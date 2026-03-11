@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSentry Podcast Index</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFED00", 
+                        "secondary": "#009FE3",
+                        "dark-bg": "#0A0A0A",
+                        "light-bg": "#FFFFFF",
+                        "background-light": "#f8f8f5", // Keeping theme requirement but main areas will override
+                        "background-dark": "#0A0A0A", // Matching user request
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["DM Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px", // Brutalist usually means sharp corners
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'brutal': '8px 8px 0px 0px #FFED00',
+                        'brutal-sm': '4px 4px 0px 0px #FFED00',
+                        'brutal-white': '4px 4px 0px 0px #FFFFFF',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0A;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col overflow-x-hidden">
+<!-- Navigation: white bg, yellow top border, black bottom border -->
+<nav class="w-full bg-light-bg border-t-[6px] border-primary border-b-2 border-dark-bg px-6 py-4 sticky top-0 z-50">
+<div class="max-w-[1200px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-dark-bg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl font-bold">shield</span>
+</div>
+<h2 class="text-dark-bg text-2xl font-bold tracking-tighter uppercase">DataSentry</h2>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-dark-bg font-mono font-medium hover:text-secondary transition-colors uppercase text-sm tracking-widest" href="#">Episodes</a>
+<a class="text-dark-bg font-mono font-medium hover:text-secondary transition-colors uppercase text-sm tracking-widest" href="#">About</a>
+<a class="text-dark-bg font-mono font-medium hover:text-secondary transition-colors uppercase text-sm tracking-widest" href="#">Subscribe</a>
+<a class="text-dark-bg font-mono font-medium hover:text-secondary transition-colors uppercase text-sm tracking-widest" href="#">Contact</a>
+</div>
+<button class="bg-dark-bg text-primary px-6 py-2 font-bold uppercase text-sm hover:bg-secondary hover:text-white transition-colors border-2 border-transparent hover:border-dark-bg">
+                Listen Now
+            </button>
+</div>
+</nav>
+<!-- Hero: Full blue bg (#009FE3), yellow top stripe -->
+<section class="relative bg-secondary w-full pt-12 pb-20 px-6 border-b-4 border-dark-bg overflow-hidden">
+<!-- Decorative Grid Background -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="max-w-[1200px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="flex flex-col gap-6">
+<!-- Headline -->
+<h1 class="text-white text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter">
+                    CYBER<br/>SECURITY.<br/>
+<span class="text-primary bg-dark-bg px-2 inline-block transform -rotate-1 mt-2">UNFILTERED.</span>
+</h1>
+<p class="font-mono text-white/90 text-lg md:text-xl max-w-md mt-4 border-l-4 border-primary pl-4">
+                    Real talk about ISO standards, AI governance, and the future of digital defense. No fluff. Just data.
+                </p>
+<!-- Platform links: Flush white border square buttons -->
+<div class="flex flex-wrap gap-4 mt-8">
+<a class="flex items-center gap-3 border-2 border-white px-5 py-3 text-white font-bold uppercase hover:bg-white hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">play_circle</span>
+<span>YouTube</span>
+</a>
+<a class="flex items-center gap-3 border-2 border-white px-5 py-3 text-white font-bold uppercase hover:bg-white hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">graphic_eq</span>
+<span>Spotify</span>
+</a>
+<a class="flex items-center gap-3 border-2 border-white px-5 py-3 text-white font-bold uppercase hover:bg-white hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">podcasts</span>
+<span>Apple</span>
+</a>
+</div>
+</div>
+<!-- Visual Element: Waveform Representation -->
+<div class="relative h-full min-h-[300px] flex items-center justify-center lg:justify-end">
+<div class="flex items-end gap-1 h-64 w-full max-w-md" id="waveform">
+<!-- Generating 32 bars via loop logic simulation in HTML -->
+<div class="w-2 bg-primary h-[40%]"></div>
+<div class="w-2 bg-white/50 h-[60%]"></div>
+<div class="w-2 bg-primary h-[30%]"></div>
+<div class="w-2 bg-white/50 h-[80%]"></div>
+<div class="w-2 bg-primary h-[50%]"></div>
+<div class="w-2 bg-white/50 h-[90%]"></div>
+<div class="w-2 bg-primary h-[70%]"></div>
+<div class="w-2 bg-white/50 h-[40%]"></div>
+<div class="w-2 bg-primary h-[60%]"></div>
+<div class="w-2 bg-white/50 h-[100%]"></div>
+<div class="w-2 bg-primary h-[85%]"></div>
+<div class="w-2 bg-white/50 h-[45%]"></div>
+<div class="w-2 bg-primary h-[35%]"></div>
+<div class="w-2 bg-white/50 h-[75%]"></div>
+<div class="w-2 bg-primary h-[55%]"></div>
+<div class="w-2 bg-white/50 h-[95%]"></div>
+<div class="w-2 bg-primary h-[65%]"></div>
+<div class="w-2 bg-white/50 h-[25%]"></div>
+<div class="w-2 bg-primary h-[85%]"></div>
+<div class="w-2 bg-white/50 h-[55%]"></div>
+<div class="w-2 bg-primary h-[45%]"></div>
+<div class="w-2 bg-white/50 h-[75%]"></div>
+<div class="w-2 bg-primary h-[35%]"></div>
+<div class="w-2 bg-white/50 h-[65%]"></div>
+<div class="w-2 bg-primary h-[90%]"></div>
+<div class="w-2 bg-white/50 h-[50%]"></div>
+<div class="w-2 bg-primary h-[70%]"></div>
+<div class="w-2 bg-white/50 h-[40%]"></div>
+<div class="w-2 bg-primary h-[80%]"></div>
+<div class="w-2 bg-white/50 h-[60%]"></div>
+<div class="w-2 bg-primary h-[30%]"></div>
+<div class="w-2 bg-white/50 h-[50%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Latest Episode Section -->
+<section class="py-24 px-6 relative bg-dark-bg">
+<div class="max-w-[1200px] mx-auto">
+<div class="flex flex-col md:flex-row items-baseline justify-between mb-12 border-b border-white/20 pb-4">
+<h2 class="text-4xl md:text-5xl font-bold uppercase tracking-tight text-white">Latest<br/>Transmission</h2>
+<a class="font-mono text-primary mt-4 md:mt-0 hover:underline uppercase tracking-widest text-sm flex items-center gap-2" href="#">
+                    View All Episodes <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<!-- Large black card with 8px yellow offset shadow -->
+<div class="bg-dark-bg border-2 border-white/10 shadow-brutal flex flex-col lg:flex-row min-h-[500px]">
+<!-- Left side: Content -->
+<div class="flex-1 p-8 md:p-12 flex flex-col justify-between border-r border-white/10 relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-6">
+<span class="font-mono text-primary text-sm tracking-widest border border-primary px-2 py-1">EP. 12</span>
+<span class="bg-secondary text-white text-xs font-bold px-3 py-1 uppercase tracking-wider">ISO Standards</span>
+</div>
+<h3 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-6">
+                            The Future of AI Governance &amp; Security Protocols
+                        </h3>
+<p class="font-mono text-gray-400 text-lg leading-relaxed mb-8 max-w-2xl">
+                            We dive deep into the new regulations shaping artificial intelligence security protocols. What does the new ISO 42001 mean for your organization?
+                        </p>
+</div>
+<div class="relative z-10 flex flex-wrap gap-3 mt-auto">
+<button aria-label="Listen on YouTube" class="h-12 w-12 flex items-center justify-center bg-[#FF0000] text-white hover:bg-white hover:text-[#FF0000] transition-colors">
+<span class="material-symbols-outlined">smart_display</span>
+</button>
+<button aria-label="Listen on Spotify" class="h-12 w-12 flex items-center justify-center bg-[#1DB954] text-white hover:bg-white hover:text-[#1DB954] transition-colors">
+<span class="material-symbols-outlined">graphic_eq</span>
+</button>
+<button class="h-12 px-6 flex items-center justify-center bg-white text-dark-bg font-bold uppercase hover:bg-primary transition-colors gap-2">
+<span class="material-symbols-outlined">play_arrow</span>
+                            Listen
+                        </button>
+</div>
+<!-- Subtle background pattern for card -->
+<div class="absolute right-0 bottom-0 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[300px] leading-none">lock</span>
+</div>
+</div>
+<!-- Right side: Solid yellow background with giant typography -->
+<div class="w-full lg:w-[400px] bg-primary flex flex-col items-center justify-center p-12 relative overflow-hidden text-dark-bg shrink-0">
+<div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(45deg, #000 25%, transparent 25%, transparent 50%, #000 50%, #000 75%, transparent 75%, transparent); background-size: 20px 20px;"></div>
+<div class="relative z-10 text-center">
+<span class="block text-9xl font-black tracking-tighter leading-none opacity-20 select-none absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 scale-150">12</span>
+<div class="w-24 h-24 border-4 border-dark-bg rounded-full flex items-center justify-center mb-6 mx-auto hover:bg-dark-bg hover:text-primary transition-colors cursor-pointer group-hover:scale-110 duration-300">
+<span class="material-symbols-outlined text-5xl">play_arrow</span>
+</div>
+<h4 class="font-mono font-bold text-2xl uppercase tracking-widest border-t-4 border-dark-bg pt-4 inline-block">
+                             Episode 12
+                         </h4>
+<p class="font-bold text-sm mt-2 uppercase opacity-75">Now Streaming</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Episodes Grid -->
+<section class="py-12 px-6 bg-[#0f0f0f]">
+<div class="max-w-[1200px] mx-auto">
+<h3 class="text-2xl font-bold uppercase text-white mb-8 flex items-center gap-4">
+<span class="w-4 h-4 bg-primary inline-block"></span>
+                Recent Logs
+            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Episode Card 1 -->
+<article class="bg-dark-bg border border-white/10 group hover:border-primary transition-colors duration-300 flex flex-col h-full">
+<div class="h-48 w-full bg-cover bg-center relative" data-alt="Abstract cyber security node network visualization in blue and dark tones" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCziGqngEpeTRQ0_cQuZ571fyzh3qKXOpUzWyyGuuLb0fEpYD59mFZ53MFMdkoSXUUxb-N1AwgYkBZy5r1Il_j5rXhpyWFhd2-bMefMRwQ7Y3OsoCfA4_4FnuT_3suLnRNQlMJHlcM6QffY4fiqLF2dpaONDw4VthIjJT51niHyWAPv_O-Nd3CGH6B4VwqIo54jfnTt6TLvFTFQs23eM81DNpIBUb6TVujI7-r_wAJN-xfToLcTo4OLI9s_eR2SZo8eu3tdNDEBGVPk');">
+<div class="absolute inset-0 bg-secondary/80 mix-blend-multiply"></div>
+<div class="absolute top-4 left-4 bg-white text-dark-bg font-mono text-xs font-bold px-2 py-1 uppercase">EP. 11</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="mb-4">
+<span class="text-primary text-xs font-bold uppercase tracking-widest mb-2 block">Threat Analysis</span>
+<h4 class="text-xl font-bold text-white group-hover:text-primary transition-colors">Zero Trust Architecture Explained</h4>
+</div>
+<p class="text-gray-400 text-sm font-mono mb-6 line-clamp-3 flex-grow">
+                            Moving beyond the perimeter. Why trusting no one is the only safe policy in 2024.
+                        </p>
+<a class="inline-flex items-center gap-2 text-white font-bold text-sm uppercase group-hover:underline decoration-primary underline-offset-4" href="#">
+                            Listen <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</a>
+</div>
+</article>
+<!-- Episode Card 2 -->
+<article class="bg-dark-bg border border-white/10 group hover:border-primary transition-colors duration-300 flex flex-col h-full">
+<div class="h-48 w-full bg-cover bg-center relative" data-alt="Server racks with green status lights in a dark data center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDnz4SvAQ8rRoj1svLr1za8BLVb3NPIlfa1hks5o6q8mFU2OGk58k-Lydz6p1XNueVbbaH_Y91_xdUdx-GPkql1VFNohn40CZpD517R74bqIiV2VQM4sxpX8b-BOCqpXv2abUd93fzelDUabjvcxZMKaGO6Z9DPBjg5Wx12jxG_z7vFuzC9tqQ7aBmlDjP2HZI-AdspbkdDfurVfjevx8E-0INS4vLfUqFeDzvBjgWM64vxTY2xIqNZT4H5ulRB3KsQXcFMeplDX8F9');">
+<div class="absolute inset-0 bg-secondary/80 mix-blend-multiply"></div>
+<div class="absolute top-4 left-4 bg-white text-dark-bg font-mono text-xs font-bold px-2 py-1 uppercase">EP. 10</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="mb-4">
+<span class="text-primary text-xs font-bold uppercase tracking-widest mb-2 block">Industry News</span>
+<h4 class="text-xl font-bold text-white group-hover:text-primary transition-colors">The Great Firewall Updates</h4>
+</div>
+<p class="text-gray-400 text-sm font-mono mb-6 line-clamp-3 flex-grow">
+                            Breaking down the latest changes in international data privacy laws and firewall restrictions.
+                        </p>
+<a class="inline-flex items-center gap-2 text-white font-bold text-sm uppercase group-hover:underline decoration-primary underline-offset-4" href="#">
+                            Listen <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</a>
+</div>
+</article>
+<!-- Episode Card 3 -->
+<article class="bg-dark-bg border border-white/10 group hover:border-primary transition-colors duration-300 flex flex-col h-full">
+<div class="h-48 w-full bg-cover bg-center relative" data-alt="Matrix style digital rain code on a computer screen" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDz3VqFma-FtrVdJ0idGwvFiMvRKGtgbDquKteSxSC6zv98t6PtXUkHxu-AQ5k3C7t4o6XYvQ49U6KfbdKx-2nRw8JYIg4EdJrnO9-dIUbIdLdAGA7DvqIP8jSoNbF3GXxYtLSmz9H8MRiD3ijUTHYlRSLns5kJItL08_AXlqBEaZiHVXXavBlyrxSAvbkKFjPMVkFKQA2zl0vBHRNACmReF-YxhOWGZzSHvNxTEvUjLagx-b1JAaErZ8K7VOsUPzDwrJqnWDT28f2L');">
+<div class="absolute inset-0 bg-secondary/80 mix-blend-multiply"></div>
+<div class="absolute top-4 left-4 bg-white text-dark-bg font-mono text-xs font-bold px-2 py-1 uppercase">EP. 09</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="mb-4">
+<span class="text-primary text-xs font-bold uppercase tracking-widest mb-2 block">Guest Interview</span>
+<h4 class="text-xl font-bold text-white group-hover:text-primary transition-colors">Ethical Hacking 101</h4>
+</div>
+<p class="text-gray-400 text-sm font-mono mb-6 line-clamp-3 flex-grow">
+                            Interview with a certified white hat hacker on discovering vulnerabilities before the bad guys do.
+                        </p>
+<a class="inline-flex items-center gap-2 text-white font-bold text-sm uppercase group-hover:underline decoration-primary underline-offset-4" href="#">
+                            Listen <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</a>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-primary text-dark-bg py-16 px-6 mt-auto">
+<div class="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-2">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-3xl font-bold">shield</span>
+<h2 class="text-3xl font-bold uppercase tracking-tighter">DataSentry</h2>
+</div>
+<p class="font-mono text-sm max-w-sm mb-6 font-medium">
+                    Unfiltered conversations about the digital battlefield. Hosted by industry veterans for security professionals.
+                </p>
+<div class="flex gap-4">
+<a class="w-10 h-10 border-2 border-dark-bg flex items-center justify-center hover:bg-dark-bg hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+<a class="w-10 h-10 border-2 border-dark-bg flex items-center justify-center hover:bg-dark-bg hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">rss_feed</span></a>
+</div>
+</div>
+<div>
+<h4 class="font-bold uppercase tracking-widest mb-6 border-b-2 border-dark-bg pb-2 inline-block">Platform</h4>
+<ul class="flex flex-col gap-3 font-mono text-sm font-bold">
+<li><a class="hover:underline" href="#">Spotify</a></li>
+<li><a class="hover:underline" href="#">Apple Podcasts</a></li>
+<li><a class="hover:underline" href="#">YouTube</a></li>
+<li><a class="hover:underline" href="#">Google Podcasts</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold uppercase tracking-widest mb-6 border-b-2 border-dark-bg pb-2 inline-block">Legal</h4>
+<ul class="flex flex-col gap-3 font-mono text-sm font-bold">
+<li><a class="hover:underline" href="#">Privacy Policy</a></li>
+<li><a class="hover:underline" href="#">Terms of Service</a></li>
+<li><a class="hover:underline" href="#">Cookie Settings</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-[1200px] mx-auto mt-12 pt-8 border-t-2 border-dark-bg/20 flex flex-col md:flex-row justify-between items-center font-mono text-xs font-bold uppercase">
+<p>© 2024 DataSentry Podcast. All rights reserved.</p>
+<p>Designed for Digital Defense.</p>
+</div>
+</footer>
+</body></html>

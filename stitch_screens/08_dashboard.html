@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSentry Brutalist Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffee00", 
+                        "primary-content": "#000000",
+                        "secondary": "#009FE3", 
+                        "accent": "#0A0A0A", 
+                        "neutral-100": "#f5f5f5",
+                        "neutral-900": "#0A0A0A", 
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["DM Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "none": "0px",
+                        "sm": "0px",
+                        "DEFAULT": "0px", 
+                        "lg": "0px",
+                        "xl": "0px",
+                        "2xl": "0px",
+                        "full": "9999px", 
+                    },
+                    borderWidth: {
+                        "1": "1px",
+                        "2": "2px",
+                        "3": "3px",
+                        "4": "4px",
+                    },
+                    boxShadow: {
+                        "hard": "4px 4px 0px 0px #000000",
+                        "hard-sm": "2px 2px 0px 0px #000000",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for brutalist feel */
+        ::-webkit-scrollbar {
+            width: 12px;
+            background: #0A0A0A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffee00;
+            border: 2px solid #0A0A0A;
+        }
+        .watermark {
+            position: absolute;
+            right: -2rem;
+            top: -4rem;
+            font-size: 20rem;
+            font-weight: 700;
+            color: rgba(0,0,0,0.03);
+            z-index: 0;
+            line-height: 1;
+            font-family: 'Space Grotesk', sans-serif;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-neutral-100 min-h-screen text-neutral-900 font-display overflow-x-hidden">
+<div class="flex flex-col md:flex-row min-h-screen w-full border-t-4 border-neutral-900">
+<!-- Sidebar -->
+<aside class="w-full md:w-[280px] bg-neutral-900 text-white flex-shrink-0 flex flex-col justify-between border-r-4 border-neutral-900 relative z-20">
+<div>
+<!-- Header -->
+<div class="p-6 border-b border-white/20">
+<div class="flex items-center gap-2 mb-1">
+<div class="w-4 h-4 bg-primary"></div>
+<h1 class="text-2xl font-bold tracking-tighter uppercase">DataSentry</h1>
+</div>
+<p class="text-white/50 text-xs font-mono tracking-widest pl-6">SYS.v2.4.0</p>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col">
+<a class="group flex items-center gap-4 px-6 py-4 border-b border-white/10 hover:bg-white hover:text-neutral-900 transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-bold uppercase tracking-wider text-sm">Dashboard</span>
+</a>
+<a class="group flex items-center gap-4 px-6 py-4 border-b border-white/10 hover:bg-white hover:text-neutral-900 transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">security</span>
+<span class="font-bold uppercase tracking-wider text-sm">Threat Intel</span>
+</a>
+<a class="group flex items-center gap-4 px-6 py-4 border-b border-white/10 hover:bg-white hover:text-neutral-900 transition-colors bg-white/5 border-l-4 border-l-primary" href="#">
+<span class="material-symbols-outlined text-primary group-hover:text-neutral-900">description</span>
+<span class="font-bold uppercase tracking-wider text-sm">System Log</span>
+</a>
+<a class="group flex items-center gap-4 px-6 py-4 border-b border-white/10 hover:bg-white hover:text-neutral-900 transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="font-bold uppercase tracking-wider text-sm">Config</span>
+</a>
+<a class="group flex items-center gap-4 px-6 py-4 border-b border-white/10 hover:bg-white hover:text-neutral-900 transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
+<span class="font-bold uppercase tracking-wider text-sm">Reports</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-6 border-t border-white/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-neutral-900 font-bold">A</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Admin User</span>
+<span class="text-xs text-white/50 font-mono">ID: 8829-X</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col relative bg-[#f0f0f0]">
+<!-- Watermark -->
+<div class="watermark">02</div>
+<!-- Top Bar / Breadcrumb area -->
+<header class="h-16 border-b-2 border-neutral-900 bg-white flex items-center justify-between px-6 sticky top-0 z-10">
+<div class="flex items-center gap-2 font-mono text-sm uppercase tracking-wide">
+<span class="text-neutral-400">System</span>
+<span class="text-neutral-400">/</span>
+<span class="font-bold bg-primary px-1">Overview</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 border border-neutral-900 bg-white shadow-hard-sm text-xs font-bold uppercase">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Live Connection
+                </div>
+<button class="material-symbols-outlined p-1 hover:bg-neutral-200 border border-transparent hover:border-neutral-900 transition-all">notifications</button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-6 md:p-10 flex-1 relative z-10">
+<!-- Page Title -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-neutral-900 pb-4">
+<div>
+<h2 class="text-6xl font-bold tracking-tighter text-neutral-900 mb-2">SYSTEM<br/>OVERVIEW</h2>
+<p class="font-mono text-sm max-w-md">Real-time monitoring of network traffic, threat detection, and system integrity status.</p>
+</div>
+<div class="text-right hidden md:block">
+<div class="text-4xl font-mono font-bold">14:23:05</div>
+<div class="text-sm font-mono uppercase tracking-widest text-neutral-500">UTC ZULU</div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<!-- Threat Level Card -->
+<div class="bg-secondary border-4 border-neutral-900 p-6 relative group hover:-translate-y-1 transition-transform duration-200">
+<div class="absolute top-4 right-4 bg-white border-2 border-neutral-900 px-2 py-0.5 text-xs font-bold font-mono text-neutral-900">
+                        RISK: HIGH
+                    </div>
+<div class="text-white font-mono text-sm mb-4 border-b border-white/30 pb-2 inline-block">THREAT LEVEL</div>
+<div class="text-white text-5xl font-bold mb-2 tracking-tighter">ELEVATED</div>
+<div class="flex items-center gap-2 text-white font-mono text-xs">
+<span class="material-symbols-outlined text-base">arrow_upward</span>
+<span>12% INCREASE IN ACTIVITY</span>
+</div>
+</div>
+<!-- System Health Card -->
+<div class="bg-white border-4 border-neutral-900 shadow-hard p-6 relative group hover:-translate-y-1 transition-transform duration-200">
+<div class="absolute -top-3 -left-3 bg-primary w-8 h-8 flex items-center justify-center border-2 border-neutral-900 z-10">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div class="text-neutral-500 font-mono text-sm mb-4">SYSTEM HEALTH</div>
+<div class="text-neutral-900 text-5xl font-bold mb-2 tracking-tighter">98.4%</div>
+<div class="flex items-center gap-2 text-red-600 font-mono text-xs font-bold">
+<span class="material-symbols-outlined text-base">arrow_downward</span>
+<span>0.2% DEGRADATION</span>
+</div>
+</div>
+<!-- Active Nodes Card -->
+<div class="bg-neutral-900 text-white p-6 relative group hover:-translate-y-1 transition-transform duration-200">
+<div class="text-neutral-400 font-mono text-sm mb-4">ACTIVE NODES</div>
+<div class="text-white text-5xl font-bold mb-2 tracking-tighter">1,024</div>
+<div class="w-full bg-neutral-800 h-2 mt-4 border border-neutral-600">
+<div class="bg-primary h-full w-3/4"></div>
+</div>
+<p class="text-neutral-400 font-mono text-xs mt-2 text-right">CAPACITY: 75%</p>
+</div>
+<!-- Action Card -->
+<div class="bg-primary border-4 border-neutral-900 p-6 flex flex-col justify-between group hover:-translate-y-1 transition-transform duration-200">
+<div>
+<div class="text-neutral-900 font-mono text-sm mb-2 font-bold">QUICK ACTION</div>
+<p class="text-sm leading-tight mb-4">Initiate immediate system purge protocols.</p>
+</div>
+<button class="bg-white w-full py-3 border-2 border-neutral-900 shadow-hard-sm font-bold uppercase hover:bg-neutral-900 hover:text-white transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">bolt</span>
+                        Execute
+                    </button>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="border-4 border-neutral-900 bg-white">
+<div class="bg-neutral-900 text-white px-6 py-4 flex items-center justify-between">
+<h3 class="font-bold text-xl uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">table_rows</span>
+                        Recent Logs
+                    </h3>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center border border-white hover:bg-white hover:text-neutral-900 transition-colors">
+<span class="material-symbols-outlined text-sm">refresh</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-white hover:bg-white hover:text-neutral-900 transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-neutral-100 border-b-2 border-neutral-900 font-mono text-xs uppercase tracking-wider text-neutral-500">
+<th class="px-6 py-4 border-r border-neutral-300 font-medium">ID Reference</th>
+<th class="px-6 py-4 border-r border-neutral-300 font-medium">Timestamp</th>
+<th class="px-6 py-4 border-r border-neutral-300 font-medium">Source IP</th>
+<th class="px-6 py-4 border-r border-neutral-300 font-medium">Severity</th>
+<th class="px-6 py-4 font-medium text-right">Action Protocol</th>
+</tr>
+</thead>
+<tbody class="font-mono text-sm text-neutral-900">
+<!-- Row 1 -->
+<tr class="border-b border-neutral-200 hover:bg-primary/10 group">
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="font-bold">#LOG-2942</span>
+</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">2023-10-27 14:22:01</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">192.168.1.42</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="bg-red-600 text-white px-2 py-1 text-xs font-bold border border-neutral-900">CRITICAL</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="font-bold underline decoration-2 decoration-neutral-900 underline-offset-4">BLOCK</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-neutral-200 hover:bg-primary/10 group">
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="font-bold">#LOG-2941</span>
+</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">2023-10-27 14:20:15</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">10.0.0.5</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="bg-yellow-400 text-neutral-900 px-2 py-1 text-xs font-bold border border-neutral-900">WARNING</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="font-bold">FLAG</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-neutral-200 hover:bg-primary/10 group">
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="font-bold">#LOG-2940</span>
+</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">2023-10-27 14:18:33</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">172.16.0.22</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="bg-neutral-200 text-neutral-900 px-2 py-1 text-xs font-bold border border-neutral-900">LOW</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="font-bold text-neutral-400">LOG</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-neutral-200 hover:bg-primary/10 group">
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="font-bold">#LOG-2939</span>
+</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">2023-10-27 14:15:00</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">192.168.1.101</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="bg-blue-200 text-blue-900 px-2 py-1 text-xs font-bold border border-neutral-900">INFO</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="font-bold text-green-700">ALLOW</span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-primary/10 group">
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="font-bold">#LOG-2938</span>
+</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">2023-10-27 14:12:45</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">10.0.0.8</td>
+<td class="px-6 py-4 border-r border-neutral-200 group-hover:border-neutral-300">
+<span class="bg-red-600 text-white px-2 py-1 text-xs font-bold border border-neutral-900">CRITICAL</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="font-bold underline decoration-2 decoration-neutral-900 underline-offset-4">ISOLATE</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="mt-12 flex items-center justify-start gap-6">
+<button class="bg-primary text-neutral-900 px-8 py-4 text-lg font-bold border-4 border-neutral-900 shadow-hard hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase tracking-wide">
+                    Initiate System Purge
+                </button>
+<div class="h-px bg-neutral-900 flex-1"></div>
+<div class="font-mono text-xs text-neutral-500 uppercase tracking-widest">
+                    Authorized Personnel Only
+                </div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

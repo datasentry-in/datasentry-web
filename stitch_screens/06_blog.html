@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSentry Blog Index</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ffee00", // Bright Yellow
+            "secondary": "#009FE3", // Bright Blue
+            "background-light": "#f8f8f5",
+            "background-dark": "#0A0A0A",
+            "border-black": "#0A0A0A",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk", "sans-serif"],
+            "mono": ["DM Mono", "monospace"],
+          },
+          boxShadow: {
+            "brutalist": "4px 4px 0px 0px #0A0A0A",
+            "brutalist-lg": "8px 8px 0px 0px #ffee00",
+            "brutalist-sm": "2px 2px 0px 0px #0A0A0A",
+          },
+          borderWidth: {
+            '3': '3px',
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-white text-[#0A0A0A] font-display selection:bg-primary selection:text-black overflow-x-hidden">
+<!-- Top Navigation -->
+<nav class="w-full bg-white border-t-4 border-t-primary border-b-[3px] border-b-border-black sticky top-0 z-50">
+<div class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-black text-primary flex items-center justify-center font-bold font-mono border-2 border-black rounded-sm">
+<span class="material-symbols-outlined text-xl">shield_lock</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight uppercase">DataSentry</h1>
+</div>
+<div class="hidden md:flex items-center gap-8 font-mono text-sm font-medium uppercase tracking-wide">
+<a class="hover:text-secondary hover:underline decoration-2 underline-offset-4" href="#">Platform</a>
+<a class="hover:text-secondary hover:underline decoration-2 underline-offset-4" href="#">Solutions</a>
+<a class="hover:text-secondary hover:underline decoration-2 underline-offset-4" href="#">Resources</a>
+<a class="hover:text-secondary hover:underline decoration-2 underline-offset-4" href="#">Pricing</a>
+</div>
+<button class="hidden md:flex bg-primary border-2 border-black px-6 py-2 font-bold text-sm uppercase shadow-brutalist active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all hover:bg-black hover:text-primary">
+        Get a Demo
+      </button>
+<button class="md:hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="w-full bg-[#0A0A0A] text-white py-16 md:py-24 border-b-[3px] border-b-border-black">
+<div class="max-w-[1200px] mx-auto px-6">
+<div class="max-w-4xl">
+<div class="inline-block bg-secondary text-white px-3 py-1 font-mono text-xs uppercase mb-6 border border-white">
+          Cybersecurity Intelligence
+        </div>
+<h2 class="text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight mb-8">
+          Security intelligence for teams that <span class="text-primary italic">build.</span>
+</h2>
+<p class="text-lg md:text-xl text-gray-300 max-w-2xl font-mono leading-relaxed mb-10 border-l-4 border-primary pl-6">
+          In-depth analysis, engineering tutorials, and compliance guides for the modern stack. No fluff, just raw data and actionable insights.
+        </p>
+<div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+<div class="flex w-full max-w-sm border-2 border-white bg-white focus-within:ring-2 focus-within:ring-primary">
+<input class="w-full bg-transparent border-none px-4 py-3 text-black placeholder:text-gray-500 font-mono text-sm uppercase focus:ring-0 outline-none" placeholder="ENTER YOUR EMAIL" type="email"/>
+<button class="bg-primary text-black px-6 py-3 font-bold uppercase hover:bg-white border-l-2 border-black transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<span class="text-gray-500 font-mono text-xs uppercase">Join 12,000+ engineers</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Filter Bar -->
+<div class="w-full bg-primary border-b-[3px] border-b-border-black overflow-x-auto">
+<div class="max-w-[1200px] mx-auto px-6 py-4">
+<div class="flex gap-3 min-w-max">
+<button class="bg-black text-white border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase shadow-none transform translate-y-[2px]">
+          All Posts
+        </button>
+<button class="bg-white text-black border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase hover:shadow-brutalist-sm transition-all hover:-translate-y-1">
+          Engineering
+        </button>
+<button class="bg-white text-black border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase hover:shadow-brutalist-sm transition-all hover:-translate-y-1">
+          GRC &amp; Compliance
+        </button>
+<button class="bg-white text-black border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase hover:shadow-brutalist-sm transition-all hover:-translate-y-1">
+          Cloud Security
+        </button>
+<button class="bg-white text-black border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase hover:shadow-brutalist-sm transition-all hover:-translate-y-1">
+          Tutorials
+        </button>
+<button class="bg-white text-black border-2 border-black px-4 py-2 font-mono text-sm font-bold uppercase hover:shadow-brutalist-sm transition-all hover:-translate-y-1">
+          Data Privacy
+        </button>
+</div>
+</div>
+</div>
+<main class="max-w-[1200px] mx-auto px-6 py-12 md:py-16">
+<!-- Featured Article -->
+<div class="mb-16 relative">
+<div class="bg-white border-[3px] border-black shadow-brutalist-lg p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-[4px_4px_0px_0px_#0A0A0A] transition-all duration-300">
+<!-- Thumbnail Section -->
+<div class="md:w-1/2 bg-[#0A0A0A] relative min-h-[320px] md:min-h-auto overflow-hidden flex items-center justify-center" data-alt="Abstract typographic pattern for ISO certification">
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#333 1px, transparent 1px); background-size: 20px 20px;"></div>
+<h1 class="text-[180px] font-black text-[#1a1a1a] leading-none select-none absolute -right-10 -bottom-10 rotate-[-10deg] group-hover:text-[#2a2a2a] transition-colors duration-500">ISO</h1>
+<div class="relative z-10 p-8">
+<span class="material-symbols-outlined text-6xl text-primary mb-4 block">verified_user</span>
+<p class="text-white font-mono text-sm uppercase tracking-widest border-b border-primary inline-block pb-1">Startups Guide</p>
+</div>
+</div>
+<!-- Content Section -->
+<div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center border-t-[3px] md:border-t-0 md:border-l-[3px] border-black bg-white relative">
+<div class="absolute top-0 right-0 bg-secondary text-white px-4 py-2 font-mono text-xs font-bold uppercase border-l-[3px] border-b-[3px] border-black">
+                Featured
+            </div>
+<div class="flex items-center gap-3 mb-4">
+<span class="bg-secondary/10 text-secondary px-3 py-1 font-mono text-xs font-bold uppercase border border-secondary rounded-sm">GRC &amp; Compliance</span>
+<span class="text-gray-500 text-xs font-mono uppercase">8 MIN READ</span>
+</div>
+<h3 class="text-3xl md:text-4xl font-bold leading-[1.1] mb-4 group-hover:text-secondary transition-colors">
+            The Complete Guide to ISO 27001 Certification for Startups
+          </h3>
+<p class="text-gray-600 font-mono text-sm md:text-base mb-8 leading-relaxed border-l-2 border-gray-200 pl-4">
+            A step-by-step breakdown of how to prepare your engineering team for your first ISO audit without slowing down velocity. We cover gap analysis, policy creation, and evidence collection.
+          </p>
+<div class="flex items-center gap-4 mt-auto">
+<button class="flex items-center gap-2 bg-primary border-2 border-black px-6 py-3 font-bold text-sm uppercase shadow-brutalist hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+              Read Article
+              <span class="material-symbols-outlined text-lg">arrow_outward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Article Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t-[3px] border-l-[3px] border-black">
+<!-- Card 1 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-white hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-[#0A0A0A] flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="Vulnerability management concept abstract">
+<div class="absolute inset-0 opacity-30" style="background-image: repeating-linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111), repeating-linear-gradient(45deg, #111 25%, #0A0A0A 25%, #0A0A0A 75%, #111 75%, #111); background-position: 0 0, 10px 10px; background-size: 20px 20px;"></div>
+<span class="text-9xl font-black text-[#1F1F1F] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-primary transition-colors duration-500">V</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Engineering</span>
+<span class="font-mono text-xs text-gray-400">Oct 24</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">Vulnerability Management in 2024</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">Why traditional scanning isn't enough anymore. Moving towards continuous monitoring and automated remediation pipelines.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-[#f8f8f5] hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-secondary flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="API security design pattern abstract">
+<span class="material-symbols-outlined absolute text-[160px] text-white/10 -rotate-12">api</span>
+<span class="text-9xl font-black text-white/20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-white/40 transition-colors duration-500">D</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Cloud Security</span>
+<span class="font-mono text-xs text-gray-400">Oct 22</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">Designing Secure APIs</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">Best practices for authentication, rate limiting, and input validation in modern REST and GraphQL APIs.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-white hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-[#0A0A0A] flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="Infrastructure code security abstract">
+<div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(0deg, transparent 24%, #333 25%, #333 26%, transparent 27%, transparent 74%, #333 75%, #333 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, #333 25%, #333 26%, transparent 27%, transparent 74%, #333 75%, #333 76%, transparent 77%, transparent); background-size: 30px 30px;"></div>
+<span class="text-9xl font-black text-[#1F1F1F] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-primary transition-colors duration-500">I</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Tutorials</span>
+<span class="font-mono text-xs text-gray-400">Oct 18</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">Infrastructure as Code Security</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">Scanning Terraform and CloudFormation templates for misconfigurations before deployment.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-[#f8f8f5] hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-secondary flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="GDPR development guidelines abstract">
+<span class="material-symbols-outlined absolute text-[160px] text-white/10 rotate-12">policy</span>
+<span class="text-9xl font-black text-white/20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-white/40 transition-colors duration-500">G</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Data Privacy</span>
+<span class="font-mono text-xs text-gray-400">Oct 15</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">GDPR for Devs</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">Practical implementation of Right to Erasure and Data Portability in your application architecture.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Card 5 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-white hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-[#0A0A0A] flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="Threat modeling security abstract">
+<div class="absolute inset-0 opacity-20" style="background: repeating-linear-gradient(-45deg, #333, #333 2px, transparent 2px, transparent 10px);"></div>
+<span class="text-9xl font-black text-[#1F1F1F] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-primary transition-colors duration-500">T</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Engineering</span>
+<span class="font-mono text-xs text-gray-400">Oct 12</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">Threat Modeling 101</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">How to conduct effective threat modeling sessions using STRIDE without boring your team.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+<!-- Card 6 -->
+<article class="group border-r-[3px] border-b-[3px] border-black bg-[#f8f8f5] hover:bg-primary/5 transition-colors relative flex flex-col h-full">
+<div class="h-48 bg-secondary flex items-center justify-center relative overflow-hidden border-b-[3px] border-black" data-alt="Container hardening security abstract">
+<span class="material-symbols-outlined absolute text-[160px] text-white/10">deployed_code</span>
+<span class="text-9xl font-black text-white/20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-white/40 transition-colors duration-500">C</span>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="font-mono text-xs font-bold uppercase text-secondary">Cloud Security</span>
+<span class="font-mono text-xs text-gray-400">Oct 10</span>
+</div>
+<h4 class="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2">Container Hardening Guide</h4>
+<p class="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">Essential security practices for Docker and Kubernetes environments in production.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
+            Read <span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</article>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-3 mt-16">
+<button aria-label="Previous Page" class="w-11 h-11 bg-white border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-black hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-11 h-11 bg-black text-primary border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-primary hover:text-black transition-colors">1</button>
+<button class="w-11 h-11 bg-white border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-black hover:text-white transition-colors">2</button>
+<button class="w-11 h-11 bg-white border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-black hover:text-white transition-colors">3</button>
+<span class="font-mono text-gray-400 px-2">...</span>
+<button class="w-11 h-11 bg-white border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-black hover:text-white transition-colors">8</button>
+<button aria-label="Next Page" class="w-11 h-11 bg-white border-2 border-black flex items-center justify-center font-mono font-bold hover:bg-black hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#0A0A0A] text-white border-t-[3px] border-primary pt-16 pb-8">
+<div class="max-w-[1200px] mx-auto px-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-6 text-primary">
+<span class="material-symbols-outlined text-3xl">shield_lock</span>
+<h2 class="text-xl font-bold uppercase tracking-tight">DataSentry</h2>
+</div>
+<p class="font-mono text-sm text-gray-400 mb-6">
+                    Securing the future of digital infrastructure, one commit at a time.
+                </p>
+<div class="flex gap-4">
+<a class="w-8 h-8 bg-white text-black flex items-center justify-center rounded-sm hover:bg-primary transition-colors" href="#"><i class="material-symbols-outlined text-sm">mail</i></a>
+<a class="w-8 h-8 bg-white text-black flex items-center justify-center rounded-sm hover:bg-primary transition-colors" href="#"><i class="material-symbols-outlined text-sm">rss_feed</i></a>
+</div>
+</div>
+<div>
+<h4 class="font-mono font-bold text-primary uppercase mb-6 text-sm">Platform</h4>
+<ul class="flex flex-col gap-3 font-mono text-sm text-gray-300">
+<li><a class="hover:text-primary" href="#">Intelligence</a></li>
+<li><a class="hover:text-primary" href="#">Compliance</a></li>
+<li><a class="hover:text-primary" href="#">API Security</a></li>
+<li><a class="hover:text-primary" href="#">Integrations</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-mono font-bold text-primary uppercase mb-6 text-sm">Resources</h4>
+<ul class="flex flex-col gap-3 font-mono text-sm text-gray-300">
+<li><a class="hover:text-primary" href="#">Blog</a></li>
+<li><a class="hover:text-primary" href="#">Documentation</a></li>
+<li><a class="hover:text-primary" href="#">Community</a></li>
+<li><a class="hover:text-primary" href="#">Help Center</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-mono font-bold text-primary uppercase mb-6 text-sm">Subscribe</h4>
+<p class="font-mono text-xs text-gray-400 mb-4">Get the latest security briefs directly to your inbox.</p>
+<div class="flex flex-col gap-2">
+<input class="bg-[#1a1a1a] border border-gray-700 p-2 font-mono text-sm text-white focus:border-primary focus:ring-0" placeholder="Email" type="email"/>
+<button class="bg-primary text-black font-bold uppercase text-xs p-2 hover:bg-white transition-colors">Subscribe</button>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-mono text-xs text-gray-500">© 2024 DataSentry Inc. All rights reserved.</p>
+<div class="flex gap-6 font-mono text-xs text-gray-500 uppercase">
+<a class="hover:text-white" href="#">Privacy</a>
+<a class="hover:text-white" href="#">Terms</a>
+<a class="hover:text-white" href="#">Cookies</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

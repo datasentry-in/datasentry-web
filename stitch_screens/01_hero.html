@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSentry Homepage</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FFED00", // Yellow from prompt
+              secondary: "#009FE3", // Blue from prompt
+              "background-light": "#F5F5F5",
+              "background-dark": "#0A0A0A",
+              "surface-dark": "#151515",
+            },
+            fontFamily: {
+              display: ['Space Grotesk', 'sans-serif'],
+              mono: ['DM Mono', 'monospace'],
+            },
+            borderRadius: {
+              DEFAULT: "0px", // Brutalist usually means sharp edges
+            },
+            boxShadow: {
+                'brutal': '6px 6px 0px 0px #FFED00',
+                'brutal-blue': '6px 6px 0px 0px #009FE3',
+                'brutal-sm': '3px 3px 0px 0px #FFED00',
+            },
+            animation: {
+                'scroll-left': 'scroll-left 20s linear infinite',
+            },
+            keyframes: {
+                'scroll-left': {
+                    '0%': { transform: 'translateX(0)' },
+                    '100%': { transform: 'translateX(-100%)' },
+                }
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        .halftone-pattern {
+            background-image: radial-gradient(#FFED00 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+<nav class="border-t-8 border-primary border-b-2 border-black dark:border-white bg-white dark:bg-surface-dark sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-20">
+<div class="flex-shrink-0 flex items-center">
+<div class="h-10 w-10 bg-black dark:bg-white border-2 border-black dark:border-white flex items-center justify-center mr-3 relative">
+<span class="absolute top-1 left-1 w-full h-full bg-secondary -z-10"></span>
+<span class="material-icons text-primary dark:text-black">security</span>
+</div>
+<span class="font-mono text-xl font-bold tracking-tighter uppercase">Data<span class="text-secondary">Sentry</span></span>
+</div>
+<div class="hidden md:flex space-x-8 items-center">
+<a class="font-mono text-sm uppercase font-medium hover:text-secondary dark:hover:text-primary transition-colors" href="#">Services</a>
+<a class="font-mono text-sm uppercase font-medium hover:text-secondary dark:hover:text-primary transition-colors" href="#">Compliance</a>
+<a class="font-mono text-sm uppercase font-medium hover:text-secondary dark:hover:text-primary transition-colors" href="#">About Us</a>
+<a class="font-mono text-sm uppercase font-medium hover:text-secondary dark:hover:text-primary transition-colors" href="#">Insights</a>
+</div>
+<div class="hidden md:flex">
+<a class="bg-black dark:bg-white text-primary dark:text-black font-mono text-sm px-6 py-3 font-bold border-2 border-transparent hover:bg-secondary hover:text-white dark:hover:bg-primary dark:hover:text-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_#FFED00] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none" href="#">
+                        GET AUDITED
+                    </a>
+</div>
+<div class="md:hidden flex items-center">
+<button class="text-gray-900 dark:text-white hover:text-secondary focus:outline-none" type="button">
+<span class="material-icons text-3xl">menu</span>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="flex-grow flex flex-col relative overflow-hidden">
+<section class="relative bg-background-dark text-white flex-grow flex items-center py-20 lg:py-32 border-b-2 border-white dark:border-gray-700">
+<div class="absolute inset-0 halftone-pattern pointer-events-none"></div>
+<div class="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-left">
+<span class="font-mono text-primary text-xs tracking-[0.2em] uppercase">HOMEPAGE 2026 // VER 4.0</span>
+</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7">
+<div class="inline-block bg-white text-black px-2 py-1 mb-6 font-mono text-xs font-bold border border-black shadow-brutal-sm">
+                            CYBERSECURITY PARTNER
+                        </div>
+<h1 class="text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.9] tracking-tight mb-8 font-display">
+                            Vulnerabilities <br/>
+<span class="text-primary italic">FOUND.</span> <br/>
+                            Compliance <br/>
+<span class="text-secondary italic">ACHIEVED.</span>
+</h1>
+<p class="font-mono text-gray-400 max-w-lg text-sm md:text-base leading-relaxed mb-10 border-l-2 border-primary pl-4">
+                            We are the new-age GRC consulting partner leveraging cutting-edge platforms to serve mid-size businesses with the highest levels of commitment.
+                        </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-primary text-black font-bold px-8 py-4 font-mono uppercase tracking-wider hover:bg-white transition-colors shadow-brutal-blue border-2 border-black">
+                                Explore Services
+                            </button>
+<button class="bg-transparent border-2 border-white text-white font-bold px-8 py-4 font-mono uppercase tracking-wider hover:bg-white hover:text-black transition-colors">
+                                View Case Studies
+                            </button>
+</div>
+</div>
+<div class="lg:col-span-5 relative mt-12 lg:mt-0">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-secondary rounded-full blur-3xl opacity-20"></div>
+<div class="absolute bottom-10 -left-10 w-40 h-40 bg-primary rounded-full blur-3xl opacity-20"></div>
+<div class="bg-white dark:bg-surface-dark border-2 border-black dark:border-white p-6 shadow-brutal transform rotate-1 transition-transform hover:rotate-0">
+<div class="flex justify-between items-start mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+<div>
+<h3 class="font-mono text-xs text-gray-500 dark:text-gray-400 uppercase">System Status</h3>
+<div class="flex items-center mt-1">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></div>
+<span class="font-bold text-lg text-black dark:text-white">Active Monitoring</span>
+</div>
+</div>
+<span class="material-icons text-secondary text-3xl">radar</span>
+</div>
+<div class="grid grid-cols-2 gap-6 mb-6">
+<div class="bg-gray-50 dark:bg-black p-4 border border-gray-200 dark:border-gray-700">
+<p class="font-mono text-xs text-gray-500 mb-1">Compliance Rate</p>
+<p class="text-4xl font-bold text-black dark:text-white">87%</p>
+<div class="w-full bg-gray-200 h-1 mt-2">
+<div class="bg-secondary h-1 w-[87%]"></div>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-black p-4 border border-gray-200 dark:border-gray-700">
+<p class="font-mono text-xs text-gray-500 mb-1">VAPT Findings</p>
+<p class="text-4xl font-bold text-primary">34</p>
+<p class="text-xs text-red-500 mt-1 font-mono flex items-center">
+<span class="material-icons text-[10px] mr-1">arrow_upward</span> 2 Critical
+                                    </p>
+</div>
+</div>
+<div class="space-y-3 font-mono text-xs">
+<div class="flex justify-between items-center bg-black text-white p-2">
+<span>ISO 27001 Audit</span>
+<span class="text-primary">IN PROGRESS</span>
+</div>
+<div class="flex justify-between items-center border border-gray-200 dark:border-gray-700 p-2 text-gray-600 dark:text-gray-300">
+<span>SOC 2 Type II</span>
+<span class="text-green-600 dark:text-green-400">COMPLIANT</span>
+</div>
+<div class="flex justify-between items-center border border-gray-200 dark:border-gray-700 p-2 text-gray-600 dark:text-gray-300">
+<span>GDPR Review</span>
+<span class="text-gray-400">PENDING</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="bg-primary text-black border-y-2 border-black overflow-hidden py-3 relative z-20">
+<div class="flex whitespace-nowrap animate-scroll-left">
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">verified</span> ISO Certification</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">lock</span> Data Privacy</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">bug_report</span> VAPT Services</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">policy</span> GRC Consulting</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">cloud_done</span> Cloud Security</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">verified</span> ISO Certification</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">lock</span> Data Privacy</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">bug_report</span> VAPT Services</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">policy</span> GRC Consulting</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center">•</span>
+<span class="mx-4 font-mono font-bold text-lg uppercase flex items-center"><span class="material-icons mr-2">cloud_done</span> Cloud Security</span>
+</div>
+</div>
+<section class="bg-white dark:bg-surface-dark py-12 border-b-2 border-black dark:border-white">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<p class="text-center font-mono text-sm text-gray-500 uppercase tracking-widest mb-8">Trusted by industry leaders</p>
+<div class="flex flex-wrap justify-center gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex items-center space-x-2">
+<span class="material-icons text-4xl">change_history</span>
+<span class="font-bold text-xl font-display">DELTA</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="material-icons text-4xl">all_inclusive</span>
+<span class="font-bold text-xl font-display">NEXSALES</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="material-icons text-4xl">token</span>
+<span class="font-bold text-xl font-display">RESPONSE</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="material-icons text-4xl">widgets</span>
+<span class="font-bold text-xl font-display">BLOCKS</span>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-background-light dark:bg-background-dark py-20">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-12">
+<h2 class="text-3xl font-bold mb-4">Our Core Defense Mechanisms</h2>
+<div class="w-20 h-2 bg-primary"></div>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-white dark:bg-surface-dark border-2 border-black dark:border-gray-700 p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-none hover:-translate-y-2 transition-transform duration-300">
+<div class="w-12 h-12 bg-primary/20 flex items-center justify-center mb-6 border border-primary text-primary">
+<span class="material-icons">gavel</span>
+</div>
+<h3 class="text-xl font-bold mb-3 font-display">Compliance &amp; Audits</h3>
+<p class="text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed">Achieve ISO 27001, SOC 2, HIPAA, and GDPR compliance with our streamlined, tech-first approach.</p>
+<a class="inline-block mt-4 text-secondary font-bold font-mono text-sm hover:underline" href="#">LEARN MORE -&gt;</a>
+</div>
+<div class="bg-white dark:bg-surface-dark border-2 border-black dark:border-gray-700 p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-none hover:-translate-y-2 transition-transform duration-300">
+<div class="w-12 h-12 bg-secondary/20 flex items-center justify-center mb-6 border border-secondary text-secondary">
+<span class="material-icons">bug_report</span>
+</div>
+<h3 class="text-xl font-bold mb-3 font-display">VAPT Services</h3>
+<p class="text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed">Identify vulnerabilities before hackers do. Comprehensive penetration testing for web, mobile, and cloud.</p>
+<a class="inline-block mt-4 text-secondary font-bold font-mono text-sm hover:underline" href="#">LEARN MORE -&gt;</a>
+</div>
+<div class="bg-white dark:bg-surface-dark border-2 border-black dark:border-gray-700 p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-none hover:-translate-y-2 transition-transform duration-300">
+<div class="w-12 h-12 bg-black/10 dark:bg-white/10 flex items-center justify-center mb-6 border border-black dark:border-white text-black dark:text-white">
+<span class="material-icons">school</span>
+</div>
+<h3 class="text-xl font-bold mb-3 font-display">Security Training</h3>
+<p class="text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed">Build a human firewall. Interactive workshops and phishing simulations to empower your workforce.</p>
+<a class="inline-block mt-4 text-secondary font-bold font-mono text-sm hover:underline" href="#">LEARN MORE -&gt;</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-black text-white py-12 border-t-8 border-primary">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+<div class="mb-6 md:mb-0">
+<span class="font-mono text-2xl font-bold tracking-tighter uppercase">Data<span class="text-secondary">Sentry</span></span>
+<p class="font-mono text-gray-400 text-xs mt-2">© 2024 DataSentry Inc. All rights reserved.</p>
+</div>
+<div class="flex space-x-6">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons">email</span></a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons">alternate_email</span></a> 
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons">phone</span></a>
+</div>
+</div>
+</footer>
+
+</body></html>
