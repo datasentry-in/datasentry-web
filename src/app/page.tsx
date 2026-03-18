@@ -1,36 +1,10 @@
+import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
+
 export default function Home() {
   return (
     <>
-      {/* NAV — exact Stitch */}
-      <nav className="border-t-8 border-primary border-b-2 border-black bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="h-10 w-10 bg-black border-2 border-black flex items-center justify-center mr-3 relative">
-                <span className="absolute top-1 left-1 w-full h-full bg-secondary -z-10"></span>
-                <span className="material-icons text-primary">security</span>
-              </div>
-              <span className="font-mono text-xl font-bold tracking-tighter uppercase">Data<span className="text-secondary">Sentry</span></span>
-            </div>
-            <div className="hidden md:flex space-x-8 items-center">
-              <a className="font-mono text-sm uppercase font-medium hover:text-secondary transition-colors" href="#">Services</a>
-              <a className="font-mono text-sm uppercase font-medium hover:text-secondary transition-colors" href="#">Compliance</a>
-              <a className="font-mono text-sm uppercase font-medium hover:text-secondary transition-colors" href="#">About Us</a>
-              <a className="font-mono text-sm uppercase font-medium hover:text-secondary transition-colors" href="#">Insights</a>
-            </div>
-            <div className="hidden md:flex">
-              <a className="bg-black text-primary font-mono text-sm px-6 py-3 font-bold border-2 border-transparent hover:bg-secondary hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none" href="#">
-                GET AUDITED
-              </a>
-            </div>
-            <div className="md:hidden flex items-center">
-              <button className="text-gray-900 hover:text-secondary focus:outline-none" type="button">
-                <span className="material-icons text-3xl">menu</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="flex-grow flex flex-col relative overflow-hidden">
 
@@ -172,7 +146,7 @@ export default function Home() {
         </section>
 
         {/* CORE ADVISORY SERVICES */}
-        <section className="bg-background-light py-20">
+        <section id="services" className="bg-background-light py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-12">
               <h2 className="text-3xl font-bold mb-4">Core Advisory Services</h2>
@@ -191,7 +165,6 @@ export default function Home() {
                   <li>• ISO 42001 AI Management System</li>
                   <li>• Risk management controls</li>
                 </ul>
-                <a className="inline-block mt-auto text-secondary font-bold font-mono text-sm hover:underline" href="#">EXPLORE SERVICE -&gt;</a>
               </div>
               <div className="bg-white border-2 border-black p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-transform duration-300 flex flex-col">
                 <div className="w-12 h-12 bg-secondary/20 flex items-center justify-center mb-6 border border-secondary text-secondary shrink-0">
@@ -205,7 +178,6 @@ export default function Home() {
                   <li>• Regulatory interpretation</li>
                   <li>• Data processing agreements</li>
                 </ul>
-                <a className="inline-block mt-auto text-secondary font-bold font-mono text-sm hover:underline" href="#">EXPLORE SERVICE -&gt;</a>
               </div>
               <div className="bg-white border-2 border-black p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-transform duration-300 flex flex-col">
                 <div className="w-12 h-12 bg-black/10 flex items-center justify-center mb-6 border border-black text-black shrink-0">
@@ -219,7 +191,6 @@ export default function Home() {
                   <li>• Audit preparation support</li>
                   <li>• Vendor governance</li>
                 </ul>
-                <a className="inline-block mt-auto text-secondary font-bold font-mono text-sm hover:underline" href="#">EXPLORE SERVICE -&gt;</a>
               </div>
             </div>
           </div>
@@ -460,7 +431,7 @@ export default function Home() {
 
 
         {/* WHY DATASENTRY */}
-        <section className="bg-background-dark py-24 px-6 md:px-12 lg:px-20 border-b-4 border-primary text-white">
+        <section id="about" className="bg-background-dark py-24 px-6 md:px-12 lg:px-20 border-b-4 border-primary text-white">
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:flex md:items-end md:justify-between">
               <div>
@@ -629,48 +600,48 @@ export default function Home() {
             </div>
             
             {/* Info area - 60% (7 cols) */}
-            <div className="lg:col-span-7 bg-black text-white p-8 md:p-16 lg:p-24 flex flex-col justify-center">
-              <h3 className="font-display text-5xl md:text-6xl font-bold mb-4">Dharita Gada</h3>
-              <div className="h-1 w-24 bg-secondary mb-8"></div>
-              <p className="text-gray-300 text-xl leading-relaxed mb-10 max-w-2xl">
+            <div className="lg:col-span-7 bg-secondary text-white p-8 md:p-16 lg:p-24 flex flex-col justify-center">
+              <h3 className="font-display text-5xl md:text-6xl font-bold mb-4 text-white">Dharita Gada</h3>
+              <div className="h-1 w-24 bg-primary mb-8"></div>
+              <p className="text-white text-xl leading-relaxed mb-10 max-w-2xl font-medium">
                 15+ years of professional experience spanning law, compliance, and information security governance. Founder of DataSentry focused on translating regulation into practical compliance frameworks.
               </p>
               <div className="space-y-4 mb-10">
                 <div className="flex items-center gap-4">
                   <div className="w-3 h-3 bg-primary"></div>
-                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">Trust, Risk &amp; Compliance Advisory</span>
+                  <span className="font-mono text-sm md:text-base text-white uppercase tracking-widest font-bold">Trust, Risk &amp; Compliance Advisory</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 bg-secondary"></div>
-                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">ISO 27001 &amp; ISO 42001 Lead Implementer</span>
+                  <div className="w-3 h-3 bg-black"></div>
+                  <span className="font-mono text-sm md:text-base text-white uppercase tracking-widest font-bold">ISO 27001 &amp; ISO 42001 Lead Implementer</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 bg-green-500"></div>
-                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">Privacy &amp; Data Protection Programs</span>
+                  <div className="w-3 h-3 bg-green-400"></div>
+                  <span className="font-mono text-sm md:text-base text-white uppercase tracking-widest font-bold">Privacy &amp; Data Protection Programs</span>
                 </div>
               </div>
               <div className="flex gap-8">
-                <a className="text-gray-400 hover:text-primary transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fab fa-linkedin text-3xl"></i></a>
-                <a className="text-gray-400 hover:text-primary transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fas fa-globe text-3xl"></i></a>
+                <a className="text-white hover:text-black transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fab fa-linkedin text-3xl"></i></a>
+                <a className="text-white hover:text-black transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fas fa-globe text-3xl"></i></a>
               </div>
             </div>
           </div>
         </section>
         {/* CALL TO ACTION */}
-        <section className="bg-secondary py-24 px-6 md:px-12 lg:px-20 text-white relative overflow-hidden flex items-center justify-center border-t-4 border-black border-b-4 border-black">
+        <section className="bg-black py-24 px-6 md:px-12 lg:px-20 text-white relative overflow-hidden flex items-center justify-center border-t-4 border-black border-b-4 border-black">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
           <div className="relative z-10 text-center max-w-4xl mx-auto">
             <h2 className="font-display text-4xl sm:text-6xl md:text-8xl font-bold leading-none uppercase tracking-tighter mb-8 text-white drop-shadow-md">
-              Start Your <br/> <span className="text-primary stroke-text shadow-black drop-shadow-lg">Compliance</span> Journey
+              Start Your <br/> <span className="text-secondary drop-shadow-lg">Compliance</span> Journey
             </h2>
-            <p className="text-xl md:text-2xl font-medium mb-12 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl font-medium mb-12 max-w-2xl mx-auto text-gray-300">
               Ready to turn regulatory requirements into a competitive advantage? Let&apos;s talk strategy.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <a href="#" className="inline-block bg-primary text-black font-display font-bold text-xl px-10 py-5 uppercase tracking-wide border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none transition-all duration-200">
+              <a href="#" className="inline-block bg-primary text-black font-display font-bold text-xl px-10 py-5 uppercase tracking-wide border-2 border-primary shadow-brutal-blue hover:translate-y-1 hover:shadow-none transition-all duration-200">
                 Book a Consultation
               </a>
-              <a href="#" className="inline-block bg-black text-white font-display font-bold text-xl px-10 py-5 uppercase tracking-wide border-2 border-black hover:bg-white hover:text-black transition-all duration-200">
+              <a href="#" className="inline-block bg-white text-black font-display font-bold text-xl px-10 py-5 uppercase tracking-wide border-2 border-white hover:bg-black hover:text-white transition-all duration-200">
                 Contact Us
               </a>
             </div>
@@ -678,20 +649,7 @@ export default function Home() {
         </section>
 
       </main>
-      {/* FOOTER — exact Stitch */}
-      <footer className="bg-black text-white py-12 border-t-8 border-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-6 md:mb-0">
-            <span className="font-mono text-2xl font-bold tracking-tighter uppercase">Data<span className="text-secondary">Sentry</span></span>
-            <p className="font-mono text-gray-400 text-xs mt-2">© 2024 DataSentry Inc. All rights reserved.</p>
-          </div>
-          <div className="flex space-x-6">
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#"><span className="material-icons">email</span></a>
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#"><span className="material-icons">alternate_email</span></a>
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#"><span className="material-icons">phone</span></a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

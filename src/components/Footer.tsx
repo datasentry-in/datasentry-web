@@ -1,41 +1,15 @@
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function Footer() {
   return (
-    <>
-      {/* CTA Band */}
-      <section className="relative bg-secondary text-white py-20 px-6 md:px-12 lg:px-20 overflow-hidden">
-        <div className="absolute -right-10 -top-10 text-[300px] font-display font-bold text-white/5 select-none pointer-events-none leading-none z-0">05</div>
-        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-12">
-          <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-6xl font-display font-bold leading-tight uppercase mb-6">
-              Stop Losing Deals To <span className="bg-primary text-black px-2">Security Gaps.</span>
-            </h2>
-            <p className="text-xl text-white/80 leading-relaxed">
-              Don&apos;t let compliance hurdles slow down your sales cycle. Secure your data, achieve certification, and close deals faster with DataSentry.
-            </p>
-          </div>
-          <div className="flex-shrink-0">
-            <Link
-              className="inline-block bg-black text-white font-mono font-bold text-lg px-12 py-5 uppercase tracking-wide border-2 border-white hover:bg-white hover:text-black transition-all duration-300"
-              href="/contact"
-            >
-              Book a Free Assessment →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-background-dark text-white py-16 border-t-4 border-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-black text-white py-16 border-t-8 border-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center mb-4">
-                <div className="h-12 w-12 bg-primary border-2 border-black flex items-center justify-center mr-3">
-                  <span className="font-display font-bold text-black text-lg leading-none text-center">DATA<br/>Sentry</span>
-                </div>
+                <Logo className="h-12 w-auto" strokeColor="#FFFFFF" />
               </div>
               <p className="font-mono text-sm text-gray-400 mt-4">
                 <span className="font-bold text-white">Headquarters</span><br/>
@@ -94,11 +68,9 @@ export default function Footer() {
             </div>
             <div className="flex space-x-4">
               <Link className="text-gray-400 hover:text-primary transition-colors w-10 h-10 border border-gray-700 flex items-center justify-center" href="#">in</Link>
-              <Link className="text-gray-400 hover:text-primary transition-colors w-10 h-10 border border-gray-700 flex items-center justify-center" href="#">𝕏</Link>
             </div>
           </div>
         </div>
       </footer>
-    </>
   );
 }
