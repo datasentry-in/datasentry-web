@@ -147,26 +147,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* TRUSTED BY — exact Stitch */}
-        <section className="bg-white py-12 border-b-2 border-black">
+        {/* Industries We Work With */}
+        <section className="bg-gray-50 py-12 border-b-4 border-black border-t-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center font-mono text-sm text-gray-500 uppercase tracking-widest mb-8">Trusted by industry leaders</p>
-            <div className="flex flex-wrap justify-center gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <div className="flex items-center space-x-2">
-                <span className="material-icons text-4xl">change_history</span>
-                <span className="font-bold text-xl font-display">DELTA</span>
+            <p className="text-center font-mono text-sm font-bold uppercase tracking-widest text-black mb-8">Industries We Work With</p>
+            <div className="flex flex-wrap justify-center items-center gap-4 lg:gap-6 px-4">
+              <div className="border-2 border-black bg-white px-4 py-2 font-mono font-bold text-sm text-black shadow-[4px_4px_0px_0px_#FFED00] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-default flex items-center">
+                <i className="fas fa-building-columns mr-2"></i> Financial Services <span className="font-sans text-xs tracking-normal opacity-80 ml-1">(NBFC / Housing Finance)</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="material-icons text-4xl">all_inclusive</span>
-                <span className="font-bold text-xl font-display">NEXSALES</span>
+              <div className="border-2 border-black bg-white px-4 py-2 font-mono font-bold text-sm text-black shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-default flex items-center">
+                <i className="fas fa-cloud mr-2"></i> SaaS &amp; Technology Platforms
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="material-icons text-4xl">token</span>
-                <span className="font-bold text-xl font-display">RESPONSE</span>
+              <div className="border-2 border-black bg-white px-4 py-2 font-mono font-bold text-sm text-black shadow-[4px_4px_0px_0px_#FFED00] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-default flex items-center">
+                <i className="fas fa-network-wired mr-2"></i> AI &amp; Data Analytics Companies
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="material-icons text-4xl">widgets</span>
-                <span className="font-bold text-xl font-display">BLOCKS</span>
+              <div className="border-2 border-black bg-white px-4 py-2 font-mono font-bold text-sm text-black shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-default flex items-center">
+                <i className="fas fa-shield-halved mr-2"></i> Background Screening &amp; Risk Intelligence
+              </div>
+              <div className="border-2 border-black bg-white px-4 py-2 font-mono font-bold text-sm text-black shadow-[4px_4px_0px_0px_#FFED00] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-default flex items-center">
+                <i className="fas fa-briefcase mr-2"></i> Management &amp; Business Consulting Firms
               </div>
             </div>
           </div>
@@ -189,7 +188,7 @@ export default function Home() {
                 <ul className="text-sm font-mono text-gray-500 space-y-2 mb-6 flex-grow">
                   <li>• ISO 27001 implementation</li>
                   <li>• ISO 27701 privacy extension</li>
-                  <li>• AI governance readiness</li>
+                  <li>• ISO 42001 AI Management System</li>
                   <li>• Risk management controls</li>
                 </ul>
                 <a className="inline-block mt-auto text-secondary font-bold font-mono text-sm hover:underline" href="#">EXPLORE SERVICE -&gt;</a>
@@ -352,7 +351,7 @@ export default function Home() {
                 <ul className="space-y-4 font-mono text-sm text-gray-300">
                   <li className="flex gap-3"><span className="text-primary material-icons-outlined text-lg shrink-0">check_circle</span> <span>Vendor &amp; third-party risk oversight</span></li>
                   <li className="flex gap-3"><span className="text-primary material-icons-outlined text-lg shrink-0">check_circle</span> <span>Privacy compliance programs</span></li>
-                  <li className="flex gap-3"><span className="text-primary material-icons-outlined text-lg shrink-0">check_circle</span> <span>AI governance readiness</span></li>
+                  <li className="flex gap-3"><span className="text-primary material-icons-outlined text-lg shrink-0">check_circle</span> <span>ISO 42001 AI Management System</span></li>
                 </ul>
               </div>
               <div className="border-t border-white/10 pt-6 mt-6 flex gap-4 items-start">
@@ -377,14 +376,14 @@ export default function Home() {
           </div>
 
           {/* STEP 01 */}
-          <div className="bg-white border-b-2 border-black py-16 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 font-display text-[10rem] md:text-[12rem] font-bold text-gray-100 leading-none -mt-4 -mr-4 select-none z-0">01</div>
+          <div className="bg-primary border-b-2 border-black py-16 relative overflow-hidden text-black group">
+            <div className="absolute top-0 right-0 font-display text-[10rem] md:text-[12rem] font-bold text-yellow-300 leading-none -mt-4 -mr-4 select-none z-0 opacity-50">01</div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div>
                   <div className="inline-block bg-black text-white font-mono px-3 py-1 mb-6 text-sm font-bold uppercase">Discovery</div>
                   <h3 className="font-display text-4xl font-bold mb-6">Understand Your Environment</h3>
-                  <p className="text-lg leading-relaxed text-gray-700">
+                  <p className="text-lg leading-relaxed font-medium">
                     We begin by understanding your business model, regulatory exposure, and current governance maturity.
                   </p>
                 </div>
@@ -393,15 +392,15 @@ export default function Home() {
           </div>
 
           {/* STEP 02 */}
-          <div className="bg-primary border-b-2 border-black py-16 relative overflow-hidden text-black group">
-            <div className="absolute top-0 left-0 font-display text-[10rem] md:text-[12rem] font-bold text-yellow-300 leading-none -mt-4 -ml-4 select-none z-0 opacity-50">02</div>
+          <div className="bg-white border-b-2 border-black py-16 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 font-display text-[10rem] md:text-[12rem] font-bold text-gray-100 leading-none -mt-4 -ml-4 select-none z-0">02</div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div className="order-2 lg:order-1 hidden lg:block"></div>
                 <div className="order-1 lg:order-2">
                   <div className="inline-block bg-black text-white font-mono px-3 py-1 mb-6 text-sm font-bold uppercase">Planning</div>
                   <h3 className="font-display text-4xl font-bold mb-6">Define the Compliance Roadmap</h3>
-                  <p className="text-lg leading-relaxed font-medium">
+                  <p className="text-lg leading-relaxed text-gray-700">
                     We identify applicable frameworks and design a structured roadmap aligned with regulatory and client expectations.
                   </p>
                 </div>
@@ -410,14 +409,14 @@ export default function Home() {
           </div>
 
           {/* STEP 03 */}
-          <div className="bg-white border-b-2 border-black py-16 relative overflow-hidden group">
-            <div className="absolute bottom-0 right-0 font-display text-[10rem] md:text-[12rem] font-bold text-gray-100 leading-none -mb-4 -mr-4 select-none z-0">03</div>
+          <div className="bg-secondary border-b-2 border-black py-16 relative overflow-hidden text-white group">
+            <div className="absolute bottom-0 right-0 font-display text-[10rem] md:text-[12rem] font-bold text-blue-400 leading-none -mb-4 -mr-4 select-none z-0 opacity-50">03</div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div>
                   <div className="inline-block bg-black text-white font-mono px-3 py-1 mb-6 text-sm font-bold uppercase">Execution</div>
                   <h3 className="font-display text-4xl font-bold mb-6">Implement Governance Controls</h3>
-                  <p className="text-lg leading-relaxed text-gray-700">
+                  <p className="text-lg leading-relaxed font-medium">
                     Policies, procedures, risk registers, vendor oversight, and compliance structures are implemented with practical guidance.
                   </p>
                 </div>
@@ -426,15 +425,15 @@ export default function Home() {
           </div>
 
           {/* STEP 04 */}
-          <div className="bg-secondary border-b-2 border-black py-16 relative overflow-hidden text-white group">
-            <div className="absolute top-0 left-0 font-display text-[10rem] md:text-[12rem] font-bold text-blue-400 leading-none -mt-4 -ml-4 select-none z-0 opacity-50">04</div>
+          <div className="bg-white border-b-2 border-black py-16 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 font-display text-[10rem] md:text-[12rem] font-bold text-gray-100 leading-none -mt-4 -ml-4 select-none z-0">04</div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div className="order-2 lg:order-1 hidden lg:block"></div>
                 <div className="order-1 lg:order-2">
                   <div className="inline-block bg-black text-white font-mono px-3 py-1 mb-6 text-sm font-bold uppercase">Validation</div>
                   <h3 className="font-display text-4xl font-bold mb-6">Certification &amp; Audit Readiness</h3>
-                  <p className="text-lg leading-relaxed font-medium">
+                  <p className="text-lg leading-relaxed text-gray-700">
                     We prepare organizations for external audits, certifications, and client security assessments.
                   </p>
                 </div>
@@ -521,99 +520,77 @@ export default function Home() {
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-secondary/10 blur-3xl pointer-events-none" style={{borderRadius: '50%'}}></div>
           <div className="max-w-7xl mx-auto">
             <div className="mb-16">
-              <h2 className="font-display text-6xl md:text-8xl font-bold text-black leading-none tracking-tighter mb-4">
+              <h2 className="font-display text-4xl sm:text-6xl md:text-8xl font-bold text-black leading-none tracking-tighter mb-4">
                 Real companies. <br/>
-                <span className="text-secondary">Real results.</span>
+                <span className="text-secondary">Real compliance journeys.</span>
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl font-medium border-l-4 border-primary pl-4">
-                Join hundreds of mid-size enterprises securing their future with DataSentry&apos;s comprehensive GRC platform.
+                Join organizations building trust through stronger security, privacy, and compliance practices.
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Featured testimonial */}
-              <div className="lg:col-span-7 bg-primary border-4 border-black p-8 md:p-12 shadow-brutal-lg relative transform hover:-translate-y-1 transition-transform duration-300">
+              <div className="lg:col-span-7 bg-primary border-4 border-black p-8 md:p-12 shadow-brutal-lg relative transform hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
                 <div className="absolute -top-6 -right-6 bg-black text-white font-display font-bold text-xl px-4 py-2 border-2 border-primary rotate-3 shadow-md">
                   FEATURED STORY
                 </div>
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <div className="text-6xl text-black opacity-20 font-serif absolute top-8 left-8">&ldquo;</div>
-                    <blockquote className="font-display text-2xl md:text-4xl font-bold text-black leading-tight relative z-10 mb-8">
-                      With DataSentry, we transformed our chaotic compliance process into a streamlined engine. We were audit-ready in record time.
-                    </blockquote>
-                  </div>
-                  <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 border-t-2 border-black pt-8">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 border-2 border-black bg-gray-200 flex items-center justify-center">
-                        <span className="font-display font-bold text-2xl text-black">RB</span>
-                      </div>
-                      <div>
-                        <div className="font-bold text-xl text-black">Rohit Bhat</div>
-                        <div className="text-sm font-bold text-black/70 uppercase tracking-wider">CTO, TechFlow Inc.</div>
-                      </div>
-                    </div>
-                    <div className="bg-white border-2 border-black px-6 py-3">
-                      <span className="block text-xs font-bold uppercase text-gray-500 mb-1">Impact</span>
-                      <span className="font-display font-bold text-3xl text-secondary">6 WEEKS TO CERTIFY</span>
-                    </div>
+                <div>
+                  <div className="text-6xl text-black opacity-20 font-serif absolute top-8 left-8">&ldquo;</div>
+                  <blockquote className="font-display text-2xl md:text-4xl font-bold text-black leading-tight relative z-10 mb-12 mt-8">
+                    In preparation for our Audit, DataSentry put policies and processes in place which have significantly minimised the chance of breach incidents.
+                  </blockquote>
+                </div>
+                <div className="border-t-2 border-black pt-6">
+                  <div className="font-bold text-lg text-black/80 uppercase tracking-wider">
+                    CO-FOUNDER, RESPONSE POINT
                   </div>
                 </div>
               </div>
-              {/* Two smaller testimonials */}
+              
+              {/* Three smaller testimonials */}
               <div className="lg:col-span-5 flex flex-col gap-6">
-                <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-secondary font-bold text-lg">FinScale Global</div>
-                    <div className="flex text-primary text-xs space-x-1">
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
+                {/* Testimonial 1 */}
+                <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex text-primary text-xs space-x-1 mb-3">
+                      <i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i>
                     </div>
+                    <p className="text-gray-800 font-medium text-lg leading-relaxed mb-6">
+                      &ldquo;With our GRC function out-sourced to Team DataSentry, all the stress of team recruitment, motivation, attrition ... is in the past.&rdquo;
+                    </p>
                   </div>
-                  <p className="text-gray-800 font-medium text-lg leading-relaxed mb-4">
-                    &ldquo;The automated evidence collection alone saved our engineering team 200+ hours this quarter.&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-200 border border-black overflow-hidden flex items-center justify-center">
-                      <span className="font-bold text-xs">SJ</span>
-                    </div>
-                    <div className="text-sm font-bold text-black">Sarah Jenkins, VP Eng</div>
+                  <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
+                    MD, DELTA PUMPS
                   </div>
                 </div>
-                <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-secondary font-bold text-lg">NovaHealth</div>
-                    <div className="flex text-primary text-xs space-x-1">
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
-                      <i className="fas fa-star text-black"></i>
+                {/* Testimonial 2 */}
+                <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex text-primary text-xs space-x-1 mb-3">
+                      <i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i>
                     </div>
+                    <p className="text-gray-800 font-medium text-lg leading-relaxed mb-6">
+                      &ldquo;Dharita is crystal-clear in her thought process, and stands by her integrity—never recommending anything unless fully convinced of its value.&rdquo;
+                    </p>
                   </div>
-                  <p className="text-gray-800 font-medium text-lg leading-relaxed mb-4">
-                    &ldquo;Finally a GRC partner that speaks human, not just compliance jargon. The support is unmatched.&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-200 border border-black overflow-hidden flex items-center justify-center">
-                      <span className="font-bold text-xs">DC</span>
-                    </div>
-                    <div className="text-sm font-bold text-black">David Chen, CISO</div>
+                  <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
+                    HEAD OF DEVELOPMENT AND DELIVERY - IT, VASTU HOUSING
                   </div>
                 </div>
-              </div>
-            </div>
-            {/* Trusted by logos */}
-            <div className="mt-16 border-t border-b border-gray-200 py-8">
-              <p className="text-center text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Trusted by security teams at</p>
-              <div className="flex flex-wrap justify-center md:justify-between items-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                <div className="h-8 flex items-center font-display font-bold text-xl text-gray-500 tracking-tight">TechFlow</div>
-                <div className="h-8 flex items-center font-display font-bold text-xl text-gray-500 tracking-tight">FinScale</div>
-                <div className="h-8 flex items-center font-display font-bold text-xl text-gray-500 tracking-tight">NovaHealth</div>
-                <div className="h-8 flex items-center font-display font-bold text-xl text-gray-500 tracking-tight">CloudNine</div>
-                <div className="h-8 flex items-center font-display font-bold text-xl text-gray-500 tracking-tight">DataWorks</div>
+                {/* Testimonial 3 */}
+                <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex text-primary text-xs space-x-1 mb-3">
+                      <i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i><i className="fas fa-star text-black"></i>
+                    </div>
+                    <p className="text-gray-800 font-medium text-lg leading-relaxed mb-6">
+                      &ldquo;We used to worry about hidden risks in our systems. Thanks to DataSentry&apos;s VAPT services, we found them and made our defences stronger than ever.&rdquo;
+                    </p>
+                  </div>
+                  <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
+                    SR. DIRECTOR - PRODUCT DEVELOPMENT, NEXSALES
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -632,7 +609,7 @@ export default function Home() {
                 The <span className="stroke-text">Architects</span>
               </h2>
               <p className="text-xl text-black font-medium max-w-xl">
-                Meet the experts building the future of cyber-defense. A team obsessed with security, simplicity, and speed.
+                Meet the experts building the future of trust and compliance. A team obsessed with security, simplicity, and practical governance.
               </p>
             </div>
           </div>
@@ -656,7 +633,7 @@ export default function Home() {
               <h3 className="font-display text-5xl md:text-6xl font-bold mb-4">Dharita Gada</h3>
               <div className="h-1 w-24 bg-secondary mb-8"></div>
               <p className="text-gray-300 text-xl leading-relaxed mb-10 max-w-2xl">
-                15+ years in GRC consulting. Formerly led security infrastructure for Fortune 500 fintechs. Obsessed with making compliance invisible.
+                15+ years of professional experience spanning law, compliance, and information security governance. Founder of DataSentry focused on translating regulation into practical compliance frameworks.
               </p>
               <div className="space-y-4 mb-10">
                 <div className="flex items-center gap-4">
@@ -665,16 +642,15 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-3 h-3 bg-secondary"></div>
-                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">ISO 27001 Lead Implementer</span>
+                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">ISO 27001 &amp; ISO 42001 Lead Implementer</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-3 h-3 bg-green-500"></div>
-                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">CISA &amp; CISM Certified</span>
+                  <span className="font-mono text-sm md:text-base text-gray-400 uppercase tracking-widest">Privacy &amp; Data Protection Programs</span>
                 </div>
               </div>
               <div className="flex gap-8">
                 <a className="text-gray-400 hover:text-primary transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fab fa-linkedin text-3xl"></i></a>
-                <a className="text-gray-400 hover:text-primary transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fab fa-twitter text-3xl"></i></a>
                 <a className="text-gray-400 hover:text-primary transition-colors hover:-translate-y-1 transform duration-200" href="#"><i className="fas fa-globe text-3xl"></i></a>
               </div>
             </div>
