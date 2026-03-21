@@ -9,7 +9,7 @@ export default function Footer() {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center mb-4">
-                <Logo className="h-12 w-auto" strokeColor="#FFFFFF" />
+                <Logo className="h-12 w-auto" strokeColor="#F5C200" />
               </div>
               <p className="font-mono text-sm text-gray-400 mt-4">
                 <span className="font-bold text-white">Headquarters</span><br/>
