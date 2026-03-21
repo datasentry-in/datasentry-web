@@ -6,9 +6,9 @@ import Logo from './Logo';
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <nav className="border-t-8 border-primary border-b-2 border-b-black bg-white sticky top-0 z-50">
+    <nav className="border-t-4 sm:border-t-8 border-primary border-b-2 border-b-black bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex items-center">
             <Logo className="h-10 w-auto sm:h-12" />
@@ -44,14 +44,14 @@ export default function Navbar() {
 
       {/* Mobile Dropdown */}
       {open && (
-        <div className="md:hidden bg-white border-t-2 border-black px-4 pb-6 space-y-4">
-          <Link className="block font-mono text-sm uppercase font-medium py-2 hover:text-secondary" href="/" onClick={() => setOpen(false)}>Home</Link>
-          <Link className="block font-mono text-sm uppercase font-medium py-2 hover:text-secondary" href="/#services" onClick={() => setOpen(false)}>Services</Link>
-          <Link className="block font-mono text-sm uppercase font-medium py-2 hover:text-secondary" href="/#about" onClick={() => setOpen(false)}>About Us</Link>
-          <Link className="block font-mono text-sm uppercase font-medium py-2 hover:text-secondary" href="/podcast" onClick={() => setOpen(false)}>Podcast</Link>
-          <Link className="block font-mono text-sm uppercase font-medium py-2 hover:text-secondary" href="/blog" onClick={() => setOpen(false)}>Blogs</Link>
+        <div className="md:hidden bg-white border-t-2 border-black px-4 pb-6 pt-2">
+          <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/" onClick={() => setOpen(false)}>Home</Link>
+          <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/#services" onClick={() => setOpen(false)}>Services</Link>
+          <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/#about" onClick={() => setOpen(false)}>About Us</Link>
+          <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/podcast" onClick={() => setOpen(false)}>Podcast</Link>
+          <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/blog" onClick={() => setOpen(false)}>Blogs</Link>
           <Link
-            className="block bg-black text-primary font-mono text-sm px-6 py-3 font-bold text-center"
+            className="block bg-black text-primary font-mono text-sm px-6 py-4 font-bold text-center mt-4 border-2 border-black"
             href="/contact"
             onClick={() => setOpen(false)}
           >

@@ -3,7 +3,7 @@ export default function Logo({ className = "h-10 w-auto", strokeColor = "#F5C200
     <svg className={className} viewBox="0 0 560 118" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="560" height="118" fill="#ffffff" />
       <rect x="1.5" y="1.5" width="557" height="115" fill="none" stroke={strokeColor} strokeWidth="3" />
-      <rect x="1.5" y="1.5" width="232" height="115" fill="#0099CC" />
+      <rect x="1.5" y="1.5" width="232" height="115" fill="#009FE3" />
       <text
         x="116"
         y="74"

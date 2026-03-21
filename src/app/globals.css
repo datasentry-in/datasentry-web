@@ -70,3 +70,39 @@
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #0A0A0A; }
 ::-webkit-scrollbar-thumb { background: #333; border: 1px solid #FFED00; }
+
+/* ========== MOBILE OPTIMIZATIONS ========== */
+
+/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Make all images/videos responsive by default */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch targets — minimum 44px on small screens */
+@media (max-width: 768px) {
+  a, button, [role="button"] {
+    min-height: 44px;
+  }
+  
+  /* Reduce brutal shadows on mobile for cleaner look */
+  .shadow-brutal-lg {
+    box-shadow: 4px 4px 0px 0px #000000 !important;
+  }
+
+  /* Tighten section spacing on mobile */
+  section {
+    scroll-margin-top: 80px;
+  }
+}
