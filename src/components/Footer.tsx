@@ -22,7 +22,7 @@ export default function Footer() {
               <ul className="space-y-3 font-mono text-sm text-gray-400">
                 <li><Link href="/#services" className="hover:text-primary transition-colors">• ISO 27001 Certification</Link></li>
                 <li><Link href="/#services" className="hover:text-primary transition-colors">• Privacy & Data Protection</Link></li>
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• AI Governance (ISO 42001)</Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors">• ISO 42001 AI Management System</Link></li>
                 <li><Link href="/#services" className="hover:text-primary transition-colors">• Compliance Program Design</Link></li>
                 <li><Link href="/#services" className="hover:text-primary transition-colors">• Risk Management</Link></li>
               </ul>
