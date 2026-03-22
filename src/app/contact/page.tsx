@@ -29,24 +29,25 @@ export default function Contact() {
             {/* Contact Form */}
             <div className="bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_#FFED00] p-5 sm:p-8 md:p-10">
               <h3 className="text-2xl font-display font-bold uppercase mb-6">Contact Us</h3>
-              <form className="space-y-6">
+              <form action="https://formsubmit.co/enquiry@datasentry.in" method="POST" className="space-y-6">
+                <input type="hidden" name="_captcha" value="false" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Full Name</label>
-                    <input className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="text" placeholder="Your Name" />
+                    <input name="Full_Name" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="text" placeholder="Your Name" />
                   </div>
                   <div>
                     <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Organization</label>
-                    <input className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="text" placeholder="Company Name" />
+                    <input name="Organization" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="text" placeholder="Company Name" />
                   </div>
                 </div>
                 <div>
                   <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Email</label>
-                  <input className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="email" placeholder="you@company.com" />
+                  <input name="Email" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light" type="email" placeholder="you@company.com" />
                 </div>
                 <div>
                   <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">What do you need help with?</label>
-                  <select className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light">
+                  <select name="Service_Requested" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light">
                     <option>ISO 27001 Implementation</option>
                     <option>Privacy & Data Protection</option>
                     <option>ISO 42001 AI Management System</option>
@@ -57,9 +58,9 @@ export default function Contact() {
                 </div>
                 <div>
                   <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Message</label>
-                  <textarea className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light min-h-[120px]" placeholder="Tell us about your compliance goals..." rows={5}></textarea>
+                  <textarea name="Message" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light min-h-[120px]" placeholder="Tell us about your compliance goals..." rows={5}></textarea>
                 </div>
-                <button className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg mt-6">
+                <button type="submit" className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg mt-6">
                   Send Message
                 </button>
               </form>
