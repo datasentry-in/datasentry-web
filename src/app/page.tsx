@@ -34,7 +34,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <a href="https://calendly.com/dharita-gada-datasentry/30min" target="_blank" rel="noopener noreferrer" className="bg-primary text-black font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider hover:bg-white transition-all shadow-brutal-blue border-2 border-black hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-center">
+                  <a href="https://calendly.com/dharita-gada-datasentry/30min" target="_blank" rel="noopener noreferrer" className="bg-primary text-black font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider transition-all shadow-brutal-blue border-2 border-black hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-center">
                     Book a Consultation
                   </a>
                   <a href="#how-it-works" className="bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider hover:bg-white hover:text-black transition-colors text-center">
