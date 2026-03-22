@@ -61,7 +61,7 @@ export default function Contact() {
                 </div>
                 <div className="space-y-4 pt-2">
                   <p className="font-mono text-xs text-gray-600 leading-relaxed text-left">
-                    Privacy Notice: DataSentry will use the information submitted in this form to respond to your query and contact you regarding the requested services. We may collect your name, email address, organization details, and the information you share in your message. You may exercise your rights, including access, correction, erasure, withdrawal of consent, and grievance redressal, by contacting <a href="mailto:dpo@datasentry.in" className="text-secondary hover:underline">dpo@datasentry.in</a>. For more details, please review our Privacy Policy.
+                    Privacy Notice: DataSentry will use the information submitted in this form to respond to your query and contact you regarding the requested services. We may collect your name, email address, organization details, and the information you share in your message. You may exercise your rights, including access, correction, erasure, withdrawal of consent, and grievance redressal, by contacting <a href="mailto:dpo@datasentry.in" className="text-secondary hover:underline">dpo@datasentry.in</a>. For more details, please review our <a href="/privacy-policy" className="text-secondary hover:underline">Privacy Policy</a>.
                   </p>
                   <div className="flex items-start gap-3">
                     <input type="checkbox" id="consent" required className="mt-0.5 w-4 h-4 border-2 border-black accent-primary cursor-pointer shrink-0" />

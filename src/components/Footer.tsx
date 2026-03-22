@@ -56,8 +56,8 @@ export default function Footer() {
           <div className="mt-10 md:mt-16 pt-6 md:pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="font-mono text-gray-500 text-xs">© 2024 DataSentry. All rights reserved.</p>
             <div className="flex space-x-4 font-mono text-sm text-gray-400">
-              <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+              <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</Link>
             </div>
             <div className="flex space-x-4">
               <Link className="text-gray-400 hover:text-primary transition-colors w-10 h-10 border border-gray-700 flex items-center justify-center" href="https://www.linkedin.com/in/dharita-gada/" target="_blank" rel="noopener noreferrer">in</Link>
