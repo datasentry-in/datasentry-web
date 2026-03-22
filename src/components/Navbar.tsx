@@ -25,12 +25,14 @@ export default function Navbar() {
 
           {/* CTA */}
           <div className="hidden md:flex">
-            <Link
-              className="bg-black text-primary font-mono text-sm px-6 py-3 font-bold border-2 border-transparent hover:bg-secondary hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-              href="/contact"
+            <a
+              className="bg-black text-primary font-mono text-sm px-6 py-3 font-bold border-2 border-transparent hover:bg-secondary hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+              href="https://calendly.com/dharita-gada-datasentry/30min"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               BOOK A CONSULTATION
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Menu */}
@@ -50,13 +52,15 @@ export default function Navbar() {
           <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/#about" onClick={() => setOpen(false)}>About Us</Link>
           <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/podcast" onClick={() => setOpen(false)}>Podcast</Link>
           <Link className="block font-mono text-sm uppercase font-medium py-3 hover:text-secondary border-b border-gray-100" href="/blog" onClick={() => setOpen(false)}>Blogs</Link>
-          <Link
-            className="block bg-black text-primary font-mono text-sm px-6 py-4 font-bold text-center mt-4 border-2 border-black"
-            href="/contact"
+          <a
+            className="block bg-black text-primary font-mono text-sm px-6 py-4 font-bold text-center mt-4 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+            href="https://calendly.com/dharita-gada-datasentry/30min"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setOpen(false)}
           >
             BOOK A CONSULTATION
-          </Link>
+          </a>
         </div>
       )}
     </nav>

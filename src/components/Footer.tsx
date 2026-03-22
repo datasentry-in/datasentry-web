@@ -43,12 +43,14 @@ export default function Footer() {
             <div className="bg-primary text-black p-5 sm:p-6 border-2 border-black">
               <h3 className="font-display font-bold text-xl uppercase mb-4">Ready to Secure Your Future?</h3>
               <p className="text-sm mb-6">Talk to our experts today and get a customized roadmap for your security needs.</p>
-              <Link
-                className="inline-block bg-black text-white font-mono font-bold text-sm px-8 py-3 uppercase border-2 border-black hover:bg-white hover:text-black transition-all"
-                href="/contact"
+              <a
+                className="inline-block bg-black text-white font-mono font-bold text-sm px-8 py-3 uppercase border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+                href="https://calendly.com/dharita-gada-datasentry/30min"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Book a Call
-              </Link>
+                Book a Consultation
+              </a>
             </div>
           </div>
 

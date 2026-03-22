@@ -34,9 +34,9 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="bg-primary text-black font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider hover:bg-white transition-colors shadow-brutal-blue border-2 border-black">
+                  <a href="https://calendly.com/dharita-gada-datasentry/30min" target="_blank" rel="noopener noreferrer" className="bg-primary text-black font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider hover:bg-white transition-all shadow-brutal-blue border-2 border-black hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-center">
                     Book a Consultation
-                  </button>
+                  </a>
                   <a href="#how-it-works" className="bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 font-mono text-sm sm:text-base uppercase tracking-wider hover:bg-white hover:text-black transition-colors text-center">
                     Explore Our Approach
                   </a>
@@ -685,7 +685,7 @@ export default function Home() {
               Ready to turn regulatory requirements into a competitive advantage? Let&apos;s talk strategy.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <a href="/contact" className="inline-block bg-primary text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-primary shadow-brutal-blue hover:translate-y-1 hover:shadow-none transition-all duration-200">
+              <a href="https://calendly.com/dharita-gada-datasentry/30min" target="_blank" rel="noopener noreferrer" className="inline-block bg-primary text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-primary shadow-brutal-blue hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200">
                 Book a Consultation
               </a>
               <a href="/contact" className="inline-block bg-white text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-white hover:bg-black hover:text-white transition-all duration-200">
