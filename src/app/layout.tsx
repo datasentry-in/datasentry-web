@@ -4,7 +4,7 @@ import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DataSentry — Trust, Risk & Compliance Advisory",
+  title: "DataSentry - Trust, Risk & Compliance Advisory",
   description: "DataSentry helps organizations navigate information security, privacy, and regulatory frameworks with clarity.",
 };
 
