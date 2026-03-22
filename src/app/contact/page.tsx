@@ -59,18 +59,7 @@ export default function Contact() {
                   <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Message</label>
                   <textarea className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light min-h-[120px]" placeholder="Tell us about your compliance goals..." rows={5}></textarea>
                 </div>
-                <div className="space-y-4 pt-2">
-                  <p className="font-mono text-xs text-gray-600 leading-relaxed text-left">
-                    Privacy Notice: DataSentry will use the information submitted in this form to respond to your query and contact you regarding the requested services. We may collect your name, email address, organization details, and the information you share in your message. You may exercise your rights, including access, correction, erasure, withdrawal of consent, and grievance redressal, by contacting <a href="mailto:dpo@datasentry.in" className="text-secondary hover:underline">dpo@datasentry.in</a>. For more details, please review our <a href="/privacy-policy" className="text-secondary hover:underline">Privacy Policy</a>.
-                  </p>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent" required className="mt-0.5 w-4 h-4 border-2 border-black accent-primary cursor-pointer shrink-0" />
-                    <label htmlFor="consent" className="font-mono text-xs font-bold text-gray-800 leading-tight cursor-pointer">
-                      I consent to the collection and processing of my personal data for the purpose of responding to my query.
-                    </label>
-                  </div>
-                </div>
-                <button className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg">
+                <button className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg mt-6">
                   Send Message
                 </button>
               </form>
