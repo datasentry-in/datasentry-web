@@ -451,14 +451,25 @@ export default function Home() {
               </div>
               <div className="w-full lg:w-1/2 order-1 lg:order-2">
                 <div className="inline-block bg-primary text-black font-mono px-3 py-1 mb-6 text-sm font-bold uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  Founder Insights
+                  PBSA APAC Council • March 12, 2026
                 </div>
-                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold uppercase leading-none mb-6">
-                  DPDP Act <span className="text-secondary italic">Insights</span>
+                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold uppercase leading-tight mb-6">
+                  DPDPA Act: <br/><span className="text-secondary italic">Implementation Insights</span>
                 </h2>
-                <p className="text-lg text-gray-700 font-medium mb-8 border-l-4 border-primary pl-4">
-                  Watch Dharita Gada, Founder of DataSentry, share practical insights on global background screening and DPDP Act compliance in this featured webinar excerpt.
-                </p>
+                <div className="text-gray-700 font-medium mb-8 border-l-4 border-primary pl-4 space-y-4">
+                  <p>In this featured session from the PBSA APAC Council, Dharita Gada unpacks the DPDPA Act for global background screening—making compliance actionable rather than theoretical.</p>
+                  <div>
+                    <p className="font-mono text-sm text-gray-500 uppercase font-bold tracking-wider mb-3">Key Topics Unpacked:</p>
+                    <ul className="font-mono text-xs sm:text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Scope & Applicability</li>
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Consent & Withdrawal</li>
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Data Minimization</li>
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Vendor & AI Risks</li>
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> 90-Day Roadmap</li>
+                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Penalties & Enforcement</li>
+                    </ul>
+                  </div>
+                </div>
                 <a href="#how-it-works" className="inline-flex items-center gap-2 bg-black text-white font-mono font-bold text-sm uppercase px-8 py-4 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none">
                   See Our Approach
                   <span className="material-icons text-xl">arrow_forward</span>
