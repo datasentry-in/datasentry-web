@@ -5,40 +5,28 @@ import Link from 'next/link';
 export default function Blog() {
   const articles = [
     {
-      letter: 'V',
-      cat: 'Engineering',
-      date: 'Oct 24',
-      title: 'Vulnerability Management in 2024',
-      desc: 'Why traditional scanning isn\'t enough anymore. Moving towards continuous monitoring and automated remediation.',
-      bg: 'bg-secondary',
-      textColor: 'text-white/20',
+      title: 'How secure is your most sensitive data?',
+      cat: 'Background Screening',
+      date: 'Jul 9, 2025',
+      desc: 'In this edition of Breach the Noise, Dharita speaks with Chetan Desai about the high-stakes security challenges in the background screening industry.',
+      img: '/blog/securesearch.jpg',
+      url: 'https://www.linkedin.com/pulse/how-secure-your-most-sensitive-data-dharita-gada-wsbaf'
     },
     {
-      letter: 'D',
-      cat: 'Cloud Security',
-      date: 'Oct 22',
-      title: 'Designing Secure APIs',
-      desc: 'Best practices for authentication, rate limiting, and input validation in modern REST and GraphQL APIs.',
-      bg: 'bg-background-dark',
-      textColor: 'text-[#1F1F1F]',
+      title: 'How Companies Turn Compliance into a Competitive Advantage',
+      cat: 'Strategic Governance',
+      date: 'May 23, 2025',
+      desc: 'Explores the shift from check-box compliance to using data privacy and security as a core business differentiator and trust-builder.',
+      img: '/blog/compliance-advantage.jpg',
+      url: 'https://www.linkedin.com/pulse/how-companies-turn-compliance-competitive-advantage-dharita-gada-dxrrf'
     },
     {
-      letter: 'I',
-      cat: 'Tutorials',
-      date: 'Sep 18',
-      title: 'Infrastructure as Code Security',
-      desc: 'Scanning Terraform and CloudFormation templates for misconfigurations before deployment.',
-      bg: 'bg-primary',
-      textColor: 'text-yellow-300/30',
-    },
-    {
-      letter: 'G',
-      cat: 'Data Privacy',
-      date: 'Nov 16',
-      title: 'GDPR for Devs',
-      desc: 'Practical implementation of Right to Erasure and Data Portability in your application architecture.',
-      bg: 'bg-green-600',
-      textColor: 'text-green-300/20',
+      title: 'Navigating SEBI’s CSCRF: 3 Things to Fix Before It’s Too Late',
+      cat: 'Regulatory Compliance',
+      date: 'May 7, 2025',
+      desc: 'A practical guide for SEBI-regulated entities to understand and implement the Cyber Security and Cyber Resilience Framework (CSCRF).',
+      img: '/blog/sebi-cscrf.jpg',
+      url: 'https://www.linkedin.com/pulse/navigating-sebis-cscrf-3-things-fix-before-its-too-late-dharita-gada-3xkrf'
     },
     {
       letter: 'T',
@@ -48,6 +36,7 @@ export default function Blog() {
       desc: 'How to conduct effective threat modeling sessions using STRIDE without boring your team.',
       bg: 'bg-primary',
       textColor: 'text-yellow-300/30',
+      url: '#'
     },
     {
       letter: 'C',
@@ -57,6 +46,7 @@ export default function Blog() {
       desc: 'Essential security practices for Docker and Kubernetes environments in production.',
       bg: 'bg-secondary',
       textColor: 'text-white/20',
+      url: '#'
     },
   ];
 
@@ -108,30 +98,29 @@ export default function Blog() {
           {/* Featured Article */}
           <div className="mb-16 relative">
             <div className="bg-white border-[3px] border-black shadow-brutal-yellow p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-brutal-black transition-all duration-300">
-              <div className="md:w-1/2 bg-background-dark relative min-h-[320px] md:min-h-auto overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                <h1 className="text-[100px] sm:text-[180px] font-black text-[#1a1a1a] leading-none select-none absolute -right-4 sm:-right-10 -bottom-4 sm:-bottom-10 rotate-[-10deg] group-hover:text-[#2a2a2a] transition-colors duration-500 font-display">ISO</h1>
-                <div className="relative z-10 p-8">
-                  <span className="material-icons text-6xl text-primary mb-4 block">verified_user</span>
-                  <p className="text-white font-mono text-sm uppercase tracking-widest border-b border-primary inline-block pb-1">Startups Guide</p>
+              <div className="md:w-1/2 bg-black relative min-h-[320px] md:min-h-auto overflow-hidden flex items-center justify-center">
+                <img src="/blog/dpdpa-it-problem.png" alt="DPDP Act" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
+                <div className="relative z-10 p-8 self-end w-full">
+                  <span className="bg-white text-black px-3 py-1 font-mono text-xs font-bold uppercase border-2 border-black inline-block mb-4 shadow-brutal-sm">Latest Newsletter</span>
                 </div>
               </div>
               <div className="md:w-1/2 p-6 sm:p-8 md:p-12 flex flex-col justify-center border-t-[3px] md:border-t-0 md:border-l-[3px] border-black bg-white relative">
                 <div className="absolute top-0 right-0 bg-secondary text-white px-4 py-2 font-mono text-xs font-bold uppercase border-l-[3px] border-b-[3px] border-black">Featured</div>
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="bg-secondary/10 text-secondary px-3 py-1 font-mono text-xs font-bold uppercase border border-secondary">GRC & Compliance</span>
-                  <span className="text-gray-500 text-xs font-mono uppercase">8 MIN READ</span>
+                  <span className="bg-secondary/10 text-secondary px-3 py-1 font-mono text-xs font-bold uppercase border border-secondary">Privacy & Compliance</span>
+                  <span className="text-gray-500 text-xs font-mono uppercase">MAR 23, 2026</span>
                 </div>
                 <h3 className="text-2xl md:text-4xl font-bold leading-[1.1] mb-4 group-hover:text-secondary transition-colors font-display">
-                  The Complete Guide to ISO 27001 Certification for Startups
+                  DPDPA Is Not Your IT Team&apos;s Problem
                 </h3>
                 <p className="text-gray-600 font-mono text-sm md:text-base mb-8 leading-relaxed border-l-2 border-gray-200 pl-4">
-                  A step-by-step breakdown of how to prepare your engineering team for your first ISO audit without slowing down velocity. We cover gap analysis, policy creation, and evidence collection.
+                  A strategic look at why the Digital Personal Data Protection (DPDP) Act compliance is a boardroom and business-wide priority rather than just a technical IT checklist. Discusses lifecycle governance and strategic risk.
                 </p>
                 <div className="flex items-center gap-4 mt-auto">
-                  <button className="flex items-center gap-2 bg-primary border-2 border-black px-6 py-3 font-bold text-sm uppercase shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+                  <a href="https://www.linkedin.com/posts/dharita-gada_dpdp-dataprivacy-indiatech-activity-7366348797540478976-lH1K" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-primary border-2 border-black px-6 py-3 font-bold text-sm uppercase shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
                     Read Article <span className="material-icons text-lg">arrow_outward</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -141,8 +130,12 @@ export default function Blog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t-[3px] border-l-[3px] border-black">
             {articles.map((a, i) => (
               <article key={i} className={`group border-r-[3px] border-b-[3px] border-black ${i % 2 === 0 ? 'bg-white' : 'bg-background-light'} hover:bg-primary/5 transition-colors relative flex flex-col h-full`}>
-                <div className={`h-48 ${a.bg} flex items-center justify-center relative overflow-hidden border-b-[3px] border-black`}>
-                  <span className={`text-9xl font-black ${a.textColor} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform duration-500 font-display`}>{a.letter}</span>
+                <div className={`h-48 ${a.img ? 'bg-black' : a.bg} flex items-center justify-center relative overflow-hidden border-b-[3px] border-black`}>
+                  {a.img ? (
+                    <img src={a.img} alt={a.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <span className={`text-9xl font-black ${a.textColor} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform duration-500 font-display`}>{a.letter}</span>
+                  )}
                 </div>
                 <div className="p-6 flex flex-col grow">
                   <div className="flex justify-between items-start mb-3">
@@ -151,8 +144,8 @@ export default function Blog() {
                   </div>
                   <h4 className="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2 font-display">{a.title}</h4>
                   <p className="text-sm font-mono text-gray-600 mb-6 grow line-clamp-3">{a.desc}</p>
-                  <Link className="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
-                    Read <span className="material-icons text-base">arrow_forward</span>
+                  <Link className="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href={a.url || '#'}>
+                    Read Article <span className="material-icons text-base">arrow_forward</span>
                   </Link>
                 </div>
               </article>
