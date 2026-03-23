@@ -431,9 +431,9 @@ export default function Home() {
 
 
         {/* WEBINAR VIDEO SECTION */}
-        <section className="bg-background-light py-16 md:py-24 border-t-4 border-black">
+        <section className="bg-background-light py-10 md:py-24 border-t-4 border-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center">
               <div className="w-full lg:w-1/2 order-2 lg:order-1">
                 <div className="bg-white border-[3px] border-black p-2 shadow-brutal-yellow -rotate-1 hover:rotate-0 transition-transform duration-500">
                   <div className="relative w-full aspect-video bg-black border-2 border-black overflow-hidden">
@@ -453,10 +453,10 @@ export default function Home() {
                 <div className="inline-block bg-primary text-black font-mono px-3 py-1 mb-6 text-sm font-bold uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   PBSA APAC Council • March 12, 2026
                 </div>
-                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold uppercase leading-tight mb-6">
+                <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold uppercase leading-tight mb-6">
                   DPDPA Act: <br/><span className="text-secondary italic">Implementation Insights</span>
                 </h2>
-                <div className="text-gray-700 font-medium mb-8 border-l-4 border-primary pl-4 space-y-4">
+                <div className="text-gray-700 font-medium mb-8 border-l-4 border-primary pl-3 sm:pl-4 space-y-4">
                   <p>In this featured session from the PBSA APAC Council, Dharita Gada unpacks the DPDPA Act for global background screening—making compliance actionable rather than theoretical.</p>
                   <div>
                     <p className="font-mono text-sm text-gray-500 uppercase font-bold tracking-wider mb-3">Key Topics Unpacked:</p>
@@ -470,7 +470,7 @@ export default function Home() {
                     </ul>
                   </div>
                 </div>
-                <a href="#how-it-works" className="inline-flex items-center gap-2 bg-black text-white font-mono font-bold text-sm uppercase px-8 py-4 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none">
+                <a href="#how-it-works" className="inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-black text-white font-mono font-bold text-sm uppercase px-6 sm:px-8 py-4 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none">
                   See Our Approach
                   <span className="material-icons text-xl">arrow_forward</span>
                 </a>
