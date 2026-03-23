@@ -146,7 +146,7 @@ export default function Podcast() {
                 <div className="relative w-full aspect-video bg-black">
                   <iframe
                     className="w-full h-full border-0 absolute inset-0"
-                    src={`https://www.youtube.com/embed/${featured.url.split('v=')[1]}?modestbranding=1&rel=0&autoplay=1&mute=1`}
+                    src={`https://www.youtube.com/embed/${featured.url.split('v=')[1]}?modestbranding=1&rel=0`}
                     title={featured.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
