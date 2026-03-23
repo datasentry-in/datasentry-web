@@ -8,10 +8,10 @@ export default function Home() {
     <>
       <Navbar />
 
-      <main className="flex-grow flex flex-col relative overflow-hidden">
+      <main className="grow flex flex-col relative overflow-hidden">
 
         {/* HERO — exact Stitch */}
-        <section className="relative bg-background-dark text-white flex-grow flex items-center py-12 md:py-20 lg:py-32 border-b-2 border-white">
+        <section className="relative bg-background-dark text-white grow flex items-center py-12 md:py-20 lg:py-32 border-b-2 border-white">
           <div className="absolute inset-0 halftone-pattern pointer-events-none"></div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
@@ -675,7 +675,7 @@ export default function Home() {
           </div>
         </section>
         {/* CALL TO ACTION */}
-        <section className="bg-black py-12 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 text-white relative overflow-hidden flex items-center justify-center border-t-4 border-black border-b-4 border-black">
+        <section className="bg-black py-12 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 text-white relative overflow-hidden flex items-center justify-center border-t-4 border-b-4 border-black">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
           <div className="relative z-10 text-center max-w-4xl mx-auto">
             <h2 className="font-display text-3xl sm:text-5xl md:text-8xl font-bold leading-none uppercase tracking-tighter mb-6 sm:mb-8 text-white drop-shadow-md">

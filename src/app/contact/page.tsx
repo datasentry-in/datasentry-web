@@ -27,7 +27,7 @@ export default function Contact() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
             {/* Contact Form */}
-            <div className="bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_#FFED00] p-5 sm:p-8 md:p-10">
+            <div className="bg-white border-[3px] border-black shadow-brutal-yellow p-5 sm:p-8 md:p-10">
               <h3 className="text-2xl font-display font-bold uppercase mb-6">Contact Us</h3>
               <form action="https://formsubmit.co/enquiry@datasentry.in" method="POST" className="space-y-6">
                 <input type="hidden" name="_captcha" value="false" />

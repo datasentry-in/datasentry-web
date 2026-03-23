@@ -200,7 +200,7 @@ export default function Podcast() {
                         ></iframe>
                       </div>
                       {/* Info */}
-                      <div className="p-6 flex flex-col flex-grow">
+                      <div className="p-6 flex flex-col grow">
                         <div className="flex items-center justify-between mb-4">
                           <span className="font-mono text-[10px] font-bold uppercase text-secondary tracking-wider">With {ep.guest}</span>
                           <div className="flex gap-2 items-center">
@@ -211,7 +211,7 @@ export default function Podcast() {
                           </div>
                         </div>
                         <h4 className="font-display text-lg font-bold leading-snug mt-1 mb-3 group-hover:text-primary transition-colors">{ep.title}</h4>
-                        <p className="font-mono text-xs text-gray-500 line-clamp-2 mb-5 flex-grow">{ep.desc}</p>
+                        <p className="font-mono text-xs text-gray-500 line-clamp-2 mb-5 grow">{ep.desc}</p>
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-xs text-gray-600">{ep.duration}</span>
                         </div>

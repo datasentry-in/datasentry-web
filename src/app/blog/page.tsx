@@ -107,7 +107,7 @@ export default function Blog() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-16">
           {/* Featured Article */}
           <div className="mb-16 relative">
-            <div className="bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_#FFED00] p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-brutal-black transition-all duration-300">
+            <div className="bg-white border-[3px] border-black shadow-brutal-yellow p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-brutal-black transition-all duration-300">
               <div className="md:w-1/2 bg-background-dark relative min-h-[320px] md:min-h-auto overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 <h1 className="text-[100px] sm:text-[180px] font-black text-[#1a1a1a] leading-none select-none absolute -right-4 sm:-right-10 -bottom-4 sm:-bottom-10 rotate-[-10deg] group-hover:text-[#2a2a2a] transition-colors duration-500 font-display">ISO</h1>
@@ -144,13 +144,13 @@ export default function Blog() {
                 <div className={`h-48 ${a.bg} flex items-center justify-center relative overflow-hidden border-b-[3px] border-black`}>
                   <span className={`text-9xl font-black ${a.textColor} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform duration-500 font-display`}>{a.letter}</span>
                 </div>
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="p-6 flex flex-col grow">
                   <div className="flex justify-between items-start mb-3">
                     <span className="font-mono text-xs font-bold uppercase text-secondary">{a.cat}</span>
                     <span className="font-mono text-xs text-gray-400">{a.date}</span>
                   </div>
                   <h4 className="text-xl font-bold leading-tight mb-3 group-hover:underline decoration-2 underline-offset-2 font-display">{a.title}</h4>
-                  <p className="text-sm font-mono text-gray-600 mb-6 flex-grow line-clamp-3">{a.desc}</p>
+                  <p className="text-sm font-mono text-gray-600 mb-6 grow line-clamp-3">{a.desc}</p>
                   <Link className="inline-flex items-center gap-2 font-bold text-sm uppercase hover:text-secondary mt-auto" href="#">
                     Read <span className="material-icons text-base">arrow_forward</span>
                   </Link>
