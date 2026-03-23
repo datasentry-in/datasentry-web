@@ -513,7 +513,7 @@ export default function Home() {
                 </div>
                 <div className="border-t-2 border-black pt-6">
                   <div className="font-bold text-lg text-black/80 uppercase tracking-wider">
-                    CO-FOUNDER, RESPONSE POINT
+                    CO-FOUNDER, Management & Business Consulting firm
                   </div>
                 </div>
               </div>
@@ -577,7 +577,7 @@ export default function Home() {
                         </p>
                       </div>
                       <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                        MD, DELTA PUMPS
+                        MD, Manufacturing & Industrial Enterprise
                       </div>
                     </div>
                     <div className="bg-white border-2 border-black p-6 shadow-brutal-sm flex flex-col justify-between min-h-[220px]">
@@ -590,7 +590,7 @@ export default function Home() {
                         </p>
                       </div>
                       <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                        HEAD OF DEVELOPMENT AND DELIVERY - IT, VASTU HOUSING
+                        HEAD OF DEVELOPMENT AND DELIVERY - IT, Financial Services & NBFC
                       </div>
                     </div>
                     <div className="bg-white border-2 border-black p-6 shadow-brutal-sm flex flex-col justify-between min-h-[220px]">
@@ -603,7 +603,7 @@ export default function Home() {
                         </p>
                       </div>
                       <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                        SR. DIRECTOR - PRODUCT DEVELOPMENT, NEXSALES
+                        SR. DIRECTOR - PRODUCT DEVELOPMENT, SaaS & AI-Driven Technology Firm
                       </div>
                     </div>
                   </MobileSlider>
