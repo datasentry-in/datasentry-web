@@ -4,11 +4,13 @@ import Link from 'next/link';
 
 export default function Blog() {
   const featuredArticle = {
-    title: 'DPDPA Act: Implementation Insights for Global Background Screening',
-    cat: 'Privacy & Compliance',
-    date: 'Mar 23, 2026',
-    desc: 'A strategic look at why the Digital Personal Data Protection (DPDPA) Act compliance is a boardroom and business-wide priority rather than just a technical IT checklist. Discusses lifecycle governance, strategic risk, and making compliance actionable.',
-    slug: '/blog/dpdpa-implementation-insights'
+    title: 'Navigating SEBI’s CSCRF: 3 Things to Fix Before It’s Too Late📰',
+    cat: 'Regulatory Compliance',
+    date: 'May 7, 2025',
+    desc: 'A practical guide for SEBI-regulated entities to understand and implement the Cyber Security and Cyber Resilience Framework (CSCRF).',
+    slug: '/blog/navigating-sebis-cscrf',
+    bg: 'bg-primary',
+    textColor: 'text-black'
   };
 
   const remainingArticles = [
@@ -16,15 +18,19 @@ export default function Blog() {
       title: 'How secure is your most sensitive data?',
       cat: 'Background Screening',
       date: 'Jul 9, 2025',
-      desc: 'In this edition of Breach the Noise, Dharita speaks with Chetan Desai about the high-stakes security challenges in the background screening industry.',
-      slug: '/blog/how-secure-is-your-most-sensitive-data'
+      desc: 'In this episode of Breach the Noise, we speak with Chetan Desai about the high-stakes security challenges in the background screening industry.',
+      slug: '/blog/how-secure-is-your-most-sensitive-data',
+      bg: 'bg-secondary',
+      textColor: 'text-white'
     },
     {
       title: 'How Companies Turn Compliance into a Competitive Advantage',
       cat: 'Strategic Governance',
       date: 'May 23, 2025',
       desc: 'Explores the shift from check-box compliance to using data privacy and security as a core business differentiator and trust-builder.',
-      slug: '/blog/compliance-competitive-advantage'
+      slug: '/blog/compliance-competitive-advantage',
+      bg: 'bg-[#FFED00]',
+      textColor: 'text-black'
     }
   ];
 
@@ -75,12 +81,22 @@ export default function Blog() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-16">
           <div className="mb-16 relative">
             <div className="bg-white border-[3px] border-black shadow-brutal-yellow p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-brutal-black transition-all duration-300 min-h-[400px]">
-              <div className="md:w-1/2 bg-black relative min-h-[320px] md:min-h-auto overflow-hidden flex items-center justify-center">
-                <div className="relative z-10 p-8 self-end w-full">
-                  <span className="bg-white text-black px-3 py-1 font-mono text-xs font-bold uppercase border-2 border-black inline-block mb-4 shadow-brutal-sm">Latest Insight</span>
+              <div className={`md:w-1/2 ${featuredArticle.bg} relative min-h-[320px] md:min-h-auto overflow-hidden flex flex-col justify-between p-8 border-b-2 md:border-b-0 md:border-r-2 border-black`}>
+                <div className="flex gap-2 mb-4">
+                  <div className="w-4 h-4 rounded-full bg-white border-2 border-black shadow-brutal-sm"></div>
+                  <div className="w-4 h-4 rounded-full bg-white border-2 border-black shadow-brutal-sm"></div>
+                  <div className="w-4 h-4 rounded-full bg-white border-2 border-black shadow-brutal-sm"></div>
                 </div>
+                <h2 className={`text-4xl sm:text-5xl font-black ${featuredArticle.textColor} leading-tight font-display z-10 uppercase drop-shadow-md`}>
+                  {featuredArticle.title.split(': ')[0]}
+                </h2>
+                <div className="relative z-10 self-end w-full mt-8">
+                  <span className="bg-white text-black px-3 py-1 font-mono text-xs font-bold uppercase border-2 border-black inline-block shadow-brutal-sm">Latest Insight</span>
+                </div>
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 2px)', backgroundSize: '20px 20px' }}></div>
               </div>
-              <div className="md:w-1/2 p-6 sm:p-8 md:p-12 flex flex-col justify-center border-t-[3px] md:border-t-0 md:border-l-[3px] border-black bg-white relative">
+              <div className="md:w-1/2 p-6 sm:p-8 md:p-12 flex flex-col justify-center bg-white relative">
                 <div className="absolute top-0 right-0 bg-secondary text-white px-4 py-2 font-mono text-xs font-bold uppercase border-l-[3px] border-b-[3px] border-black">Featured</div>
                 <div className="flex items-center gap-3 mb-4">
                   <span className="bg-secondary/10 text-secondary px-3 py-1 font-mono text-xs font-bold uppercase border border-secondary">{featuredArticle.cat}</span>
@@ -101,12 +117,15 @@ export default function Blog() {
             </div>
           </div>
 
-          {/* Article Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 border-t-[3px] border-l-[3px] border-black">
             {remainingArticles.map((a, i) => (
               <article key={i} className={`group border-r-[3px] border-b-[3px] border-black ${i % 2 === 0 ? 'bg-white' : 'bg-background-light'} hover:bg-primary/5 transition-colors relative flex flex-col h-full`}>
-                <div className={`h-48 bg-black flex items-center justify-center relative overflow-hidden border-b-[3px] border-black`}>
-                  {/* Blank Thumbnail per user request */}
+                <div className={`h-56 ${a.bg} flex flex-col items-center justify-center relative overflow-hidden border-b-[3px] border-black p-6 text-center`}>
+                  <h3 className={`text-3xl font-black ${a.textColor} leading-tight font-display z-10 uppercase drop-shadow-md`}>
+                    {a.title.split(':')[0]}
+                  </h3>
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 2px)', backgroundSize: '15px 15px' }}></div>
                 </div>
                 <div className="p-6 flex flex-col grow">
                   <div className="flex justify-between items-start mb-3">

@@ -5,25 +5,26 @@ import { notFound } from 'next/navigation';
 
 // Static Data for the 3 Blogs
 const blogPosts = {
-  'dpdpa-implementation-insights': {
-    title: 'DPDPA Act: Implementation Insights for Global Background Screening',
-    cat: 'Privacy & Compliance',
-    date: 'Mar 23, 2026',
+  'navigating-sebis-cscrf': {
+    title: 'Navigating SEBI’s CSCRF: 3 Things to Fix Before It’s Too Late📰',
+    cat: 'Regulatory Compliance',
+    date: 'May 7, 2025',
     author: 'Dharita Gada',
     content: `
-      <h2>The Shift from IT to Boardroom</h2>
-      <p>The Digital Personal Data Protection (DPDPA) Act marks a critical turning point for organizations operating within and connected to India. For too long, data privacy has been relegated to the IT department as a technical checklist—firewalls installed, spreadsheets updated, checkboxes ticked. However, compliance with the DPDPA is a boardroom and business-wide priority.</p>
-      
-      <h2>Key Operational Pillars</h2>
-      <ul>
-        <li><strong>Scope & Applicability:</strong> Understanding exactly what data falls under the purview of DPDPA and separating it from general corporate data.</li>
-        <li><strong>Consent & Withdrawal:</strong> Establishing clear, multi-lingual, and frictionless mechanisms for Data Principals to give and withdraw consent.</li>
-        <li><strong>Data Minimization:</strong> Moving away from the "collect everything just in case" mentality to strict purpose-driven data collection.</li>
-        <li><strong>Vendor & AI Risks:</strong> Background screening relies heavily on third-party integrations and AI for fast processing. Ensuring these nodes are compliant is non-negotiable.</li>
-      </ul>
+      <h2>Disclaimer</h2>
+      <p><em>This newsletter is for general information only and not legal or financial advice. DataSentry is not liable for actions taken based on this content. Please consult professional advisors for guidance specific to your situation.</em></p>
 
-      <h2>A Practical 90-Day Roadmap</h2>
-      <p>Organizations must establish a 90-day roadmap focused on mapping roles (Data Fiduciary vs. Data Processor), updating consent frameworks, and implementing robust grievance handling mechanisms. Delays can lead to significant penalties, but more importantly, a loss of trust from enterprise clients who now view compliance as a prerequisite for business.</p>
+      <h2>What Is CSCRF and Why Should You Care?</h2>
+      <p>Imagine: You’re a regulated financial entity in India, perhaps a stockbroker, asset manager, or depository participant. One day, SEBI knocks on your door, asking for detailed evidence of your cybersecurity measures: policies, monitoring systems, incident response plans, and board-level oversight. If you’re caught unprepared, the consequences could be severe.</p>
+      
+      <p>In August 2024, the Securities and Exchange Board of India (SEBI) introduced the Cybersecurity and Cyber Resilience Framework (CSCRF). This framework consolidates various cybersecurity requirements into a unified, comprehensive guideline applicable to all SEBI-regulated entities (REs). It mandates that REs not only implement robust cybersecurity measures but also demonstrate resilience — the ability to anticipate, withstand, and recover from cyber incidents.</p>
+
+      <h2>The 3-Step CSCRF Readiness Guide</h2>
+      <ul>
+        <li><strong>Step 1: Assess Your Cybersecurity Posture.</strong> Start with a gap analysis. Look at access controls, endpoint protection, data backup, log monitoring, and incident response.</li>
+        <li><strong>Step 2: Build Governance &amp; Documentation.</strong> CSCRF emphasizes accountability. You’ll need customized policies, clear roles (like a dedicated CISO), and audit-ready documentation. If it’s not written down, it didn’t happen.</li>
+        <li><strong>Step 3: Implement Real-Time Monitoring &amp; Reporting.</strong> SEBI expects ongoing risk management, strong access controls, encryption, Network segmentation, and a fully functional Security Operations Centre (SOC) for Mid-size or Qualified Regulatory Entities.</li>
+      </ul>
     `
   },
   'how-secure-is-your-most-sensitive-data': {
