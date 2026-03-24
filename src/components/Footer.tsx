@@ -20,11 +20,11 @@ export default function Footer() {
             <div>
               <h3 className="font-display font-bold text-lg uppercase mb-6 border-b border-gray-700 pb-2">Our Services</h3>
               <ul className="space-y-3 font-mono text-sm text-gray-400">
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• ISO 27001 Certification</Link></li>
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• Privacy & Data Protection</Link></li>
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• ISO 42001 AI Management System</Link></li>
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• Compliance Program Design</Link></li>
-                <li><Link href="/#services" className="hover:text-primary transition-colors">• Risk Management</Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors flex items-start gap-2"><span className="shrink-0">•</span><span>ISO 27001 Certification</span></Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors flex items-start gap-2"><span className="shrink-0">•</span><span>Privacy & Data Protection</span></Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors flex items-start gap-2"><span className="shrink-0">•</span><span>ISO 42001 AI Management System</span></Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors flex items-start gap-2"><span className="shrink-0">•</span><span>Compliance Program Design</span></Link></li>
+                <li><Link href="/#services" className="hover:text-primary transition-colors flex items-start gap-2"><span className="shrink-0">•</span><span>Risk Management</span></Link></li>
               </ul>
             </div>
 

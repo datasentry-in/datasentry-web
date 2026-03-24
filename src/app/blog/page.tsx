@@ -58,7 +58,6 @@ export default function Blog() {
                     <span className="material-icons">arrow_forward</span>
                   </button>
                 </div>
-                <span className="text-gray-500 font-mono text-xs uppercase">Join 11,000+ Engineers</span>
               </div>
             </div>
           </div>
