@@ -175,8 +175,57 @@ export default function Podcast() {
           </div>
         </section>
 
+        {/* WEBINAR VIDEO SECTION */}
+        <section className="bg-background-light py-16 md:py-24 border-b-4 border-black">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center">
+              <div className="w-full lg:w-1/2 order-2 lg:order-1">
+                <div className="bg-white border-[3px] border-black p-2 shadow-[8px_8px_0px_0px_#00A3E0] hover:shadow-[4px_4px_0px_0px_#00A3E0] hover:translate-x-[4px] hover:translate-y-[4px] transition-all duration-300">
+                  <div className="relative w-full aspect-video bg-black border-2 border-black overflow-hidden">
+                    <video 
+                      src="/videos/webinar.mp4" 
+                      controls 
+                      controlsList="nodownload"
+                      preload="metadata"
+                      className="w-full h-full object-cover"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full lg:w-1/2 order-1 lg:order-2">
+                <div className="inline-block bg-primary text-black font-mono px-3 py-1 mb-6 text-sm font-bold uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative z-10 -rotate-2">
+                  PBSA APAC Council • March 12, 2026
+                </div>
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold uppercase tracking-tight leading-none mb-6">
+                  DPDPA Act: <br/><span className="text-secondary italic">Implementation Insights</span>
+                </h2>
+                <div className="text-gray-700 font-mono text-sm md:text-base leading-relaxed mb-8 border-l-4 border-secondary pl-4 space-y-4">
+                  <p>In this featured session from the PBSA APAC Council, Dharita Gada unpacks the DPDPA Act for global background screening—making compliance actionable rather than theoretical.</p>
+                  <div>
+                    <p className="font-mono text-xs text-gray-400 uppercase font-bold tracking-widest mb-3 border-b border-gray-200 pb-2">Key Topics Unpacked:</p>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> Scope & Applicability</li>
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> Consent & Withdrawal</li>
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> Data Minimization</li>
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> Vendor & AI Risks</li>
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> 90-Day Roadmap</li>
+                      <li className="flex items-center gap-2"><span className="text-primary material-icons text-sm">check_circle</span> Penalties & Enforcement</li>
+                    </ul>
+                  </div>
+                </div>
+                <a href="#all-episodes" className="inline-flex items-center justify-center gap-2 bg-black text-white font-mono font-bold text-xs uppercase px-8 py-4 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+                  See More Episodes
+                  <span className="material-icons text-base">arrow_downward</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ═══════════ ALL EPISODES ═══════════ */}
-        <section className="bg-background-dark py-20 md:py-24 text-white">
+        <section id="all-episodes" className="bg-background-dark py-20 md:py-24 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center gap-3 mb-12">
               <div className="w-3 h-3 bg-primary"></div>

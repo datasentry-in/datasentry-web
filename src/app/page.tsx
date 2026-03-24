@@ -429,56 +429,6 @@ export default function Home() {
           </div>
         </section>
 
-
-        {/* WEBINAR VIDEO SECTION */}
-        <section className="bg-background-light py-10 md:py-24 border-t-4 border-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center">
-              <div className="w-full lg:w-1/2 order-2 lg:order-1">
-                <div className="bg-white border-[3px] border-black p-2 shadow-brutal-yellow -rotate-1 hover:rotate-0 transition-transform duration-500">
-                  <div className="relative w-full aspect-video bg-black border-2 border-black overflow-hidden">
-                    <video 
-                      src="/videos/webinar.mp4" 
-                      controls 
-                      controlsList="nodownload"
-                      preload="metadata"
-                      className="w-full h-full object-cover"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full lg:w-1/2 order-1 lg:order-2">
-                <div className="inline-block bg-primary text-black font-mono px-3 py-1 mb-6 text-sm font-bold uppercase border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  PBSA APAC Council • March 12, 2026
-                </div>
-                <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold uppercase leading-tight mb-6">
-                  DPDPA Act: <br/><span className="text-secondary italic">Implementation Insights</span>
-                </h2>
-                <div className="text-gray-700 font-medium mb-8 border-l-4 border-primary pl-3 sm:pl-4 space-y-4">
-                  <p>In this featured session from the PBSA APAC Council, Dharita Gada unpacks the DPDPA Act for global background screening—making compliance actionable rather than theoretical.</p>
-                  <div>
-                    <p className="font-mono text-sm text-gray-500 uppercase font-bold tracking-wider mb-3">Key Topics Unpacked:</p>
-                    <ul className="font-mono text-xs sm:text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Scope & Applicability</li>
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Consent & Withdrawal</li>
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Data Minimization</li>
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Vendor & AI Risks</li>
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> 90-Day Roadmap</li>
-                      <li className="flex items-start gap-2"><span className="text-primary material-icons-outlined text-base">check_circle</span> Penalties & Enforcement</li>
-                    </ul>
-                  </div>
-                </div>
-                <a href="#how-it-works" className="inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-black text-white font-mono font-bold text-sm uppercase px-6 sm:px-8 py-4 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[4px_4px_0px_0px_#009FE3] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none">
-                  See Our Approach
-                  <span className="material-icons text-xl">arrow_forward</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* WHY DATASENTRY */}
         <section id="about" className="bg-background-dark py-12 md:py-24 px-4 sm:px-6 md:px-12 lg:px-20 border-b-4 border-primary text-white">
           <div className="max-w-7xl mx-auto">
