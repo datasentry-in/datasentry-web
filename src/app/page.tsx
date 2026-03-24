@@ -582,7 +582,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                      MD, DELTA PUMPS
+                      MD, Manufacturing & Industrial Enterprise
                     </div>
                   </div>
                   <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300 flex flex-col h-full justify-between">
@@ -595,7 +595,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                      HEAD OF DEVELOPMENT AND DELIVERY - IT, VASTU HOUSING
+                      HEAD OF DEVELOPMENT AND DELIVERY - IT, Financial Services & NBFC
                     </div>
                   </div>
                   <div className="bg-white border-2 border-black p-6 shadow-brutal-sm hover:shadow-brutal-lg transition-shadow duration-300 flex flex-col h-full justify-between">
@@ -608,7 +608,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="text-xs font-bold text-black/70 uppercase tracking-wider">
-                      SR. DIRECTOR - PRODUCT DEVELOPMENT, NEXSALES
+                      SR. DIRECTOR - PRODUCT DEVELOPMENT, SaaS & AI-Driven Technology Firm
                     </div>
                   </div>
                 </div>
