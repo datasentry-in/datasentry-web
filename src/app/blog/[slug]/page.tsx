@@ -11,20 +11,18 @@ const blogPosts = {
     date: 'May 7, 2025',
     author: 'Dharita Gada',
     content: `
-      <h2>Disclaimer</h2>
+      <h3>Disclaimer</h3>
       <p><em>This newsletter is for general information only and not legal or financial advice. DataSentry is not liable for actions taken based on this content. Please consult professional advisors for guidance specific to your situation.</em></p>
 
-      <h2>What Is CSCRF and Why Should You Care?</h2>
+      <h3>What Is CSCRF and Why Should You Care?</h3>
       <p>Imagine: You’re a regulated financial entity in India, perhaps a stockbroker, asset manager, or depository participant. One day, SEBI knocks on your door, asking for detailed evidence of your cybersecurity measures: policies, monitoring systems, incident response plans, and board-level oversight. If you’re caught unprepared, the consequences could be severe.</p>
       
       <p>In August 2024, the Securities and Exchange Board of India (SEBI) introduced the Cybersecurity and Cyber Resilience Framework (CSCRF). This framework consolidates various cybersecurity requirements into a unified, comprehensive guideline applicable to all SEBI-regulated entities (REs). It mandates that REs not only implement robust cybersecurity measures but also demonstrate resilience — the ability to anticipate, withstand, and recover from cyber incidents.</p>
 
-      <h2>The 3-Step CSCRF Readiness Guide</h2>
-      <ul>
-        <li><strong>Step 1: Assess Your Cybersecurity Posture.</strong> Start with a gap analysis. Look at access controls, endpoint protection, data backup, log monitoring, and incident response.</li>
-        <li><strong>Step 2: Build Governance &amp; Documentation.</strong> CSCRF emphasizes accountability. You’ll need customized policies, clear roles (like a dedicated CISO), and audit-ready documentation. If it’s not written down, it didn’t happen.</li>
-        <li><strong>Step 3: Implement Real-Time Monitoring &amp; Reporting.</strong> SEBI expects ongoing risk management, strong access controls, encryption, Network segmentation, and a fully functional Security Operations Centre (SOC) for Mid-size or Qualified Regulatory Entities.</li>
-      </ul>
+      <h3>The 3-Step CSCRF Readiness Guide</h3>
+      <p><strong>Step 1: Assess Your Cybersecurity Posture.</strong> Start with a gap analysis. Look at access controls, endpoint protection, data backup, log monitoring, and incident response.</p>
+      <p><strong>Step 2: Build Governance &amp; Documentation.</strong> CSCRF emphasizes accountability. You’ll need customized policies, clear roles (like a dedicated CISO), and audit-ready documentation. If it’s not written down, it didn’t happen.</p>
+      <p><strong>Step 3: Implement Real-Time Monitoring &amp; Reporting.</strong> SEBI expects ongoing risk management, strong access controls, encryption, Network segmentation, and a fully functional Security Operations Centre (SOC) for Mid-size or Qualified Regulatory Entities.</p>
     `
   },
   'how-secure-is-your-most-sensitive-data': {
@@ -33,13 +31,13 @@ const blogPosts = {
     date: 'Jul 9, 2025',
     author: 'Dharita Gada',
     content: `
-      <h2>The Hidden Vulnerabilities in Screening</h2>
+      <h3>The Hidden Vulnerabilities in Screening</h3>
       <p>In a recent discussion with Chetan Desai, we explored the high-stakes security challenges inherent to the background screening industry. Every day, screening firms process highly sensitive personal data—from financial records to criminal histories. Yet, the infrastructure protecting this data often lags behind the sophistication of modern threats.</p>
       
-      <h2>Data Lifecycle and Silos</h2>
+      <h3>Data Lifecycle and Silos</h3>
       <p>One of the biggest risks is fragmented data storage. When sensitive information is passed between HR systems, screening vendors, and sub-contractors via email or unsecured APIs, the attack surface multiplies. Organizations need to adopt end-to-end encryption and zero-trust architectures to ensure that data remains secure both at rest and in transit.</p>
       
-      <h2>Preparing for Modern Regulations</h2>
+      <h3>Preparing for Modern Regulations</h3>
       <p>With regulations like India's DPDP Act coming into full force, the cost of a breach extends far beyond operational downtime—it threatens the very existence of the firm through direct penalties and catastrophic reputational damage. Security can no longer be an afterthought; it must be the foundation upon which screening services are built.</p>
     `
   },
@@ -49,13 +47,13 @@ const blogPosts = {
     date: 'May 23, 2025',
     author: 'Dharita Gada',
     content: `
-      <h2>Beyond Check-Box Compliance</h2>
+      <h3>Beyond Check-Box Compliance</h3>
       <p>For decades, compliance has been viewed as a tax on doing business—a mere cost center required to avoid regulatory fines. However, forward-thinking organizations are realizing that robust data privacy and security frameworks can be a massive competitive differentiator.</p>
       
-      <h2>Trust as a Business Differentiator</h2>
+      <h3>Trust as a Business Differentiator</h3>
       <p>In B2B environments, especially within SaaS, FinTech, and enterprise services, procurement teams are actively filtering out vendors with weak security postures. By achieving and maintaining standards like ISO 27001, SOC 2, and DPDPA compliance, companies significantly shorten sales cycles and win enterprise deals that would otherwise be lost to more secure competitors.</p>
       
-      <h2>The ROI of Good Governance</h2>
+      <h3>The ROI of Good Governance</h3>
       <p>When compliance is integrated into the product design phase (Privacy by Design), it builds inherent trust with end-users. Customers are increasingly loyal to platforms that transparently protect their data. Ultimately, turning compliance into a competitive advantage means treating security not as a hurdle to jump over, but as a feature you actively sell.</p>
     `
   }
@@ -109,7 +107,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </div>
 
         {/* Article Body */}
-        <article className="max-w-3xl mx-auto px-6 py-16 md:py-24 prose prose-lg prose-headings:font-display prose-headings:font-bold prose-headings:text-black prose-p:font-mono prose-p:text-gray-700 prose-p:leading-relaxed prose-li:font-mono prose-li:text-gray-700 prose-a:text-secondary hover:prose-a:text-primary transition-colors">
+        <article className="max-w-3xl mx-auto px-6 py-16 md:py-24 prose prose-lg prose-headings:font-display prose-headings:font-bold prose-headings:text-black prose-p:font-mono prose-p:text-gray-700 prose-p:leading-relaxed prose-h3:mb-2 prose-h3:mt-8 prose-p:mt-0 prose-p:mb-5 prose-li:font-mono prose-li:text-gray-700 prose-a:text-secondary hover:prose-a:text-primary transition-colors">
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
         
