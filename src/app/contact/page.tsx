@@ -1,10 +1,12 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Breadcrumb from '@/components/Breadcrumb';
 
 export default function Contact() {
   return (
     <>
       <Navbar />
+      <Breadcrumb items={[{ label: 'Contact' }]} />
       <main>
         {/* Hero */}
         <header className="w-full bg-background-dark text-white py-12 md:py-24 border-b-[3px] border-black">

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import BlogThumbnail from '@/components/BlogThumbnail';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
+import Breadcrumb from '@/components/Breadcrumb';
 import { blogPosts, formatBlogDate, getBlogPost, type BlogBlock, type BlogLink } from '../posts';
 
 const toneStyles = {
@@ -190,6 +191,7 @@ export default async function BlogPost({
   return (
     <>
       <Navbar />
+      <Breadcrumb items={[{ label: 'Blog', href: '/blog' }, { label: post.title }]} />
       <main className="min-h-screen bg-background-light">
         <header className="w-full bg-background-dark text-white border-b-[3px] border-black">
           <div className="max-w-6xl mx-auto px-6 pt-24 pb-14 md:pt-32 md:pb-20">

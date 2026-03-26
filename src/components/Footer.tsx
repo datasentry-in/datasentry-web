@@ -12,7 +12,7 @@ export default function Footer() {
                 <Logo className="h-12 w-auto" strokeColor="#F5C200" />
               </div>
               <div className="mt-4 space-y-2 font-mono text-sm">
-                <p className="text-secondary">✉ enquiry@datasentry.in</p>
+                <a href="mailto:enquiry@datasentry.in" className="text-secondary hover:text-primary transition-colors">✉ enquiry@datasentry.in</a>
               </div>
             </div>
 

@@ -1,7 +1,14 @@
+'use client';
+
+import { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Breadcrumb from '@/components/Breadcrumb';
 
 export default function Podcast() {
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const webinarRef = useRef<HTMLVideoElement>(null);
+
   const episodes = [
     {
       ep: '04',
@@ -52,9 +59,25 @@ export default function Podcast() {
   const featured = episodes[0];
   const restEpisodes = episodes.slice(1);
 
+  const getVideoId = (url: string) => url.split('v=')[1];
+
+  const handlePlayVideo = (videoId: string) => {
+    // Pause webinar video when a YouTube video is activated
+    if (webinarRef.current) {
+      webinarRef.current.pause();
+    }
+    setActiveVideo(videoId);
+  };
+
+  const handleWebinarPlay = () => {
+    // Deactivate any YouTube iframe when webinar starts
+    setActiveVideo(null);
+  };
+
   return (
     <>
       <Navbar />
+      <Breadcrumb items={[{ label: 'Podcast' }]} />
       <main>
         {/* ═══════════ HERO ═══════════ */}
         <header className="relative bg-background-dark text-white overflow-hidden border-b-4 border-primary">
@@ -142,15 +165,33 @@ export default function Podcast() {
             {/* Featured Card */}
             <div className="block group">
               <div className="border-2 border-black overflow-hidden shadow-[6px_6px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] transition-all duration-300">
-                {/* Video area — full width */}
-                <div className="relative w-full aspect-video bg-black">
-                  <iframe
-                    className="w-full h-full border-0 absolute inset-0"
-                    src={`https://www.youtube.com/embed/${featured.url.split('v=')[1]}?modestbranding=1&rel=0`}
-                    title={featured.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
+                {/* Video area — click to load */}
+                <div
+                  className="relative w-full aspect-video bg-black cursor-pointer"
+                  onClick={() => handlePlayVideo(getVideoId(featured.url))}
+                >
+                  {activeVideo === getVideoId(featured.url) ? (
+                    <iframe
+                      className="w-full h-full border-0 absolute inset-0"
+                      src={`https://www.youtube.com/embed/${getVideoId(featured.url)}?autoplay=1&modestbranding=1&rel=0`}
+                      title={featured.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <>
+                      <img
+                        src={`https://img.youtube.com/vi/${getVideoId(featured.url)}/maxresdefault.jpg`}
+                        alt={featured.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                        <div className="w-20 h-20 bg-red-600 border-2 border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#000]">
+                          <span className="material-icons text-white text-4xl">play_arrow</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
                 {/* Content below */}
                 <div className="bg-background-dark p-5 sm:p-8 md:p-10 text-white">
@@ -183,11 +224,13 @@ export default function Podcast() {
                 <div className="bg-white border-[3px] border-black p-2 shadow-[8px_8px_0px_0px_#00A3E0] hover:shadow-[4px_4px_0px_0px_#00A3E0] hover:translate-x-[4px] hover:translate-y-[4px] transition-all duration-300">
                   <div className="relative w-full aspect-video bg-black border-2 border-black overflow-hidden">
                     <video 
+                      ref={webinarRef}
                       src="/videos/webinar.mp4" 
                       controls 
                       controlsList="nodownload"
                       preload="metadata"
                       className="w-full h-full object-cover"
+                      onPlay={handleWebinarPlay}
                     >
                       Your browser does not support the video tag.
                     </video>
@@ -235,18 +278,37 @@ export default function Podcast() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {restEpisodes.map((ep, i) => {
+                const videoId = getVideoId(ep.url);
                 return (
                   <div key={i} className="block group">
                     <article className="bg-surface-dark border border-white/10 hover:border-primary/50 transition-all duration-300 overflow-hidden h-full flex flex-col">
-                      {/* Video */}
-                      <div className="h-52 relative overflow-hidden bg-black">
-                        <iframe
-                          className="w-full h-full border-0 absolute inset-0"
-                          src={`https://www.youtube.com/embed/${ep.url.split('v=')[1]}?modestbranding=1&rel=0`}
-                          title={ep.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
+                      {/* Video — click to load */}
+                      <div
+                        className="h-52 relative overflow-hidden bg-black cursor-pointer"
+                        onClick={() => handlePlayVideo(videoId)}
+                      >
+                        {activeVideo === videoId ? (
+                          <iframe
+                            className="w-full h-full border-0 absolute inset-0"
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`}
+                            title={ep.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        ) : (
+                          <>
+                            <img
+                              src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                              alt={ep.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center hover:bg-black/20 transition-colors">
+                              <div className="w-14 h-14 bg-red-600 border-2 border-white flex items-center justify-center shadow-[3px_3px_0px_0px_#000]">
+                                <span className="material-icons text-white text-2xl">play_arrow</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                       {/* Info */}
                       <div className="p-6 flex flex-col grow">

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Footer from '@/components/Footer';
 import BlogThumbnail from '@/components/BlogThumbnail';
 import Navbar from '@/components/Navbar';
+import Breadcrumb from '@/components/Breadcrumb';
 import {
   blogCategories,
   blogPosts,
@@ -44,6 +45,7 @@ export default function Blog() {
   return (
     <>
       <Navbar />
+      <Breadcrumb items={[{ label: 'Blog' }]} />
       <main>
         <header className="w-full bg-background-dark text-white border-b-[3px] border-black">
           <div className="max-w-[1200px] mx-auto px-6 py-14 md:py-24">
