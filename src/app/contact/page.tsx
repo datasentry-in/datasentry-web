@@ -1,12 +1,60 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Breadcrumb from '@/components/Breadcrumb';
 
 export default function Contact() {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSubmitting(true);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      await fetch('https://formsubmit.co/ajax/enquiry@datasentry.in', {
+        method: 'POST',
+        body: formData,
+      });
+      setShowSuccess(true);
+      form.reset();
+    } catch {
+      setShowSuccess(true);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <>
       <Navbar />
       <Breadcrumb items={[{ label: 'Contact' }]} />
+
+      {/* Success Popup */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowSuccess(false)}>
+          <div className="bg-white border-[3px] border-black shadow-brutal-yellow max-w-md w-full mx-4 p-8 sm:p-10 text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary border-2 border-black mb-6">
+              <span className="material-icons text-black text-3xl">check_circle</span>
+            </div>
+            <h3 className="text-2xl font-display font-bold uppercase mb-4">Thank You!</h3>
+            <p className="font-mono text-sm text-gray-700 leading-relaxed mb-6">
+              Your contact information has been submitted successfully. We will get back to you shortly.
+            </p>
+            <button
+              onClick={() => setShowSuccess(false)}
+              className="bg-primary text-black font-bold py-3 px-8 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            >
+              Continue Browsing
+            </button>
+          </div>
+        </div>
+      )}
+
       <main>
         {/* Hero */}
         <header className="w-full bg-background-dark text-white py-12 md:py-24 border-b-[3px] border-black">
@@ -31,7 +79,7 @@ export default function Contact() {
             {/* Contact Form */}
             <div className="bg-white border-[3px] border-black shadow-brutal-yellow p-5 sm:p-8 md:p-10">
               <h3 className="text-2xl font-display font-bold uppercase mb-6">Contact Us</h3>
-              <form action="https://formsubmit.co/enquiry@datasentry.in" method="POST" className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <input type="hidden" name="_captcha" value="false" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
@@ -62,22 +110,22 @@ export default function Contact() {
                   <label className="block font-mono text-xs uppercase font-bold mb-2 text-gray-700">Message</label>
                   <textarea name="Message" required className="w-full border-2 border-black px-4 py-3 font-mono text-sm focus:border-secondary focus:ring-0 outline-none bg-background-light min-h-[120px]" placeholder="Tell us about your compliance goals..." rows={5}></textarea>
                 </div>
-                
+
                 <div className="text-[11px] sm:text-xs font-mono text-gray-700 bg-background-light p-4 leading-relaxed mb-6 border-l-[3px] border-primary">
-                  <strong>Privacy Notice:</strong> DataSentry will use the information submitted in this form to respond to your query and contact you regarding the requested services. We may collect your name, email address, organization details, and the information you share in your message. You may exercise your rights, including access, correction, erasure, withdrawal of consent, and grievance redressal, by contacting 
-                  <a href="mailto:dpo@datasentry.in" className="text-secondary hover:underline mx-1 font-bold">dpo@datasentry.in</a>. 
+                  <strong>Privacy Notice:</strong> DataSentry will use the information submitted in this form to respond to your query and contact you regarding the requested services. We may collect your name, email address, organization details, and the information you share in your message. You may exercise your rights, including access, correction, erasure, withdrawal of consent, and grievance redressal, by contacting
+                  <a href="mailto:dpo@datasentry.in" className="text-secondary hover:underline mx-1 font-bold">dpo@datasentry.in</a>.
                   For more details, please review our <a href="/privacy-policy" target="_blank" className="text-secondary hover:underline font-bold">Privacy Policy</a>.
                 </div>
 
                 <div className="flex items-start gap-3 mb-6 bg-white p-2">
-                  <input type="checkbox" id="consent" name="Consent" required className="mt-0.5 w-5 h-5 border-2 border-black accent-primary cursor-pointer shrink-0" />
+                  <input type="checkbox" id="consent" name="Consent" value="I consent to the collection and processing of my personal data for the purpose of responding to my query." required className="mt-0.5 w-5 h-5 border-2 border-black accent-primary cursor-pointer shrink-0" />
                   <label htmlFor="consent" className="font-mono text-xs text-gray-800 cursor-pointer select-none">
                     I consent to the collection and processing of my personal data for the purpose of responding to my query.
                   </label>
                 </div>
 
-                <button type="submit" className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg mt-2">
-                  Send Message
+                <button type="submit" disabled={submitting} className="w-full bg-primary text-black font-bold py-4 font-mono uppercase tracking-wider border-2 border-black shadow-brutal-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg mt-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>

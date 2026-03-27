@@ -687,7 +687,7 @@ export default function Home() {
               <a href="https://calendly.com/dharita-gada-datasentry/30min" target="_blank" rel="noopener noreferrer" className="inline-block bg-primary text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-primary shadow-brutal-blue hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200">
                 Book a Consultation
               </a>
-              <a href="/contact" className="inline-block bg-white text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-white hover:bg-black hover:text-white transition-all duration-200">
+              <a href="/contact" target="_blank" className="inline-block bg-white text-black font-display font-bold text-base sm:text-xl px-6 py-4 sm:px-10 sm:py-5 uppercase tracking-wide border-2 border-white hover:bg-black hover:text-white transition-all duration-200">
                 Contact Us
               </a>
             </div>
