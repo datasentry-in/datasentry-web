@@ -1,40 +1,115 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 declare global {
   interface Window {
     gtag: (...args: any[]) => void;
+    [key: string]: unknown;
   }
 }
 
-type ConsentState = 'unknown' | 'granted' | 'denied' | 'revoked';
+type ConsentState = 'unknown' | 'granted' | 'denied';
+type PopupState = 'hidden' | 'opening' | 'visible' | 'closing';
+const GA_MEASUREMENT_ID = 'G-ZVZD226ZME';
+const CLOSE_ANIMATION_MS = 320;
+const OPEN_ANIMATION_DELAY_MS = 16;
 
 export default function CookieConsent() {
   const [consent, setConsent] = useState<ConsentState>('unknown');
-  const [showBanner, setShowBanner] = useState(false);
-  const [showRevoke, setShowRevoke] = useState(false);
+  const [bannerState, setBannerState] = useState<PopupState>('hidden');
+  const [revokeState, setRevokeState] = useState<PopupState>('hidden');
+  const [preferencesMode, setPreferencesMode] = useState<'actions' | 'confirmation'>('actions');
+  const [preferencesAction, setPreferencesAction] = useState<'accept' | 'revoke' | null>(null);
   const [ready, setReady] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+  const bannerCloseTimerRef = useRef<number | null>(null);
+  const revokeCloseTimerRef = useRef<number | null>(null);
+  const bannerOpenTimerRef = useRef<number | null>(null);
+  const revokeOpenTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('cookie_consent') as ConsentState | null;
+    const stored = localStorage.getItem('cookie_consent');
     if (!stored) {
       // First visit — show main banner
-      setShowBanner(true);
+      setBannerState('opening');
+      bannerOpenTimerRef.current = window.setTimeout(() => {
+        setBannerState('visible');
+        bannerOpenTimerRef.current = null;
+      }, OPEN_ANIMATION_DELAY_MS);
       setConsent('unknown');
-    } else if (stored === 'revoked') {
-      // Previously revoked — only show floating icon, no auto-banner
-      setConsent('revoked');
+    } else if (stored === 'granted') {
+      setConsent('granted');
     } else {
-      setConsent(stored as ConsentState);
+      // Treat denied and legacy revoked as denied.
+      setConsent('denied');
     }
     setReady(true);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+      if (bannerCloseTimerRef.current) {
+        window.clearTimeout(bannerCloseTimerRef.current);
+      }
+      if (revokeCloseTimerRef.current) {
+        window.clearTimeout(revokeCloseTimerRef.current);
+      }
+      if (bannerOpenTimerRef.current) {
+        window.clearTimeout(bannerOpenTimerRef.current);
+      }
+      if (revokeOpenTimerRef.current) {
+        window.clearTimeout(revokeOpenTimerRef.current);
+      }
+    };
+  }, []);
+
+  const beginRevokeOpen = () => {
+    if (revokeOpenTimerRef.current) {
+      window.clearTimeout(revokeOpenTimerRef.current);
+    }
+    if (revokeCloseTimerRef.current) {
+      window.clearTimeout(revokeCloseTimerRef.current);
+    }
+    setRevokeState('opening');
+    revokeOpenTimerRef.current = window.setTimeout(() => {
+      setRevokeState('visible');
+      revokeOpenTimerRef.current = null;
+    }, OPEN_ANIMATION_DELAY_MS);
+  };
+
+  const beginBannerClose = () => {
+    if (bannerCloseTimerRef.current) {
+      window.clearTimeout(bannerCloseTimerRef.current);
+    }
+    setBannerState('closing');
+    bannerCloseTimerRef.current = window.setTimeout(() => {
+      setBannerState('hidden');
+      bannerCloseTimerRef.current = null;
+    }, CLOSE_ANIMATION_MS);
+  };
+
+  const beginRevokeClose = () => {
+    if (revokeCloseTimerRef.current) {
+      window.clearTimeout(revokeCloseTimerRef.current);
+    }
+    setRevokeState('closing');
+    revokeCloseTimerRef.current = window.setTimeout(() => {
+      setRevokeState('hidden');
+      setPreferencesMode('actions');
+      setPreferencesAction(null);
+      revokeCloseTimerRef.current = null;
+    }, CLOSE_ANIMATION_MS);
+  };
+
   const updateGtag = (granted: boolean) => {
     if (typeof window !== 'undefined' && window.gtag) {
       const value = granted ? 'granted' : 'denied';
+      window[`ga-disable-${GA_MEASUREMENT_ID}`] = !granted;
       window.gtag('consent', 'update', {
         analytics_storage: value,
         ad_storage: value,
@@ -47,22 +122,29 @@ export default function CookieConsent() {
   const handleAccept = () => {
     localStorage.setItem('cookie_consent', 'granted');
     setConsent('granted');
-    setShowBanner(false);
+    if (bannerState !== 'hidden') {
+      beginBannerClose();
+    }
     updateGtag(true);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', GA_MEASUREMENT_ID);
+    }
   };
 
   const handleDecline = () => {
     localStorage.setItem('cookie_consent', 'denied');
     setConsent('denied');
-    setShowBanner(false);
+    if (bannerState !== 'hidden') {
+      beginBannerClose();
+    }
     updateGtag(false);
   };
 
   const handleRevoke = () => {
-    // Update consent state
-    localStorage.setItem('cookie_consent', 'revoked');
-    setConsent('revoked');
-    setShowRevoke(false);
+    // Revocation is persisted as denied.
+    localStorage.setItem('cookie_consent', 'denied');
+    setConsent('denied');
 
     // Deny all via gtag
     updateGtag(false);
@@ -75,30 +157,49 @@ export default function CookieConsent() {
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
     });
 
-    // Reload to kill running analytics scripts
-    window.location.reload();
   };
 
   const handleFloatingClick = () => {
-    if (consent === 'revoked') {
-      // After revocation, let user re-consent via main banner
-      setShowBanner(true);
+    setPreferencesMode('actions');
+    setPreferencesAction(null);
+    beginRevokeOpen();
+  };
+
+  const handlePreferencesAction = (action: 'accept' | 'revoke') => {
+    if (action === 'accept') {
+      handleAccept();
     } else {
-      // Active consent (granted/denied) — show revoke-only panel
-      setShowRevoke(true);
+      handleRevoke();
     }
+    setPreferencesAction(action);
+    setPreferencesMode('confirmation');
+
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+    }
+
+    closeTimerRef.current = window.setTimeout(() => {
+      beginRevokeClose();
+      closeTimerRef.current = null;
+    }, 1400);
   };
 
   if (!ready) return null;
 
-  const showFloatingIcon = !showBanner && !showRevoke && consent === 'granted';
+  const showBanner = bannerState !== 'hidden';
+  const showRevoke = revokeState !== 'hidden';
+  const showFloatingIcon = bannerState === 'hidden' && revokeState === 'hidden' && consent !== 'unknown';
+  const popupMotionClass = (state: PopupState) =>
+    `transition-all duration-300 ease-out ${
+      state === 'visible' ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-[0.98]'
+    }`;
 
   return (
     <>
-      {/* Main Cookie Banner — first visit or re-consent after revocation */}
+      {/* Main Cookie Banner — first visit only */}
       {showBanner && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 pb-6 sm:pb-8 flex justify-center pointer-events-none">
-          <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] p-6 max-w-4xl w-full pointer-events-auto flex flex-col md:flex-row gap-6 items-center justify-between animate-slide-up">
+          <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] p-6 max-w-4xl w-full pointer-events-auto flex flex-col md:flex-row gap-6 items-center justify-between ${popupMotionClass(bannerState)}`}>
             <div className="grow">
               <h3 className="font-display font-bold text-xl uppercase mb-2">We Use Cookies</h3>
               <p className="font-mono text-sm text-gray-700 leading-relaxed">
@@ -126,29 +227,72 @@ export default function CookieConsent() {
         </div>
       )}
 
-      {/* Revoke-only Banner — shown when user clicks floating icon with active consent */}
+      {/* Cookie preferences panel — shown when user clicks floating icon */}
       {showRevoke && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 pb-6 sm:pb-8 flex justify-center pointer-events-none">
-          <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] p-6 max-w-4xl w-full pointer-events-auto flex flex-col md:flex-row gap-6 items-center justify-between animate-slide-up">
+          <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] p-6 max-w-4xl w-full pointer-events-auto flex flex-col md:flex-row gap-6 items-center justify-between ${popupMotionClass(revokeState)}`}>
             <div className="grow">
-              <h3 className="font-display font-bold text-xl uppercase mb-2">Cookie Preferences</h3>
-              <p className="font-mono text-sm text-gray-700 leading-relaxed">
-                You have the right to withdraw your cookie consent at any time. Revoking consent will clear all cookies and disable tracking.
-              </p>
+              <div
+                className={`transition-all duration-300 ${
+                  preferencesMode === 'actions'
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 -translate-y-1 h-0 overflow-hidden'
+                }`}
+              >
+                <h3 className="font-display font-bold text-xl uppercase mb-2">Cookie Preferences</h3>
+                <p className="font-mono text-sm text-gray-700 leading-relaxed">
+                  {consent === 'granted'
+                    ? 'You can withdraw consent at any time. Revoking will clear cookies and disable tracking.'
+                    : 'Cookie tracking is currently disabled. You can accept cookies at any time to enable analytics.'}
+                </p>
+              </div>
+              <div
+                className={`transition-all duration-300 ${
+                  preferencesMode === 'confirmation'
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-1 h-0 overflow-hidden'
+                }`}
+              >
+                <h3 className="font-display font-bold text-xl uppercase mb-2">
+                  {preferencesAction === 'revoke' ? 'Consent revoked' : 'Cookies accepted'}
+                </h3>
+                <p className="font-mono text-sm text-gray-700 leading-relaxed">
+                  {preferencesAction === 'revoke'
+                    ? 'Analytics tracking is now disabled. Closing cookie settings...'
+                    : 'Analytics tracking is now enabled. Closing cookie settings...'}
+                </p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
-              <button
-                onClick={() => setShowRevoke(false)}
-                className="bg-background-light font-mono font-bold text-sm uppercase px-6 py-3 border-2 border-black hover:bg-gray-200 transition-colors"
-              >
-                Close
-              </button>
-              <button
-                onClick={handleRevoke}
-                className="bg-red-600 text-white font-mono font-bold text-sm uppercase px-6 py-3 border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                Revoke Consent
-              </button>
+              {preferencesMode === 'actions' ? (
+                <>
+                  <button
+                    onClick={() => {
+                      beginRevokeClose();
+                    }}
+                    className="bg-background-light font-mono font-bold text-sm uppercase px-6 py-3 border-2 border-black hover:bg-gray-200 transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => handlePreferencesAction(consent === 'granted' ? 'revoke' : 'accept')}
+                    className={`font-mono font-bold text-sm uppercase px-6 py-3 border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${
+                      consent === 'granted'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-primary text-black'
+                    }`}
+                  >
+                    {consent === 'granted' ? 'Revoke Consent' : 'Accept Cookies'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  disabled
+                  className="bg-gray-200 text-gray-700 font-mono font-bold text-sm uppercase px-6 py-3 border-2 border-black cursor-not-allowed"
+                >
+                  Closing...
+                </button>
+              )}
             </div>
           </div>
         </div>
