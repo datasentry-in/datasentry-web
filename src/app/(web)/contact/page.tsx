@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Breadcrumb from '@/components/Breadcrumb';
+import Navbar from '@/modules/web/components/Navbar';
+import Footer from '@/modules/web/components/Footer';
+import Breadcrumb from '@/modules/web/components/Breadcrumb';
 
 export default function Contact() {
   const [showSuccess, setShowSuccess] = useState(false);
@@ -138,9 +138,14 @@ export default function Contact() {
                 <div className="relative z-10">
                   <h3 className="text-2xl font-display font-bold uppercase mb-4">Schedule a Consultation</h3>
                   <p className="font-mono text-sm text-white/80 mb-6">Book a 30-minute discovery call with Dharita Gada. We&apos;ll discuss your compliance landscape and identify the right approach for your organization.</p>
-                  <button className="bg-black text-white font-mono font-bold px-8 py-4 uppercase border-2 border-white hover:bg-white hover:text-black transition-all">
+                  <a
+                    href="https://calendly.com/dharita-gada-datasentry/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-black text-white font-mono font-bold px-8 py-4 uppercase border-2 border-white hover:bg-white hover:text-black transition-all"
+                  >
                     Schedule Call →
-                  </button>
+                  </a>
                 </div>
               </div>
 

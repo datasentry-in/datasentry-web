@@ -1,7 +1,7 @@
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
-import ResponsiveSlider from '../components/ResponsiveSlider';
-import MobileSlider from '../components/MobileSlider';
+import Footer from '@/modules/web/components/Footer';
+import Navbar from '@/modules/web/components/Navbar';
+import ResponsiveSlider from '@/modules/web/components/ResponsiveSlider';
+import MobileSlider from '@/modules/web/components/MobileSlider';
 
 export default function Home() {
   return (

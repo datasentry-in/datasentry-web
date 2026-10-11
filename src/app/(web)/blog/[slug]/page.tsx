@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import BlogThumbnail from '@/components/BlogThumbnail';
-import Footer from '@/components/Footer';
-import Navbar from '@/components/Navbar';
-import Breadcrumb from '@/components/Breadcrumb';
+import BlogThumbnail from '@/modules/web/components/BlogThumbnail';
+import Footer from '@/modules/web/components/Footer';
+import Navbar from '@/modules/web/components/Navbar';
+import Breadcrumb from '@/modules/web/components/Breadcrumb';
 import { blogPosts, formatBlogDate, getBlogPost, type BlogBlock, type BlogLink } from '../posts';
 
 const toneStyles = {

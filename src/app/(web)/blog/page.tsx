@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Footer from '@/components/Footer';
-import BlogThumbnail from '@/components/BlogThumbnail';
-import Navbar from '@/components/Navbar';
-import Breadcrumb from '@/components/Breadcrumb';
+import Footer from '@/modules/web/components/Footer';
+import BlogThumbnail from '@/modules/web/components/BlogThumbnail';
+import Navbar from '@/modules/web/components/Navbar';
+import Breadcrumb from '@/modules/web/components/Breadcrumb';
 import {
   blogCategories,
   blogPosts,

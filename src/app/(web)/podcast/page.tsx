@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Breadcrumb from '@/components/Breadcrumb';
+import Navbar from '@/modules/web/components/Navbar';
+import Footer from '@/modules/web/components/Footer';
+import Breadcrumb from '@/modules/web/components/Breadcrumb';
 
 export default function Podcast() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);

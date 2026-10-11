@@ -1,0 +1,146 @@
+/* Console theme for the product under /app — loaded by src/app/app/layout.tsx.
+   Plain CSS (no Tailwind directives), scoped to `.demo-root` so it cannot leak
+   into the marketing site. */
+
+/* ==========================================================================
+   DPDP Console — product UI theme
+   The marketing site is deliberately brutalist; the console is not. Inside
+   `.demo-root` we run a quiet, Linear-style surface: 1px hairlines, soft
+   radii, Inter, and colour used only where it carries meaning.
+   ========================================================================== */
+
+.demo-root {
+  --ds-bg: #fbfbfc;
+  --ds-panel: #ffffff;
+  --ds-subtle: #f7f7f8;
+  --ds-subtle-2: #f1f1f3;
+  --ds-border: #e7e7e9;
+  --ds-border-strong: #d7d8dc;
+  --ds-text: #0e0f11;
+  --ds-text-2: #63666e;
+  --ds-text-3: #8b8f98;
+  /* DataSentry brand. #009FE3 is the mark's blue; the interactive blue is a
+     step deeper so white button text clears 4.5:1. Yellow is the accent from
+     the logo's rule and is used only as a highlight, never as a surface. */
+  --ds-brand: #009FE3;
+  --ds-brand-ink: #07090c;
+  --ds-brand-yellow: #ffed00;
+  --ds-accent: #0077b0;
+  --ds-accent-hover: #00618f;
+  --ds-accent-weak: #e8f4fb;
+  --ds-accent-border: #bfe0f2;
+  --ds-danger: #b42318;
+  --ds-danger-weak: #fef3f2;
+  --ds-danger-border: #fcd9d4;
+  --ds-warn: #b54708;
+  --ds-warn-weak: #fffaeb;
+  --ds-warn-border: #fdebc3;
+  --ds-ok: #067647;
+  --ds-ok-weak: #ecfdf3;
+  --ds-ok-border: #cdf0dd;
+  --ds-shadow: 0 1px 2px rgba(16, 17, 19, 0.04), 0 1px 3px rgba(16, 17, 19, 0.03);
+  --ds-shadow-md: 0 2px 4px rgba(16, 17, 19, 0.05), 0 8px 24px rgba(16, 17, 19, 0.06);
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  font-variant-ligatures: common-ligatures;
+  color: var(--ds-text);
+  background: var(--ds-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.demo-root :is(h1, h2, h3, h4, p, span, a, li, td, th, dt, dd, button, label, div) {
+  font-family: inherit;
+}
+
+/* Tabular numerals wherever figures are compared down a column. */
+.demo-root .tnum { font-variant-numeric: tabular-nums; }
+
+/* The site-wide brutalist reset zeroes every radius with !important; restore
+   the Tailwind scale inside the console only. */
+.demo-root .rounded-none { border-radius: 0 !important; }
+.demo-root .rounded-sm { border-radius: 3px !important; }
+.demo-root .rounded { border-radius: 4px !important; }
+.demo-root .rounded-md { border-radius: 6px !important; }
+.demo-root .rounded-lg { border-radius: 8px !important; }
+.demo-root .rounded-xl { border-radius: 12px !important; }
+.demo-root .rounded-2xl { border-radius: 16px !important; }
+.demo-root .rounded-full { border-radius: 9999px !important; }
+
+.demo-root ::-webkit-scrollbar { width: 10px; height: 10px; }
+.demo-root ::-webkit-scrollbar-track { background: transparent; }
+.demo-root ::-webkit-scrollbar-thumb {
+  background: #d4d5d9;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px !important;
+}
+.demo-root ::-webkit-scrollbar-thumb:hover { background: #b9bbc1; background-clip: content-box; }
+
+.demo-root ::selection { background: var(--ds-accent-weak); color: var(--ds-accent-hover); }
+
+/* The console lays out its own touch targets; the mobile 44px floor from the
+   marketing site stretches every inline chip and link out of shape here. */
+@media (max-width: 768px) {
+  .demo-root a,
+  .demo-root button,
+  .demo-root [role='button'] { min-height: 0; }
+}
+
+/* The document scrollbar belongs to <html>, not to `.demo-root`, so the
+   marketing site's dark track would otherwise frame the console. */
+body:has(.demo-root) { background: #fbfbfc; }
+body:has(.demo-root) ::-webkit-scrollbar-track,
+html:has(.demo-root) ::-webkit-scrollbar-track { background: transparent; }
+body:has(.demo-root) ::-webkit-scrollbar-thumb,
+html:has(.demo-root) ::-webkit-scrollbar-thumb {
+  background: #d4d5d9;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px !important;
+}
+
+/* ---- Console motion and mono ----------------------------------------------
+   The sign-in entrance. The register visual animates on a canvas (see
+   RegisterField.tsx). Off for viewers who ask for reduced motion. */
+@keyframes ds-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.demo-root .ds-rise { animation: ds-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-root .ds-rise { animation: none !important; }
+}
+
+/* DataSentry's mono (DM Mono, from the marketing site) for technical labels.
+   A class of its own because the console's font reset outranks `font-mono`. */
+.demo-root .ds-mono {
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
+  font-feature-settings: normal;
+}
+
+/* ---- Console type roles ------------------------------------------------------
+   Three roles, taken from the sign-in screen, used on every console page:
+     ds-display  tight Inter headlines (size set where used)
+     ds-label    DM Mono uppercase for technical labels, column heads, meta
+     ds-figure   DM Mono tabular numerals for every headline number
+   Colour and size stay with utilities; these set only the voice. */
+.demo-root .ds-display {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+.demo-root .ds-label {
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.demo-root .ds-figure {
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
