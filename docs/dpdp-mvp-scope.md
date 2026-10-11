@@ -1,5 +1,5 @@
 <!--
-Status: scope agreed. An interactive mock of these modules is built at /demo
+Status: scope agreed. An interactive mock of these modules is built at /app/dpdp-demo
 (see PR #1). The product application itself has not been started.
 The "Technical approach" and "Verification" sections below describe the app
 to be built, not the mock — the mock has no backend.
