@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import CookieConsent from "@/components/CookieConsent";
+import SiteCookieConsent from "@/components/SiteCookieConsent";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="bg-background-light font-[Space_Grotesk] text-gray-900 min-h-screen flex flex-col"
       >
         {children}
-        <CookieConsent />
+        <SiteCookieConsent />
         <Script strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} />
         <Script
           id="google-analytics"
