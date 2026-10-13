@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { CLIENT_THEME, ORGS, PRIVACY_CENTRE, getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { Wordmark } from '@/modules/app/ui/Brand';
+import { BrandLink } from '@/modules/app/ui/Brand';
 
 /**
  * Client-facing pages — the privacy centre, the request form, the staff
@@ -67,12 +67,15 @@ export default async function ClientPublicLayout({
       <footer className="border-t border-[var(--ds-border)] bg-white">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4">
           <span className="flex items-center gap-1.5">
-            <span className="ds-label text-[var(--ds-text-3)]">Powered by</span>
-            <Wordmark className="h-[15px] w-auto" />
+            <span className="text-[12px] font-medium text-[var(--ds-text-3)]">Powered by</span>
+            <BrandLink />
           </span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="ds-label text-[var(--ds-warn)]">Prototype · all data illustrative</span>
-            <Link href={demoPath(org.slug, 'intake')} className="ds-label text-[var(--ds-text-3)] hover:text-[var(--ds-text)]">
+            <span className="flex items-center gap-2 text-[12px] text-[var(--ds-text-3)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-brand-yellow)] ring-1 ring-[#e5d400]" aria-hidden />
+              Prototype — all data is illustrative.
+            </span>
+            <Link href={demoPath(org.slug, 'intake')} className="text-[12px] font-medium text-[var(--ds-text-2)] hover:text-[var(--ds-text)]">
               ← Consultant view
             </Link>
           </span>

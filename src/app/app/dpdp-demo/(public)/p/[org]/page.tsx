@@ -17,12 +17,7 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
   return (
     <div className="space-y-8">
       <div className="max-w-2xl">
-        <p className="ds-meta text-[var(--ds-accent-hover)]">Privacy centre</p>
-        <h1 className="ds-display mt-2 text-[30px] sm:text-[38px]">
-          Your information
-          <br />
-          <span className="text-[var(--ds-text-3)]">at {org.name}.</span>
-        </h1>
+        <h1 className="ds-display text-[26px] sm:text-[30px]">Your information at {org.name}</h1>
         <p className="mt-3 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
           Whether you work here, worked here, applied for a role, or are a customer of a client we serve, you can see what
           we hold, ask us to change or erase it, withdraw consent, or raise a concern. We respond within{' '}

@@ -8,7 +8,9 @@ import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { ProductLockup } from '@/modules/app/ui/Brand';
 import { ICONS } from '@/modules/app/ui/Icons';
 import { NAV, navLabel } from '@/modules/app/dpdp/nav';
+import { ToastProvider } from '@/modules/app/ui/Toast';
 import CommandPalette from './CommandPalette';
+import Shortcuts from './Shortcuts';
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 
@@ -80,12 +82,15 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   const activeSeg = parts[1] ?? '';
 
   return (
+    <ToastProvider>
     <div className="demo-root flex min-h-screen flex-col">
+      <Shortcuts org={org?.slug ?? null} />
       {/* Mock banner — nobody should mistake this for a running product. */}
       <div className="border-b border-[var(--ds-border)]">
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1.5 lg:px-5">
-          <p className="ds-label text-[var(--ds-warn)]">
-            Prototype · not a working product · all data illustrative
+          <p className="flex items-center gap-2 text-[12px] text-[var(--ds-text-3)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-brand-yellow)] ring-1 ring-[#e5d400]" aria-hidden />
+            Prototype — not a working product. All data is illustrative.
           </p>
           <Link
             href="/"
@@ -99,9 +104,9 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-[var(--ds-border)] bg-[rgba(255,255,255,0.86)] backdrop-blur-md">
         <div className="flex items-center gap-3 px-4 py-2.5 lg:px-5">
-          <Link href={demoPath()} className="flex shrink-0 items-center gap-2 lg:w-[13.5rem]">
-            <ProductLockup />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2 lg:w-[13.5rem]">
+            <ProductLockup href={demoPath()} />
+          </div>
 
           {/* Main menu. Where you are within a client lives in the body's breadcrumb. */}
           <nav aria-label="Main" className="ml-0.5 flex items-center gap-1 border-l border-[var(--ds-border)] pl-2 sm:ml-2 sm:pl-3 lg:ml-0 lg:border-l-0 lg:pl-0">
@@ -175,9 +180,12 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setNavOpen(!navOpen)}
                 aria-expanded={navOpen}
-                className="ml-0.5 rounded-md border border-[var(--ds-border-strong)] px-2 py-1 text-[12px] font-medium text-[var(--ds-text-2)] lg:hidden"
+                aria-label={navOpen ? 'Close modules menu' : 'Open modules menu'}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] lg:hidden"
               >
-                {navOpen ? 'Close' : 'Modules'}
+                <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+                  {navOpen ? <path d="m4 4 8 8M12 4l-8 8" /> : <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
+                </svg>
               </button>
             )}
           </div>
@@ -213,6 +221,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
                           href={href}
                           onClick={() => setNavOpen(false)}
                           aria-current={active ? 'page' : undefined}
+                          title={`${m.label} — G then ${m.key.toUpperCase()}`}
                           className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] transition-colors ${
                             active
                               ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]'
@@ -289,5 +298,6 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
     </div>
+    </ToastProvider>
   );
 }

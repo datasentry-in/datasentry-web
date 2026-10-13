@@ -71,15 +71,20 @@ src/modules/app/dpdp/    the DPDP product
 - **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates
   and event times — exact date in the prerendered HTML, relative after mount, red when overdue,
   amber within a week.
-- **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, breadcrumb, bell and ⌘K
-  palette pick them up. Overlays that must escape the header portal into `.demo-root` (the
-  header's backdrop blur traps `position: fixed`).
+- **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, breadcrumb, bell, ⌘K
+  palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
+- **Overlays** use `Dialog` (`ui/Dialog.tsx`), which portals into `.demo-root` — the header's
+  backdrop blur traps `position: fixed`. Confirmations use `useToast()` (`ui/Toast.tsx`).
+- **Row actions** (e.g. `RemindButton`) appear on hover: `ds-row` on the row, `ds-row-link` on its
+  main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
+- **Empty lists** render `EmptyState` with what it means, never a blank panel.
+- **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Colour carries meaning only**: red = overdue/unlawful, amber = needs attention,
   green = settled, blue = the one primary action. Everything else is grey.
 - **Radius**: the marketing `globals.css` forces `border-radius: 0 !important` on every
   element. `console.css` restores the Tailwind `rounded-*` scale inside `.demo-root`; add
   any new radius class there or it renders square.
-- **Brand**: `Wordmark` (the DATA|SENTRY logo) and `ProductLockup` ("DPDP Console by
+- **Brand**: `Wordmark` (the DATA|SENTRY logo) and `ProductLockup` ("DPDP Console", "Powered by
   [wordmark]") in `Brand.tsx`. There is no square "DS" mark — it was removed on purpose.
 
 ## Rules that are easy to break

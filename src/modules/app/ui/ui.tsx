@@ -75,7 +75,7 @@ export function Callout({
 }: { tone?: Tone; title?: ReactNode; children?: ReactNode; action?: ReactNode; boxed?: boolean; className?: string }) {
   const bar = (
     <div className={`ds-bar ds-bar-${tone} flex flex-wrap items-center gap-x-6 gap-y-2 ${boxed ? '' : className}`}>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 basis-60">
         {title && <p className="text-[14px] font-semibold leading-snug tracking-[-0.01em] text-[var(--ds-text)]">{title}</p>}
         {children && (
           <div className={`text-[13px] leading-relaxed text-[var(--ds-text-2)] ${title ? 'mt-0.5' : ''}`}>{children}</div>
@@ -359,6 +359,21 @@ export function DemoNote({ children }: { children: ReactNode }) {
       <span className="font-medium text-[var(--ds-text)]">Design note — </span>
       {children}
     </Callout>
+  );
+}
+
+/** What a list shows when there is nothing in it — say why, and what next. */
+export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center px-6 py-10 text-center">
+      <svg viewBox="0 0 24 24" className="h-6 w-6 text-[var(--ds-ok)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12.3 2.7 2.7L16 9.7" />
+      </svg>
+      <p className="mt-3 text-[14px] font-medium text-[var(--ds-text)]">{title}</p>
+      {children && <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-[var(--ds-text-3)]">{children}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </div>
   );
 }
 

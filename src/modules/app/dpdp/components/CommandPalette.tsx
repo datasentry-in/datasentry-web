@@ -2,11 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { attentionAt } from '@/modules/app/dpdp/attention';
 import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { NAV } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import Dialog from '@/modules/app/ui/Dialog';
 import { ICONS } from '@/modules/app/ui/Icons';
 
 /**
@@ -16,7 +16,7 @@ import { ICONS } from '@/modules/app/ui/Icons';
  * alert shows up here without touching this file.
  */
 
-type Command = { id: string; group: string; label: string; hint?: string; href: string; icon?: ReactNode; terms: string };
+type Command = { id: string; group: string; label: string; hint?: string; keys?: string; href: string; icon?: ReactNode; terms: string };
 
 function buildCommands(org: string | null): Command[] {
   const current = ORGS.find((o) => o.slug === org) ?? null;
@@ -33,7 +33,7 @@ function buildCommands(org: string | null): Command[] {
     for (const g of NAV) {
       for (const m of g.items) {
         out.push({
-          id: `nav-${m.seg}`, group: current.name, label: m.label, hint: g.title, href: demoPath(current.slug, m.seg),
+          id: `nav-${m.seg}`, group: current.name, label: m.label, keys: `G ${m.key.toUpperCase()}`, href: demoPath(current.slug, m.seg),
           icon: ICONS[m.icon], terms: `${m.label} ${m.keywords ?? ''}`,
         });
       }
@@ -113,7 +113,7 @@ export default function CommandPalette({ org }: { org: string | null }) {
         type="button"
         onClick={show}
         aria-label="Search and jump to — Command K"
-        className="flex h-8 items-center gap-2 rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] text-[var(--ds-text-3)] transition-colors hover:border-[var(--ds-border-strong)] hover:text-[var(--ds-text-2)] sm:w-56"
+        className="hidden h-8 items-center gap-2 rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] text-[var(--ds-text-3)] transition-colors hover:border-[var(--ds-border-strong)] hover:text-[var(--ds-text-2)] sm:flex sm:w-56"
       >
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
           <circle cx="7" cy="7" r="4.5" />
@@ -123,16 +123,7 @@ export default function CommandPalette({ org }: { org: string | null }) {
         <kbd className="ds-figure hidden rounded border border-[var(--ds-border)] px-1 text-[11px] leading-[16px] text-[var(--ds-text-3)] sm:inline">⌘K</kbd>
       </button>
 
-      {open && createPortal(
-        <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]">
-          {/* A div, not a button: the marketing reset strips button backgrounds. Esc also closes. */}
-          <div aria-hidden className="absolute inset-0 bg-[rgba(14,15,17,0.24)]" onClick={() => setOpen(false)} />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Command palette"
-            className="ds-pop relative w-full max-w-xl overflow-hidden rounded-xl border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[0_16px_48px_rgba(14,15,17,0.16)]"
-          >
+      <Dialog open={open} onClose={() => setOpen(false)} label="Command palette">
             <input
               autoFocus
               value={query}
@@ -169,6 +160,11 @@ export default function CommandPalette({ org }: { org: string | null }) {
                       <span className="flex w-4 shrink-0 items-center justify-center text-[var(--ds-text-3)]">{c.icon}</span>
                       <span className="min-w-0 flex-1 truncate">{c.label}</span>
                       {c.hint && <span className="hidden max-w-[45%] truncate text-[12px] text-[var(--ds-text-3)] sm:block">{c.hint}</span>}
+                      {c.keys && (
+                        <span className="hidden gap-1 sm:flex">
+                          {c.keys.split(' ').map((k) => <kbd key={k} className="ds-kbd">{k}</kbd>)}
+                        </span>
+                      )}
                     </div>
                   </li>
                 );
@@ -178,14 +174,9 @@ export default function CommandPalette({ org }: { org: string | null }) {
               <span>↑↓ to move</span>
               <span>↵ to open</span>
               <span>esc to close</span>
+              <span className="ml-auto">? for shortcuts</span>
             </p>
-          </div>
-        </div>,
-        // Into the console root, not the header: the header's backdrop blur would
-        // otherwise become the containing block for `fixed`, and outside
-        // `.demo-root` the --ds-* tokens do not exist.
-        document.querySelector('.demo-root') ?? document.body,
-      )}
+      </Dialog>
     </>
   );
 }

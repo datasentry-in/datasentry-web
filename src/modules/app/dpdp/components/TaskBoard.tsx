@@ -7,6 +7,7 @@ import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
 import { BasisTag, Panel, Person, Stat, Tag } from '@/modules/app/ui/ui';
+import RemindButton from './RemindButton';
 import When from './When';
 
 /**
@@ -133,8 +134,8 @@ export default function TaskBoard({ org }: { org: string }) {
           >
             <ul>
               {g.map((t) => (
-                <li key={t.id} className="border-b border-[var(--ds-border)] px-4 py-3.5 last:border-b-0 sm:px-5">
-                  <div className="grid gap-x-6 gap-y-1.5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_8rem_10rem] lg:items-center">
+                <li key={t.id} className="ds-row border-b border-[var(--ds-border)] px-4 py-3.5 last:border-b-0 sm:px-5">
+                  <div className="grid gap-x-6 gap-y-1.5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_8rem_14rem] lg:items-center">
                     <div className="min-w-0">
                       <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold tracking-[-0.01em]">
                         {t.system}
@@ -147,6 +148,11 @@ export default function TaskBoard({ org }: { org: string }) {
                       {t.status === 'Open' || t.status === 'Overdue' ? <When date={t.due} /> : t.due}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
+                      {(t.status === 'Open' || t.status === 'Overdue') && (
+                        <span className="ds-row-actions">
+                          <RemindButton person={OWNERS[t.owner] ?? t.owner} what={`${t.id} — ${t.action}`} />
+                        </span>
+                      )}
                       {statusTag(t.status)}
                       {(t.status === 'Open' || t.status === 'Overdue') && attesting !== t.id && (
                         <button

@@ -1,3 +1,8 @@
+import Link from 'next/link';
+
+/** The marketing site — where the DataSentry wordmark always leads. */
+export const BRAND_URL = 'https://datasentry.in';
+
 /**
  * Brand assets for the console, matching the marketing site's lockup
  * (src/components/Logo.tsx): DATA reversed out of the blue block, SENTRY in
@@ -26,13 +31,22 @@ export function Wordmark({ className = 'h-7' }: { className?: string }) {
 }
 
 /**
- * The product lockup: the product name, and who makes it — the
+ * The product lockup: the product name, and who powers it — the
  * DataSentry wordmark itself, not a plain-text label. Used wherever the
  * console names itself, so it is never in doubt which system this is.
  */
+/** The wordmark as a link to datasentry.in. */
+export function BrandLink({ className = 'h-[15px] w-auto' }: { className?: string }) {
+  return (
+    <a href={BRAND_URL} aria-label="DataSentry — datasentry.in" className="inline-flex transition-opacity hover:opacity-80">
+      <Wordmark className={className} />
+    </a>
+  );
+}
+
 export function ProductLockup({
-  size = 'sm', byline = true, layout = 'stack',
-}: { size?: 'sm' | 'lg'; byline?: boolean; layout?: 'stack' | 'row' }) {
+  size = 'sm', byline = true, layout = 'stack', href,
+}: { size?: 'sm' | 'lg'; byline?: boolean; layout?: 'stack' | 'row'; href?: string }) {
   const lg = size === 'lg';
   const name = (
     <span
@@ -41,10 +55,13 @@ export function ProductLockup({
       DPDP Console
     </span>
   );
+  // The product name and the maker are separate links: the name goes home
+  // inside the console (`href`), the wordmark goes to datasentry.in.
+  const title = href ? <Link href={href}>{name}</Link> : name;
   const by = byline && (
     <span className="flex items-center gap-1.5">
-      <span className="ds-label leading-none text-[var(--ds-text-3)]">by</span>
-      <Wordmark className={lg ? 'h-5 w-auto' : 'h-[15px] w-auto'} />
+      <span className="text-[11px] font-medium leading-none text-[var(--ds-text-3)]">Powered by</span>
+      <BrandLink className={lg ? 'h-5 w-auto' : 'h-[15px] w-auto'} />
     </span>
   );
 
@@ -52,14 +69,14 @@ export function ProductLockup({
   if (layout === 'row') {
     return (
       <span className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        {name}
+        {title}
         {by}
       </span>
     );
   }
   return (
     <span className="inline-flex flex-col">
-      {name}
+      {title}
       {by && <span className="mt-1.5">{by}</span>}
     </span>
   );

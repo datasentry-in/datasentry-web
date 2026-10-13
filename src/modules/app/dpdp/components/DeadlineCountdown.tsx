@@ -107,10 +107,10 @@ export default function DeadlineCountdown() {
     <div className="grid gap-5 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8">
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <p className="text-[12.5px] font-medium text-[var(--ds-text)]">
+          <p className="text-[13px] font-medium text-[var(--ds-text)]">
             {inForce ? 'DPDP substantive obligations are in force' : 'DPDP substantive obligations commence in'}
           </p>
-          <p className="ds-label text-[var(--ds-text-3)]">13 May 2027 · 00:00 IST</p>
+          <p className="ds-meta text-[var(--ds-text-3)]">13 May 2027 · 00:00 IST</p>
         </div>
 
         <div className="mt-4">
@@ -126,8 +126,8 @@ export default function DeadlineCountdown() {
             />
           </div>
           <div className="mt-1.5 flex flex-wrap justify-between gap-x-4 gap-y-0.5">
-            <p className="ds-label text-[var(--ds-text-3)]">Rules notified · 13 Nov 2025</p>
-            <p className="ds-label text-[var(--ds-text-2)]">
+            <p className="ds-meta text-[var(--ds-text-3)]">Rules notified · 13 Nov 2025</p>
+            <p className="ds-meta text-[var(--ds-text-2)]">
               {now === null ? '—' : `${Math.round(runway * 100)}% of the 18-month runway used`}
             </p>
           </div>
@@ -135,9 +135,9 @@ export default function DeadlineCountdown() {
         </div>
       </div>
 
-      <div className="self-start rounded-md border border-[var(--ds-border)] px-3.5 py-3">
-        <p className="ds-label text-[var(--ds-text-3)]">Next dated milestone</p>
-        <p className="mt-1.5 text-[12.5px] font-medium text-[var(--ds-text)]">Rule 4 — Consent Manager framework</p>
+      <div className="self-start border-t border-[var(--ds-border)] pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+        <p className="ds-meta text-[var(--ds-text-3)]">Next dated milestone</p>
+        <p className="mt-1.5 text-[13px] font-medium text-[var(--ds-text)]">Rule 4 — Consent Manager framework</p>
         <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">13 Nov 2026</p>
         <p className="mt-2 flex items-baseline gap-1.5">
           <span className="ds-figure text-[22px] leading-none tracking-[-0.03em] text-[var(--ds-warn)]">

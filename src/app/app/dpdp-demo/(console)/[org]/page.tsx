@@ -3,6 +3,7 @@ import {
 } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import AttentionList from '@/modules/app/dpdp/components/AttentionList';
+import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import When from '@/modules/app/dpdp/components/When';
 import {
   Button, Callout, CiteLink, DemoNote, Person, Meter, PageHeader, Panel, ScoreBlock, SeverityTag, Stat, Tag,
@@ -15,7 +16,7 @@ export function generateStaticParams() {
 export default async function Overview({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
-  const openIncident = INCIDENTS.find((i) => i.status === 'Open');
+  const openIncident = org.incidentOpen > 0 ? INCIDENTS.find((i) => i.status === 'Open') : undefined;
   const topGaps = GAPS.filter((g) => g.severity === 'High');
   const generated = EVIDENCE_PACK.filter((e) => e.status === 'Generated').length;
 
@@ -108,7 +109,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
           {topGaps.map((g) => (
             <li
               key={g.id}
-              className="flex flex-wrap items-start gap-x-3 gap-y-1.5 border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5"
+              className="ds-row flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-medium tracking-[-0.01em]">{g.title}</p>
@@ -116,6 +117,9 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
               <div className="flex w-full items-center gap-4 sm:w-auto">
                 <Person name={OWNERS[g.owner] ?? g.owner} role={OWNERS[g.owner] ? g.owner : undefined} compact />
                 <When date={g.due} className="ds-figure text-[12px]" />
+                <span className="ds-row-actions">
+                  <RemindButton person={OWNERS[g.owner] ?? g.owner} what={`${g.id} — ${g.title}`} />
+                </span>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                 <CiteLink provision={g.provision} />
