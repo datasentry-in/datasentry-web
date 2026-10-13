@@ -31,9 +31,14 @@ export type Activity = {
   provenance: Provenance;
 };
 
+/** Where a finding's remediation stands. Resolved means the consultant has seen the fix, not just been told. */
+export type GapStatus = 'Open' | 'In progress' | 'Resolved';
+
 export type Gap = {
   id: string;
   severity: Severity;
+  /** Open unless set. */
+  status?: GapStatus;
   title: string;
   detail: string;
   provision: string;

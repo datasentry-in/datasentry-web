@@ -120,7 +120,7 @@ const ACTIVITIES: Activity[] = [
 
 const GAPS: Gap[] = [
   {
-    id: 'G-01', severity: 'High',
+    id: 'G-01', status: 'In progress', severity: 'High',
     title: 'Annotation workforce can download client source images to personal devices',
     detail: 'On the annotation floor, browser downloads and USB mass storage are allowed on 14 of 62 workstations, and the client Labelbox workspace permits image export for the "Reviewer" role. Source images include faces and number plates. The s.17(1)(d) exemption does not lift the duty to protect the data against a breach.',
     provision: 's.8(5) reasonable security safeguards — applies despite s.17(1)(d)',

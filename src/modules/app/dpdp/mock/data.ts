@@ -235,7 +235,7 @@ export const GAPS: Gap[] = [
     basis: 'observed',
   },
   {
-    id: 'G-04', severity: 'High',
+    id: 'G-04', status: 'In progress', severity: 'High',
     title: 'No breach response procedure and no incident register',
     detail: 'There is no documented procedure for identifying, escalating or notifying a personal data breach, and no register of past incidents. Rule 7 requires intimation to the Board within 72 hours of becoming aware, with no severity threshold, and intimation to affected principals without delay.',
     provision: 'Rule 7 read with s.8(6)', activity: 'All activities',
@@ -270,7 +270,7 @@ export const GAPS: Gap[] = [
     basis: 'observed',
   },
   {
-    id: 'G-08', severity: 'Medium',
+    id: 'G-08', status: 'In progress', severity: 'Medium',
     title: 'Payroll folder on Google Drive is shared with anyone holding the link',
     detail: 'The folder HR/Payroll/FY26 is set to "Anyone with the link — Viewer". It contains 12 monthly registers covering 240 employees with salary, PAN, bank account and PF number.',
     provision: 's.8(4) reasonable security safeguards', activity: 'PA-04 Payroll processing',

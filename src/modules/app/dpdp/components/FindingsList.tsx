@@ -3,26 +3,29 @@
 import { useState } from 'react';
 import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
-import type { Gap, Severity } from '@/modules/app/dpdp/types';
+import type { Gap, GapStatus, Severity } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
-import { BasisTag, SeverityTag } from '@/modules/app/dpdp/components/Tags';
-import {
-  CiteLink, FilterInput, Person, SortHead, TableWrap, Th, ViewTabs,
-} from '@/modules/app/ui/ui';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
+import { FINDING_STATUS, SEVERITY_PRIORITY } from '@/modules/app/dpdp/workStatus';
+import DisplayMenu from '@/modules/app/ui/DisplayMenu';
+import { PriorityIcon, StatusIcon, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
+import { CiteLink, FilterInput, Person, ViewTabs } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
 /**
  * The gap report as a worklist: saved views (by severity, by what is due soon,
- * by owner), sortable columns, and each finding opened beside the list with
- * its evidence, provision and history.
+ * by owner), one row per finding — severity, ID, status, title, citation, due,
+ * owner — and each finding opened beside the list with its evidence, provision
+ * and history.
  */
 
 const RANK: Record<Severity, number> = { High: 0, Medium: 1, Low: 2 };
 const due = (g: Gap) => parseDisplayDate(g.due)?.getTime() ?? 0;
+const statusOf = (g: Gap): GapStatus => g.status ?? 'Open';
 const DAY = 86_400_000;
 
 /**
@@ -62,56 +65,47 @@ export default function FindingsList({ org }: { org: string }) {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
         <ViewTabs views={VIEWS} active={t.view} counts={t.counts} onChange={t.setView} />
-        <FilterInput value={t.query} onChange={t.setQuery} placeholder="Filter findings, owners…" />
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <FilterInput value={t.query} onChange={t.setQuery} placeholder="Filter findings, owners…" />
+          <DisplayMenu orders={SORTS} order={t.sort} dir={t.dir} onOrder={t.orderBy} onFlip={t.flip} />
+        </div>
       </div>
-      <TableWrap minWidth="52rem">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <SortHead id="id" label="ID" active={t.sort === 'id'} dir={t.dir} onSort={t.sortBy} className="w-20" />
-              <Th>Finding</Th>
-              <SortHead id="severity" label="Severity" active={t.sort === 'severity'} dir={t.dir} onSort={t.sortBy} />
-              <Th>Owner</Th>
-              <SortHead id="due" label="Due" active={t.sort === 'due'} dir={t.dir} onSort={t.sortBy} />
-              <th className="w-24 border-b border-[var(--ds-border)] bg-[var(--ds-subtle)]" />
-            </tr>
-          </thead>
-          <tbody>
-            {t.shown.map((g) => (
-              <tr key={g.id} className="ds-row cursor-pointer hover:bg-[var(--ds-subtle)]">
-                <td className="ds-id border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">{g.id}</td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top">
-                  <button type="button" onClick={() => setOpenId(g.id)} className="ds-row-link text-left text-[13px] font-medium leading-snug">
-                    {g.title}
-                  </button>
-                  <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--ds-text-3)]">
-                    <CiteLink provision={g.provision} /><span aria-hidden>·</span>{g.activity}
-                  </span>
-                </td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><SeverityTag s={g.severity} /></td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><Person {...personFor(OWNERS, g.owner)} /></td>
-                <td className="whitespace-nowrap border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">
-                  <When date={g.due} />
-                </td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 text-right align-top">
-                  <span className="ds-row-actions"><RemindButton person={person(g)} what={`${g.id} — ${g.title}`} /></span>
-                </td>
-              </tr>
-            ))}
-            {t.shown.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No findings match this view.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </TableWrap>
+      <WorkList>
+        {t.shown.map((g) => {
+          const status = statusOf(g);
+          return (
+            <WorkRow
+              key={g.id}
+              priority={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
+              id={g.id}
+              status={<StatusIcon status={FINDING_STATUS[status]} label={status} />}
+              title={g.title}
+              onOpen={() => setOpenId(g.id)}
+              current={openId === g.id}
+              meta={<><CiteLink provision={g.provision} /> · {g.activity}</>}
+              actions={<RemindButton person={person(g)} what={`${g.id} — ${g.title}`} />}
+              due={<When date={g.due} />}
+              owner={personFor(OWNERS, g.owner)}
+            />
+          );
+        })}
+        {t.shown.length === 0 && (
+          <li className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No findings match this view.</li>
+        )}
+      </WorkList>
 
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
         title={open?.title}
-        meta={open && (<><span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span><SeverityTag s={open.severity} /><CiteLink provision={open.provision} /></>)}
+        meta={open && (
+          <>
+            <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]"><PriorityIcon level={SEVERITY_PRIORITY[open.severity]} />{open.severity}</span>
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]"><StatusIcon status={FINDING_STATUS[statusOf(open)]} label={statusOf(open)} />{statusOf(open)}</span>
+            <CiteLink provision={open.provision} />
+          </>
+        )}
         footer={open && <RemindButton person={person(open)} what={`${open.id} — ${open.title}`} />}
       >
         {open && (
@@ -143,12 +137,13 @@ export default function FindingsList({ org }: { org: string }) {
                 conclusion; it can be traced line by line to the register and the rule.
               </p>
             </SheetSection>
-                    <SheetSection title="Discussion">
+            <SheetSection title="Discussion">
               <Discussion org={org} refId={open.id} />
             </SheetSection>
             <SheetSection title="History">
               <AuditTimeline entries={auditFor(d, open.id)} empty={`Raised ${getOrg(org).lastReview} by rule engine v1.4. No changes since.`} />
-            </SheetSection>   </>
+            </SheetSection>
+          </>
         )}
       </Sheet>
     </>

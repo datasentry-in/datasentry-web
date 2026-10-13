@@ -102,8 +102,9 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   const activeSeg = parts[1] ?? '';
 
   return (
-    <ToastProvider>
+    // The provider sits inside .demo-root so its toast stack gets the console's tokens and type.
     <div className="demo-root flex min-h-screen flex-col">
+    <ToastProvider>
       <Shortcuts org={org?.slug ?? null} />
       {/* Top bar: product, the client you are in, then quick access and alerts. */}
       <header className="sticky top-0 z-40 h-14 border-b border-[var(--ds-border)] bg-[rgba(255,255,255,0.86)] backdrop-blur-md">
@@ -169,7 +170,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
           </p>
         </div>
       </footer>
-    </div>
     </ToastProvider>
+    </div>
   );
 }

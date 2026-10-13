@@ -1,7 +1,6 @@
 import { loadClient } from '@/modules/app/dpdp/routeData';
-import type { Dsr } from '@/modules/app/dpdp/types';
 import { DsrHeader } from '@/modules/app/dpdp/components/RequestsLive';
-import SlaBar from '@/modules/app/dpdp/components/SlaBar';
+import RequestList from '@/modules/app/dpdp/components/RequestList';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
   Button, Card, CiteLink, DemoNote, PageHeader, Panel, TableWrap, Tag, Td, Th,
@@ -9,17 +8,12 @@ import {
 import MockButton from '@/modules/app/ui/MockButton';
 
 
-const statusTone = (s: Dsr['status']) =>
-  s === 'Closed' ? 'ok' : s === 'Awaiting client' ? 'watch' : s === 'New' ? 'info' : 'dark';
-
 export default async function Dsr({ params }: { params: Promise<{ org: string }> }) {
   const { org, d } = await loadClient(params);
   const slug = org.slug;
   const data = d;
   const DSRS = data.dsrs;
   const TASKS = data.tasks;
-  const responseDays = data.privacyCentre?.responseDays ?? 30;
-  const open = DSRS.filter((d) => d.status !== 'Closed');
   const closed = DSRS.filter((d) => d.status === 'Closed');
   const grievance = data.privacyCentre?.grievanceOfficer ?? null;
   // The request worked through in detail on this page, when the client has one.
@@ -34,46 +28,8 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
 
       <DsrHeader org={slug} />
 
-      <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining" flush>
-        <TableWrap>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <Th>Reference</Th>
-                <Th>Type</Th>
-                <Th>Data principal</Th>
-                <Th>Relationship</Th>
-                <Th>Received</Th>
-                <Th>Channel</Th>
-                <Th>Response window</Th>
-                <Th>Status</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {open.map((d) => (
-                <tr
-                  key={d.id}
-                  className={d.id === focus?.id ? 'bg-[var(--ds-accent-weak)]' : 'hover:bg-[var(--ds-subtle)]'}
-                >
-                  <Td className="ds-id whitespace-nowrap text-[12px]">{d.id}</Td>
-                  <Td>
-                    <Tag tone={d.type === 'Erasure' ? 'alert' : 'plain'}>{d.type}</Tag>
-                  </Td>
-                  <Td className="font-medium">{d.principal}</Td>
-                  <Td className="text-[var(--ds-text-2)]">{d.relationship}</Td>
-                  <Td className="tnum text-[var(--ds-text-2)]">{d.received}</Td>
-                  <Td className="text-[var(--ds-text-2)]">{d.channel ?? '—'}</Td>
-                  <Td>
-                    <SlaBar received={d.received} days={responseDays} />
-                  </Td>
-                  <Td>
-                    <Tag tone={statusTone(d.status)}>{d.status}</Tag>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrap>
+      <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining. Open one for its tasks and history." flush>
+        <RequestList org={slug} />
       </Panel>
 
       {/* The hard case — this is the screen that sells the product to a consultant. */}

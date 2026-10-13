@@ -38,6 +38,7 @@ src/modules/app/dpdp/    the DPDP product
   score.ts               readiness score bands (colour, verdict)
   nav.ts                 modules and intake pages — the sidebar, ⌘K palette and shortcuts all read it
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
+  workStatus.ts          finding/task/request statuses and severities → WorkRow glyphs (with hover labels)
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock (shared per tick rate), null while hydrating
@@ -92,6 +93,10 @@ src/modules/app/dpdp/    the DPDP product
 - **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates
   and event times — exact date in the prerendered HTML, relative after mount, red only when overdue.
   One date per row: the relative form, with the exact date on hover (detail panels may show both).
+- **The sidebar speaks the statute.** Modules and intake pages map one-to-one to DPDP compliance
+  vocabulary (RoPA, notice & consent, data principal requests, breach register, evidence pack…). Never
+  merge, hide or rename them into generic product terms. Cross-cutting views (Inbox, My work) sit in their
+  own section above "Modules" and name every item in the same vocabulary.
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
 - **Overlays** use `Dialog` / `Sheet`, both on `useOverlay`: portal into `.demo-root` (the header's
@@ -105,13 +110,22 @@ src/modules/app/dpdp/    the DPDP product
 - **Zero is never flagged**: `Stat`/`Fact` drop the tone dot for a value of 0.
 - **Owners**: `personFor(owners, role)` gives `Person` props; never re-implement `owners[r] ?? r`.
 - **Histories** render through `ui/Timeline` (`AuditTimeline` for audit entries).
+- **One shape for a work item** (`ui/WorkRow.tsx`): findings, tasks, requests and the overview worklist
+  are all `WorkRow`s — priority · ID · status · title · labels · due · owner. Status and severity are
+  glyphs (`StatusIcon`, `PriorityIcon`), not pills; owners are an `OwnerAvatar` with name and role on
+  hover (`ds-tip`); titles stay on one line; due is one relative date. `WorkList` is a size container:
+  rows lay out by the list's width (two lines on a phone). Group with `WorkGroup`. Registers with many
+  columns (RoPA) stay tables.
 - **Row actions** (e.g. `RemindButton`) appear on hover: `ds-row` on the row, `ds-row-link` on its
-  main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
+  main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch. In a
+  `WorkRow` they float in over the end of the labels, so they take no width until shown.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
 - **Records open beside their list** in a `Sheet` (`ui/Sheet.tsx`) — details, linked findings and the
-  `AuditTimeline` — so the list keeps its place. RoPA and the gap report do this today.
+  `AuditTimeline` — so the list keeps its place. RoPA, the gap report, tasks (with the attest form) and
+  requests do this.
 - **Lists are worklists**: `useTableView` (`ui/useTableView.ts`) gives saved views with counts
-  (`ViewTabs`), a filter box (`FilterInput`) and sortable heads (`SortHead`).
+  (`ViewTabs`), a filter box (`FilterInput`) and the order (`DisplayMenu` on worklists; `SortHead` on
+  register tables).
 - **Edits happen in place** (RoPA lawful basis and retention): the row turns consultant-reviewed, an
   audit entry records old → new (`Change`), and a toast says what the rule engine does with it.
 - **One `NextStep` per page at most**, in yellow, with a button named for the action ("Draft the

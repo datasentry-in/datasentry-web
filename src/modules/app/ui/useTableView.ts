@@ -38,5 +38,9 @@ export function useTableView<T>({
     }
   };
 
-  return { shown, view, setView, counts, sort, dir, sortBy, query, setQuery };
+  return {
+    shown, view, setView, counts, sort, dir, sortBy, query, setQuery,
+    /** For a Display menu: pick the order without flipping it, and flip it separately. */
+    orderBy: setSort, flip: () => setDir((d) => (d === 1 ? -1 : 1)),
+  };
 }
