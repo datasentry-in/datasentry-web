@@ -1,8 +1,9 @@
 import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import DataFlowMap from '@/modules/app/dpdp/components/DataFlowMap';
+import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
+  Button, Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
 
@@ -24,6 +25,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
       <PageHeader
         title="Data flow map"
         sub={`Derived from the register — no separate authoring step. ${org.name}.`}
+        right={<Button as="link" href={demoPath(org.slug, 'flows', 'elk')}>Try the auto layout</Button>}
       />
 
       <Facts>

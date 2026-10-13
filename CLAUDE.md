@@ -174,6 +174,11 @@ src/modules/app/dpdp/    the DPDP product
   carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
   personal data" class, so never label anything sensitive.
+- **Auto-layout experiment** (`[org]/flows/elk`, `DataFlowElk.tsx`): the same `graphFor(org)` graph laid
+  out by ELK (`elkjs`, layered, trust zones as nested groups pinned by partition, orthogonal routing, sized
+  edge labels) in two passes — the second keeps the first's order and stacks each zone from the top so the
+  columns line up — and drawn with React Flow (`@xyflow/react`): pan, zoom, minimap, drag. It reuses the
+  hand-placed map's colours, icons, legend and `FlowSheet`. ELK is EPL-2.0 licensed; check before shipping.
 - **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
   ease-out in and faster out, all off under reduced motion. Every page eases in (`ds-page-in`: title,
   then body 40ms behind, a 4px rise over `--ds-dur-page` 200ms — keep it that short). Headline numbers

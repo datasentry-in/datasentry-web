@@ -26,7 +26,7 @@ import When from './When';
 
 // SVG reads no CSS variables reliably across the static export, so the
 // console tokens are spelled out (console.css is the source of truth).
-const C = {
+export const C = {
   ink: '#0e0f11', text2: '#4b4f57', text3: '#757983', line: '#d7d8dc', border: '#ebebed', zone: '#fbfbfc',
   panel: '#ffffff', danger: '#b42318', warn: '#b54708', ok: '#067647', brand: '#009FE3', accent: '#0077b0',
   /** An ordinary flow: DataSentry blue, softened so findings still stand out. */
@@ -38,18 +38,18 @@ const C = {
  * parties in violet, outside India in amber (a transfer to watch). Kinds get a
  * tinted icon badge; lawful bases get a colour each, red when not determined.
  */
-const ZONE_TONE: Record<FlowNode['zone'], { fill: string; stroke: string; title: string }> = {
+export const ZONE_TONE: Record<FlowNode['zone'], { fill: string; stroke: string; title: string }> = {
   internal: { fill: '#f3faff', stroke: '#bfe3f6', title: '#0077b0' },
   india: { fill: '#f6f5fd', stroke: '#d9d5f3', title: '#5b4bc4' },
   abroad: { fill: '#fffaf1', stroke: '#f3d9a6', title: '#b54708' },
 };
-const KIND_TONE: Record<FlowNode['kind'], { bg: string; fg: string }> = {
+export const KIND_TONE: Record<FlowNode['kind'], { bg: string; fg: string }> = {
   system: { bg: '#e3f3fc', fg: '#0077b0' },
   processor: { bg: '#eeebfb', fg: '#5b4bc4' },
   statutory: { bg: '#eceff3', fg: '#475467' },
   client: { bg: '#e2f4f1', fg: '#0f766e' },
 };
-const basisTone = (b: string) =>
+export const basisTone = (b: string) =>
   b === 'Not determined' ? C.danger
     : b === 'Consent' ? '#5b4bc4'
       : b === 'Legal obligation' ? '#475467'
@@ -76,12 +76,12 @@ const Y: Record<string, number> = {
 };
 
 
-const SAFEGUARD_TONE: Record<FlowNode['safeguard'], string> = {
+export const SAFEGUARD_TONE: Record<FlowNode['safeguard'], string> = {
   Internal: C.accent, 'DPA in place': C.ok, 'No DPA': C.danger, 'Terms only': C.warn, Statutory: '#475467', Exempt: '#0f766e',
 };
 
-type Filter = 'all' | 'finding' | 'border' | FlowEdge['principals'];
-const FILTERS: { id: Filter; label: string }[] = [
+export type Filter = 'all' | 'finding' | 'border' | FlowEdge['principals'];
+export const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All flows' },
   { id: 'finding', label: 'With a finding' },
   { id: 'border', label: 'Cross-border' },
@@ -97,7 +97,7 @@ const FILTERS: { id: Filter; label: string }[] = [
  * One client's graph and the helpers that draw it. Built per client, so the
  * map shows that client's systems, flows and findings — never another's.
  */
-function graphFor(org: string) {
+export function graphFor(org: string) {
   const d = clientData(org);
   const nodes = d.flowNodes;
   const edges = d.flowEdges;
@@ -146,7 +146,7 @@ function graphFor(org: string) {
 
 /* --------------------------------------------------------------------- icons */
 
-function KindIcon({ kind, x, y, color }: { kind: FlowNode['kind']; x: number; y: number; color: string }) {
+export function KindIcon({ kind, x, y, color }: { kind: FlowNode['kind']; x: number; y: number; color: string }) {
   const p = { fill: 'none', stroke: color, strokeWidth: 1.3, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   return (
     <g transform={`translate(${x} ${y})`}>
@@ -160,7 +160,7 @@ function KindIcon({ kind, x, y, color }: { kind: FlowNode['kind']; x: number; y:
 
 /* ----------------------------------------------------------------- the map */
 
-type Selected = { type: 'node'; id: string } | { type: 'edge'; id: string } | null;
+export type Selected = { type: 'node'; id: string } | { type: 'edge'; id: string } | null;
 
 export default function DataFlowMap({ org }: { org: string }) {
   const { nodes: FLOW_NODES, edges: FLOW_EDGES, clientShort, byId, gap, sevColor, matches, pos, curve } = graphFor(org);
@@ -326,7 +326,7 @@ export default function DataFlowMap({ org }: { org: string }) {
 
 /* --------------------------------------------------------------- the legend */
 
-function Legend() {
+export function Legend() {
   const item = (glyph: ReactNode, text: string) => (
     <span key={text} className="flex items-center gap-1.5">
       <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden>{glyph}</svg>
@@ -393,7 +393,7 @@ function Rows({ rows }: { rows: [string, ReactNode][] }) {
 const safeguardText = (s: FlowNode['safeguard']) => <span className="font-medium" style={{ color: SAFEGUARD_TONE[s] }}>{s}</span>;
 const where = (n: FlowNode) => ({ IN: 'India', US: 'United States', UK: 'United Kingdom' })[n.region];
 
-function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selected; onSelect: (s: Selected) => void }) {
+export function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selected; onSelect: (s: Selected) => void }) {
   const { edges: FLOW_EDGES, clientShort, byId, crossBorder } = graphFor(org);
   const edge = selected?.type === 'edge' ? FLOW_EDGES.find((e) => e.id === selected.id) : undefined;
   const node = selected?.type === 'node' ? byId.get(selected.id) : undefined;
