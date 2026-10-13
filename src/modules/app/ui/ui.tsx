@@ -353,10 +353,12 @@ export function NextStep({ title, children, action }: { title: ReactNode; childr
 
 /** A field change as an audit trail records it: old value struck, new value after. */
 export function Change({ field, from, to }: { field: string; from: string; to: string }) {
+  // A first value has nothing to strike through: "Status → New", not "Status ~~—~~ → New".
+  const first = !from || from === '—';
   return (
     <span className="inline-flex flex-wrap items-baseline gap-x-1.5 text-[12px]">
       <span className="text-[var(--ds-text-3)]">{field}</span>
-      <span className="text-[var(--ds-text-3)] line-through decoration-[var(--ds-text-3)]">{from}</span>
+      {!first && <span className="text-[var(--ds-text-3)] line-through decoration-[var(--ds-text-3)]">{from}</span>}
       <span aria-hidden className="text-[var(--ds-text-3)]">→</span>
       <span className="font-medium text-[var(--ds-text)]">{to}</span>
     </span>

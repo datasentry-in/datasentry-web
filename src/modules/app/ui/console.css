@@ -246,7 +246,9 @@ body:has(.demo-root) {
 .demo-root .ds-work-row { --row-bg: var(--ds-panel); background: var(--row-bg); }
 .demo-root .ds-work-row:hover,
 .demo-root .ds-work-row[aria-current='true'] { --row-bg: var(--ds-subtle); }
-.demo-root .ds-row-float { position: absolute; padding-left: 2rem; background: linear-gradient(to right, transparent, var(--row-bg) 1.5rem); }
+/* Anchored to a zero-width point, so it takes its own width (max-content) —
+   otherwise a two-word button ("Mark read") wraps. */
+.demo-root .ds-row-float { position: absolute; width: max-content; white-space: nowrap; padding-left: 2rem; background: linear-gradient(to right, transparent, var(--row-bg) 1.5rem); }
 .demo-root .ds-work-row:focus-within { --row-bg: var(--ds-subtle); }
 .demo-root .ds-row-muted { font-weight: 400; color: var(--ds-text-2); }
 .demo-root .ds-work-row[data-selected] { --row-bg: var(--ds-accent-weak); }
