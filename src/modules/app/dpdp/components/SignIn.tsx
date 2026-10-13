@@ -40,7 +40,7 @@ export default function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     'h-10 w-full rounded-md border border-[var(--ds-border-strong)] bg-white px-3 text-[13.5px] text-[var(--ds-text)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--ds-text-3)] focus:border-[var(--ds-accent)] focus:shadow-[0_0_0_3px_var(--ds-accent-weak)]';
 
   return (
-    <div className="demo-root flex min-h-screen flex-col bg-white">
+    <div className="demo-root ds-signin flex min-h-screen flex-col bg-white">
       <main className="grid flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(26rem,38rem)]">
         {/* The data map, on white */}
         <section className="order-2 flex min-w-0 flex-col gap-10 border-t border-[var(--ds-border)] px-5 py-8 lg:order-1 lg:border-t-0 lg:px-10 lg:py-9">

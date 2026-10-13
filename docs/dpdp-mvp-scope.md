@@ -41,7 +41,7 @@ These change the module list versus the original three-module idea. Each is a le
 
 | Decision | Choice |
 |---|---|
-| Discovery depth | AI-backed adaptive questionnaire. No system integrations in MVP; close the coverage gap with evidence-file upload + parsing. |
+| Discovery depth | AI-backed adaptive questionnaire. No system integrations and no file imports in MVP; coverage comes from the interview, consultant walkthroughs and owner attestations (see *Data intake without integrations*). |
 | Tenancy / GTM | Consultant-led multi-client console. One consultant login, many client orgs, cross-client dashboard. Client staff get scoped logins. |
 | Codebase | Separate Next.js app (`app.datasentry.in`), sharing the marketing site's design tokens. |
 | R1 modules | Scope & Role Register + RoPA; Evidence & Audit Pack + policy generator; Candidate & employee consent + breach register. |
@@ -83,8 +83,8 @@ activity name, department, purpose, data categories (itemised, not category labe
 
 **Data-flow map** — derived automatically from RoPA edges (system → system, system → processor, system → country) and rendered as a graph. No separate authoring step.
 
-**Reaching connector-grade coverage without connectors — evidence upload + parsing:**
-A questionnaire captures *declared* state. The findings that persuade clients come from *observed* state. Bridge it with one-click exports the client can already produce, uploaded and reconciled against the RoPA:
+**Phase 2, opt-in — evidence upload + parsing (not in MVP):**
+Out of MVP Phase I; see *Data intake without integrations* for why, and for what replaces it. Kept here as the Phase 2 design. A questionnaire captures *declared* state, and the findings that persuade clients come from *observed* state. For clients who opt in, bridge it with one-click exports they already produce, uploaded and reconciled against the RoPA:
 
 | Uploaded export | Findings it unlocks |
 |---|---|
@@ -94,7 +94,7 @@ A questionnaire captures *declared* state. The findings that persuade clients co
 | ATS candidate export | Actual resume volume and age distribution vs declared retention — usually the single biggest finding |
 | Payroll vendor report | Undeclared processor; undeclared data categories |
 
-This is CSV/XLSX parsing plus reconciliation rules — parser cost, not integration cost — and it keeps "no system integration in MVP" true. Real connectors become a Phase 2 upgrade path on the same reconciliation engine.
+This is CSV/XLSX parsing plus reconciliation rules — parser cost, not integration cost. Real connectors then build on the same reconciliation engine.
 
 ### M2 — Notice & Consent (deliberately narrow)
 
@@ -140,6 +140,46 @@ This is what justifies the price and what a client's board or a Board of India q
 
 ---
 
+## Data intake without integrations
+
+MVP Phase I takes in client data through **no system integrations and no file imports**. Three reasons:
+
+- **There is no fixed stack to build against.** One client runs Keka, the next greytHR, the next a spreadsheet; the same holds for ATS, payroll and cloud. Parsers or connectors for a "likely" set would miss most clients.
+- **Clients won't send internal exports to a third party.** An HR roster or candidate dump leaving their systems is exactly the exposure DPDP is about.
+- **Clients won't spend admin time producing dumps.** Asking for them is friction, and each quarterly re-upload is more.
+
+### Principle: records about processing, not the personal data itself
+
+The register holds **metadata about processing** — systems, activities, data categories, counts, retention rules, owners — never copies of the client's data. The only personal data the platform holds is what it is the **system of record** for: consent records, DSR requests and breach notifications. That keeps DataSentry's own Processor footprint small, and is itself a selling point.
+
+### Where each stage's data comes from
+
+| Stage | Source | What the client does |
+|---|---|---|
+| M1 Register | Adaptive interview — declared facts, including aggregates (record counts, oldest-record dates) read off the client's own screens, not exported | Answers questions |
+| M1 verification | **Consultant walkthrough**: on a review call the client screen-shares a system; the consultant records what they saw as an observation (who, when, which system). Nothing leaves the client's system | One call per review cycle |
+| M2 Consent | Captured by the platform — hosted consent page or embeddable widget linked from the careers page. The platform is the system of record. An inbound API exists for clients who want it; it is not required | Adds a link |
+| M3 DSR & grievance | Public intake page, plus a per-client forwarding address for requests that arrive by email | Nothing |
+| M4 Breach | Reported by a person through a form; the 72-hour clock and notices run in the platform | Reports the incident |
+| M5 Evidence | Generated from records already in the platform | Nothing |
+| Erasure and access fulfilment | A task per system, generated from the RoPA. The owner does the work in their own system and **attests** it — who, when, what — with an optional screenshot | Work they do today anyway |
+| Keeping the register current | **Quarterly re-attestation**: a short check-in ("payroll vendor changed? new tools? headcount?") that the model compares against the register, flagging anything new | ~10 minutes a quarter |
+
+Every recorded fact carries its basis alongside the existing provenance chain: **declared** (the client said it), **observed** (the consultant saw it on a walkthrough), or **attested** (an owner confirmed an action) — each with actor and timestamp. The evidence pack shows which is which.
+
+### What this can't see
+
+- **Deletion and fulfilment are attested, not machine-verified.** The evidence pack records a named owner's confirmation. That is defensible as reasonable safeguards with records, but it is trust-based; the consultant's review is the control.
+- **Findings are as good as the declarations.** "4,812 CVs past their purpose" comes from the count the client reads off their ATS during the interview or walkthrough, not from a reconciled export. A client who understates gets an understated finding; the walkthrough is the counterweight.
+- **Drift between check-ins goes unseen.** A new tool adopted mid-quarter surfaces at the next re-attestation.
+- **Access requests depend on owners pulling data by hand**, which puts pressure on the SLA. Per-system checklists and escalation mitigate it.
+
+### Phase 2: opt-in, chosen per client
+
+Automated intake comes later and only when a client asks for it: first **evidence-file upload and reconciliation** for exports the client chooses to share (see M1), then **read-only connectors**, starting with the Google Workspace / Microsoft 365 user directory — it answers the most common finding, accounts still active for people who have left. Connectors build on the same reconciliation engine as file upload. Neither is ever required to use the platform.
+
+---
+
 ## Explicitly out of MVP
 
 | Excluded | Why |
@@ -151,6 +191,7 @@ This is what justifies the price and what a client's board or a Board of India q
 | Cross-border transfer assessment engine | The s.16 restricted-country list is not yet notified. Record destinations; do not assess. |
 | Vendor risk questionnaires at scale / TPRM | Adjacent product. A DPA register is sufficient. |
 | SSO/SCIM, SOC 2 | Email OTP + Google is enough for the ICP. An ISO 27001 readiness statement covers the security question initially. |
+| Evidence-file upload and reconciliation; system connectors | Client stacks vary, so there is no fixed set of systems to build parsers or connectors for; clients won't send internal exports to a third party or spend admin time producing them. Phase 2, opt-in per client — see *Data intake without integrations*. |
 | Mobile apps | Responsive web is sufficient. |
 | All 22 Eighth Schedule languages | Ship the slot, 4–5 languages, add on request. |
 
@@ -167,7 +208,7 @@ This is what justifies the price and what a client's board or a Board of India q
 | DB | Postgres on Supabase, **Mumbai region** | Row-level security is the right primitive for tenant isolation |
 | ORM | Drizzle | Lighter, pairs well with RLS |
 | Auth | Supabase Auth (email OTP + Google) + org membership table | 4 roles |
-| Storage | Supabase Storage, Mumbai | Evidence attachments, uploaded exports |
+| Storage | Supabase Storage, Mumbai | Evidence attachments: contracts, attestation screenshots |
 | Jobs | Inngest or Trigger.dev | SLA clocks, 72-hour breach countdown, retention sweeps, email |
 | Email | AWS SES `ap-south-1` | Residency consistency over convenience |
 | PDF | Headless Chromium HTML→PDF | Brand fidelity with Tailwind; Chromium is already available in this environment |
@@ -176,7 +217,7 @@ This is what justifies the price and what a client's board or a Board of India q
 ### AI layer
 
 - **`claude-opus-5-5`** ($4 / $20 per MTok) for adaptive question generation, activity inference from free-text, and policy/notice assembly. Thinking is always on — omit the `thinking` param; `{type: "disabled"}` and `budget_tokens` both return 400. Effort defaults to `medium` on this model, so set `output_config.effort` explicitly (`high` for question generation and policy assembly).
-- **`claude-haiku-5-5`** ($0.10 / $0.50) for bulk field normalisation and parsing uploaded exports; step up to **`claude-sonnet-5-5`** ($2 / $10) where judgement is needed. Route the Batch API (50% discount) for non-interactive bulk normalisation.
+- **`claude-haiku-5-5`** ($0.10 / $0.50) for bulk field normalisation and comparing quarterly re-attestations against the register; step up to **`claude-sonnet-5-5`** ($2 / $10) where judgement is needed. Route the Batch API (50% discount) for non-interactive bulk normalisation.
 - **Structured outputs** via `output_config: {format: {...}}` with `messages.parse()`, and `strict: true` on tool definitions. Note: forced `tool_choice` (`any` / `tool`) returns 400 on Opus 5.5 — use `auto` with an explicit instruction, or structured outputs.
 - **Prompt caching is the main cost lever.** Every question-generation call carries the same statutory corpus (Act ss.5–9, 11–14, 16–17; Rules 3–7, 13; Schedule I) plus the domain pack. Put that in a cached, byte-stable prefix (cache reads $0.20/MTok on Opus 5.5); keep client-specific and per-request content after the last breakpoint. Verify with `usage.cache_read_input_tokens` — a persistent zero means a silent invalidator. With caching, a full discovery run should land in the low tens of rupees, negligible against the price point.
 - **Grounding and citation**: retrieval over the statutory corpus so every gap finding and generated clause cites a provision. Never let the model assert a legal conclusion — the rule engine does that.
@@ -185,7 +226,7 @@ This is what justifies the price and what a client's board or a Board of India q
 
 New application, so the significant surfaces rather than a file list:
 
-- `db/schema/` — Drizzle schema. Core entities: `organisation`, `membership`, `processing_activity` (the RoPA row), `data_category`, `system`, `processor`, `notice` + `notice_version`, `consent_record` (append-only), `consent_purpose`, `dsr_request` + `dsr_event`, `nomination`, `incident` + `incident_event`, `remediation_task`, `evidence_export`, `uploaded_artefact`, `audit_log` (append-only, hash-chained), `domain_pack`, `gap_rule`, `gap_finding`.
+- `db/schema/` — Drizzle schema. Core entities: `organisation`, `membership`, `processing_activity` (the RoPA row), `data_category`, `system`, `processor`, `notice` + `notice_version`, `consent_record` (append-only), `consent_purpose`, `dsr_request` + `dsr_event`, `nomination`, `incident` + `incident_event`, `remediation_task`, `attestation` (owner confirmation of an action, with actor, timestamp and optional evidence), `observation` (what a consultant saw on a walkthrough), `evidence_export`, `uploaded_artefact`, `audit_log` (append-only, hash-chained), `domain_pack`, `gap_rule`, `gap_finding`.
 - `lib/rules/` — deterministic role, basis and gap rule engines, versioned. Pure functions over RoPA rows; fully unit-testable, and the highest-value test target in the codebase.
 - `lib/ai/` — Anthropic client, cached statutory-corpus prefix builder, question-generation and normalisation flows, structured-output schemas.
 - `lib/retention/` — R2: statutory retention matrix and conflict detection.
@@ -208,13 +249,13 @@ Tenancy, auth, RBAC, RLS, audit log, consultant console shell, data table compon
 *Sellable on its own as a paid DPDP Readiness Assessment.*
 
 **R1 — Operate (6–8 weeks)**
-M3 thin DSR + grievance + nomination, public intake pages, SLA engine. M4 breach register with 72-hour countdown and notification templates. Evidence upload + reconciliation parsers. Primary-source legal verification pass over every rule and template — a release gate, not a follow-up.
+M3 thin DSR + grievance + nomination, public intake pages, SLA engine. M4 breach register with 72-hour countdown and notification templates. Per-system fulfilment tasks with owner attestation; quarterly re-attestation check-ins. Primary-source legal verification pass over every rule and template — a release gate, not a follow-up.
 
 **R2 — Consent + Retention depth (6 weeks)**
 M2 candidate consent capture, consent ledger, withdrawal→erasure tasking, employee exception consents, notice localisation. Statutory retention matrix and cited part-refusal generation.
 
 **Phase 2 (post-May 2027)**
-Real system connectors on the reconciliation engine, cookie consent/CMP, additional domain packs, DPIA module for clients that grow into SDF status.
+Opt-in evidence-file upload and reconciliation, then read-only system connectors (user directory first) on the same engine; cookie consent/CMP, additional domain packs, DPIA module for clients that grow into SDF status.
 
 ---
 
@@ -239,7 +280,7 @@ Real system connectors on the reconciliation engine, cookie consent/CMP, additio
 **R1 acceptance:**
 7. Submit a DSR from the public intake page as a simulated ex-employee; verify identity challenge, owner assignment, SLA clock, escalation on breach, and audit-log entries for every transition.
 8. Open an incident; verify the 72-hour countdown starts from the awareness timestamp (not creation), that both Board artefacts and the principal notification generate, and that the countdown survives a server restart (clock in the job scheduler, not in memory).
-9. Upload a Google Drive sharing report and an ATS export for the synthetic org; assert reconciliation findings (external HR folder share, resume age distribution exceeding declared retention) appear in the gap report.
+9. Raise an erasure request against the synthetic org; assert a task is generated for each system the RoPA lists for that person, each owner's attestation records actor, timestamp and optional evidence, and the evidence pack shows the request as *attested*, not *verified*. Run a quarterly re-attestation that declares a new tool; assert it is flagged against the register.
 10. Legal verification gate: every statutory citation in every rule and template checked against the Gazette text of the Act and DPDP Rules 2025. Record sign-off per rule.
 
 **R2 acceptance:**

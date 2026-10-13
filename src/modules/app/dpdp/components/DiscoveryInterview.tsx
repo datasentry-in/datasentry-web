@@ -7,7 +7,7 @@ import {
 } from '@/modules/app/dpdp/mock/interview';
 import type { Answers, Question, Section } from '@/modules/app/dpdp/mock/interview';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { Button, Card, CiteLink, DemoNote, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
+import { Box, Button, Card, CiteLink, DemoNote, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
 
 /* --------------------------------------------------------------- controls */
 
@@ -64,7 +64,7 @@ function Field({ q, value, onChange }: { q: Question; value: Answers[string] | u
             onClick={() => toggle(o.value)}
             aria-pressed={on}
             title={o.hint}
-            className={`rounded-md border px-2.5 py-1.5 text-left text-[12.5px] transition-colors ${
+            className={`rounded-md border px-2.5 py-1.5 text-left text-[13px] transition-colors ${
               on
                 ? 'border-[var(--ds-accent)] bg-[var(--ds-accent-weak)] font-medium text-[var(--ds-accent-hover)]'
                 : 'border-[var(--ds-border-strong)] bg-[var(--ds-panel)] text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
@@ -96,14 +96,14 @@ function QuestionBlock({
     <li className="border-b border-[var(--ds-border)] p-4 last:border-b-0 sm:p-5">
       <div className="flex gap-3">
         <span
-          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10.5px] font-medium ${
+          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${
             answered ? 'bg-[var(--ds-ok-weak)] text-[var(--ds-ok)]' : 'bg-[var(--ds-subtle-2)] text-[var(--ds-text-3)]'
           }`}
         >
           {answered ? '✓' : n}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[13.5px] font-medium leading-snug tracking-[-0.01em]">{q.text}</p>
+          <p className="text-[14px] font-medium leading-snug tracking-[-0.01em]">{q.text}</p>
 
           {q.because && (
             <p className="mt-1 inline-flex flex-wrap items-center gap-1 rounded border border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)] px-1.5 py-px text-[11px] text-[var(--ds-accent-hover)]">
@@ -167,7 +167,8 @@ function Trace({ lines, done, onDone }: { lines: string[]; done: boolean; onDone
   const visible = done ? lines : lines.slice(0, shown);
 
   return (
-    <div className="rounded-lg border border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)] p-4">
+    <Box>
+    <div className="ds-bar ds-bar-accent">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--ds-accent-hover)]">
           <span className={done ? '' : 'animate-pulse'}>
@@ -175,26 +176,27 @@ function Trace({ lines, done, onDone }: { lines: string[]; done: boolean; onDone
           </span>
           {done ? 'Question engine — how this section was chosen' : 'Question engine is reading your answers…'}
         </p>
-        <p className="ds-figure text-[10.5px] text-[var(--ds-text-2)]">
+        <p className="ds-figure text-[11px] text-[var(--ds-text-2)]">
           {CALL_META.model} · effort {CALL_META.effort} · cached prefix {CALL_META.cachedPrefix}
         </p>
       </div>
 
       <ul className="mt-2.5 space-y-1.5">
         {visible.map((l) => (
-          <li key={l} className="flex gap-2 text-[12.5px] leading-relaxed text-[var(--ds-text)]">
+          <li key={l} className="flex gap-2 text-[14px] leading-relaxed text-[var(--ds-text)]">
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[var(--ds-accent)]" aria-hidden />
             {l}
           </li>
         ))}
         {!done && shown < lines.length && (
-          <li className="flex gap-2 text-[12.5px] text-[var(--ds-text-3)]">
+          <li className="flex gap-2 text-[13px] text-[var(--ds-text-3)]">
             <span className="mt-[7px] h-1 w-1 shrink-0 animate-pulse rounded-full bg-[var(--ds-text-3)]" aria-hidden />
             thinking…
           </li>
         )}
       </ul>
     </div>
+    </Box>
   );
 }
 
@@ -257,7 +259,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
           ].map((s) => (
             <div key={s.n} className="flex items-center gap-2">
               <span
-                className={`flex h-5 w-5 items-center justify-center rounded-full text-[10.5px] font-medium ${
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium ${
                   s.done
                     ? 'bg-[var(--ds-ok-weak)] text-[var(--ds-ok)]'
                     : s.active
@@ -267,10 +269,10 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               >
                 {s.done ? '✓' : s.n}
               </span>
-              <span className={`text-[12.5px] ${s.active ? 'font-medium' : 'text-[var(--ds-text-2)]'}`}>{s.label}</span>
+              <span className={`text-[13px] ${s.active ? 'font-medium' : 'text-[var(--ds-text-2)]'}`}>{s.label}</span>
             </div>
           ))}
-          <span className="ml-auto text-[11.5px] text-[var(--ds-text-3)]">
+          <span className="ml-auto text-[12px] text-[var(--ds-text-3)]">
             {totalAsked} questions asked so far · nothing is pre-filled
           </span>
         </div>
@@ -299,7 +301,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               type="button"
               disabled={!s1Done}
               onClick={generate2}
-              className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                 s1Done
                   ? 'border-transparent bg-[var(--ds-accent)] text-white hover:bg-[var(--ds-accent-hover)]'
                   : 'cursor-not-allowed border-[var(--ds-border)] bg-[var(--ds-subtle)] text-[var(--ds-text-3)]'
@@ -326,11 +328,11 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                 key={r.id}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
               >
-                <span className="ds-figure w-12 shrink-0 text-[11px] text-[var(--ds-text-3)]">{r.id}</span>
-                <span className="min-w-0 flex-1 text-[12.5px] font-medium">{r.name}</span>
-                <span className="text-[11.5px] text-[var(--ds-text-2)]">{r.principals}</span>
+                <span className="ds-id w-12 shrink-0 text-[11px] text-[var(--ds-text-3)]">{r.id}</span>
+                <span className="min-w-0 flex-1 text-[13px] font-medium">{r.name}</span>
+                <span className="text-[12px] text-[var(--ds-text-2)]">{r.principals}</span>
                 {r.source === 'proposed' && <Tag tone="watch">Not in the pack</Tag>}
-                <span className="w-full text-[11.5px] text-[var(--ds-text-3)] sm:w-auto sm:basis-full sm:pl-[3.75rem]">
+                <span className="w-full text-[12px] text-[var(--ds-text-3)] sm:w-auto sm:basis-full sm:pl-[3.75rem]">
                   {r.note}
                 </span>
               </li>
@@ -369,7 +371,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               <button
                 type="button"
                 onClick={() => setShowSkipped(!showSkipped)}
-                className="text-[12.5px] font-medium text-[var(--ds-accent-hover)]"
+                className="text-[13px] font-medium text-[var(--ds-accent-hover)]"
                 aria-expanded={showSkipped}
               >
                 {showSkipped ? 'Hide' : 'Show'} the {section2.skipped.length} questions the engine decided not to ask
@@ -379,7 +381,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                   {section2.skipped.map((s) => (
                     <li key={s.text} className="text-[12px] leading-snug text-[var(--ds-text-3)]">
                       <span className="line-through">{s.text}</span>
-                      <span className="block text-[11.5px]">Skipped because {s.reason}.</span>
+                      <span className="block text-[12px]">Skipped because {s.reason}.</span>
                     </li>
                   ))}
                 </ul>
@@ -396,7 +398,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                 type="button"
                 disabled={!s2Done}
                 onClick={generate3}
-                className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                   s2Done
                     ? 'border-transparent bg-[var(--ds-accent)] text-white hover:bg-[var(--ds-accent-hover)]'
                     : 'cursor-not-allowed border-[var(--ds-border)] bg-[var(--ds-subtle)] text-[var(--ds-text-3)]'
@@ -436,7 +438,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                     </Tag>
                   </div>
                 </div>
-                <p className="mt-1 max-w-3xl text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">{r.detail}</p>
+                <p className="mt-1 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">{r.detail}</p>
               </li>
             ))}
           </ul>
@@ -469,7 +471,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               <button
                 type="button"
                 onClick={() => setPhase('done')}
-                className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-[var(--ds-accent)] px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-[var(--ds-accent-hover)]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-[var(--ds-accent)] px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[var(--ds-accent-hover)]"
               >
                 Close the interview
               </button>
@@ -490,7 +492,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               <Card key={k} tone="subtle">
                 <p className="text-[12px] font-medium text-[var(--ds-text-2)]">{k}</p>
                 <p className="ds-figure mt-1 text-[26px] leading-none tracking-[-0.03em]">{v}</p>
-                <p className="mt-1 text-[11.5px] text-[var(--ds-text-3)]">{note}</p>
+                <p className="mt-1 text-[12px] text-[var(--ds-text-3)]">{note}</p>
               </Card>
             ))}
           </div>
@@ -504,7 +506,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               <Button as="link" href={demoPath('northstar', 'ropa')}>
                 See a completed register
               </Button>
-              <button type="button" onClick={reset} className="text-[12.5px] font-medium text-[var(--ds-accent-hover)]">
+              <button type="button" onClick={reset} className="text-[13px] font-medium text-[var(--ds-accent-hover)]">
                 Run the interview again with different answers
               </button>
             </div>

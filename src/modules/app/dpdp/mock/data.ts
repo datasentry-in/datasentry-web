@@ -2,7 +2,8 @@
 // Figures are illustrative and shaped to look like a real 240-seat ITES firm.
 // The live app replaces this module with a real data layer; the types stay.
 
-import type { Activity, Dsr, Gap, Incident, Org, Provenance } from '../types';
+import type {
+  FlowEdge, FlowNode, Activity, Dsr, FulfilmentTask, Gap, Incident, Org, Provenance, Walkthrough } from '../types';
 
 export * from '../types';
 
@@ -74,9 +75,10 @@ export const ORGS: Org[] = [
     locations: 'Chennai, Coimbatore',
     score: 19,
     trend: 'baseline',
-    openGaps: { high: 7, medium: 9, low: 3 },
-    activities: 22,
-    exemptActivities: 4,
+    // In discovery: no register yet, so no activities and no findings.
+    openGaps: { high: 0, medium: 0, low: 0 },
+    activities: 0,
+    exemptActivities: 0,
     dsrOpen: 5,
     dsrBreaching: 2,
     incidentOpen: 0,
@@ -230,7 +232,8 @@ export const GAPS: Gap[] = [
     detail: '4,812 candidate records in Zoho Recruit are older than the declared 180-day talent-pool period. The oldest is 4 years 2 months. No erasure trigger is configured and no purge has ever run.',
     provision: 's.8(7) read with Rule 8', activity: 'PA-01 Recruitment & applicant tracking',
     owner: 'Head of Talent Acquisition', due: '15 Nov 2026',
-    evidence: 'Reconciled against ATS export of 09 Oct 2026 (6,431 records)',
+    evidence: 'Walkthrough 09 Oct 2026 — candidate list viewed on screen in Zoho Recruit: 6,431 records, oldest Aug 2022, no purge rule',
+    basis: 'observed',
   },
   {
     id: 'G-02', severity: 'High',
@@ -238,15 +241,17 @@ export const GAPS: Gap[] = [
     detail: 'AuthBridge processes candidate identity, education, employment and criminal-record data under a purchase order only. There is no written contract covering purpose limitation, security, sub-processing, breach notification or return and erasure on termination.',
     provision: 's.8(2)', activity: 'PA-02 Pre-employment background verification',
     owner: 'Legal & Compliance', due: '30 Nov 2026',
-    evidence: 'Vendor file review — PO 2024/BGV/117, no MSA on record',
+    evidence: 'Vendor file reviewed on the walkthrough — PO 2024/BGV/117, no MSA on record',
+    basis: 'observed',
   },
   {
     id: 'G-03', severity: 'High',
-    title: 'Candidate application form carries no Rule 3 notice',
+    title: 'Job application form asks for one blanket consent, with no itemised notice',
     detail: 'The application form collects 14 distinct data items behind a single "I agree to the Privacy Policy" checkbox. There is no itemised description of data with a purpose per item, no withdrawal link, and no route to complain to the Data Protection Board.',
     provision: 'Rule 3 read with s.5 and s.6', activity: 'PA-01 Recruitment & applicant tracking',
     owner: 'Head of Talent Acquisition', due: '31 Dec 2026',
-    evidence: 'Form capture — careers.northstarbpo.in/apply, reviewed 08 Oct 2026',
+    evidence: 'Public form reviewed — careers.northstarbpo.in/apply, 08 Oct 2026',
+    basis: 'observed',
   },
   {
     id: 'G-04', severity: 'High',
@@ -262,7 +267,8 @@ export const GAPS: Gap[] = [
     detail: 'The group mediclaim roster includes 61 dependants recorded as under 18. Enrolment was collected from the employee without any guardian verification step, and no separate notice was issued.',
     provision: 's.9', activity: 'PA-09 Group mediclaim & dependant enrolment',
     owner: 'HR Operations Manager', due: '31 Jan 2027',
-    evidence: 'Insurer roster export of 30 Sep 2026',
+    evidence: 'Declared in discovery by the HR Operations Manager — 61 dependants under 18 on the mediclaim roster',
+    basis: 'declared',
   },
   {
     id: 'G-06', severity: 'Medium',
@@ -270,15 +276,17 @@ export const GAPS: Gap[] = [
     detail: 'Marketing mails rehire openings and company news to 1,340 former employees. No consent was captured at exit, and s.7(i) does not extend to marketing after the employment relationship has ended. Basis is recorded as Not determined.',
     provision: 's.6 read with s.4', activity: 'PA-12 Alumni communications',
     owner: 'Marketing Lead', due: '15 Dec 2026',
-    evidence: 'Mailchimp audience export of 01 Oct 2026',
+    evidence: 'Walkthrough 09 Oct 2026 — Mailchimp audience of 1,340 viewed on screen, no consent field',
+    basis: 'observed',
   },
   {
     id: 'G-07', severity: 'Medium',
     title: 'Active Google Workspace accounts for 23 departed employees',
-    detail: 'Reconciliation of the Workspace user list against the HRMS exit roster shows 23 enabled accounts belonging to employees who have left. The oldest exit was 14 months ago. Four of these accounts retain access to the shared HR drive.',
+    detail: 'On the walkthrough, the Workspace admin console showed 23 enabled accounts belonging to employees who have left. The oldest exit was 14 months ago. Four of these accounts retain access to the shared HR drive.',
     provision: 's.8(4) reasonable security safeguards', activity: 'PA-11 Exit & full-and-final settlement',
     owner: 'IT Manager', due: '25 Oct 2026',
-    evidence: 'Workspace user export vs Keka exit roster, 09 Oct 2026',
+    evidence: 'Walkthrough 09 Oct 2026 — Workspace admin console checked against the leavers HR named on the call',
+    basis: 'observed',
   },
   {
     id: 'G-08', severity: 'Medium',
@@ -286,7 +294,8 @@ export const GAPS: Gap[] = [
     detail: 'The folder HR/Payroll/FY26 is set to "Anyone with the link — Viewer". It contains 12 monthly registers covering 240 employees with salary, PAN, bank account and PF number.',
     provision: 's.8(4) reasonable security safeguards', activity: 'PA-04 Payroll processing',
     owner: 'IT Manager', due: '18 Oct 2026',
-    evidence: 'Drive sharing report of 09 Oct 2026',
+    evidence: 'Walkthrough 09 Oct 2026 — folder sharing settings viewed on screen',
+    basis: 'observed',
   },
   {
     id: 'G-09', severity: 'Medium',
@@ -302,7 +311,8 @@ export const GAPS: Gap[] = [
     detail: 'Fingerprint templates are held in the Matrix COSEC controller with no retention period defined and no purge. Employees are not offered a non-biometric means of marking attendance, which weakens the claim that the processing is necessary for the employment purpose.',
     provision: 's.8(7) read with s.7(i)', activity: 'PA-06 Attendance & biometric access control',
     owner: 'Administration Head', due: '31 Jan 2027',
-    evidence: 'Controller configuration review, 08 Oct 2026',
+    evidence: 'Controller settings viewed on screen, 08 Oct 2026',
+    basis: 'observed',
   },
   {
     id: 'G-11', severity: 'Low',
@@ -310,7 +320,8 @@ export const GAPS: Gap[] = [
     detail: 'PA-16 and PA-17 are recorded as exempt under s.17(1)(d). The MSAs are on file but the specific clauses establishing that the principals are outside India and that the counterparty is a person outside India have not been extracted and linked.',
     provision: 's.17(1)(d)', activity: 'PA-16, PA-17 Client delivery',
     owner: 'Legal & Compliance', due: '28 Feb 2027',
-    evidence: 'MSA 14 Feb 2024; MSA 03 Sep 2025',
+    evidence: 'MSA 14 Feb 2024; MSA 03 Sep 2025 — named by Legal, clauses not yet linked',
+    basis: 'declared',
   },
   {
     id: 'G-12', severity: 'Low',
@@ -341,7 +352,7 @@ export const GAPS: Gap[] = [
 export const DSRS: Dsr[] = [
   {
     id: 'DSR-2026-0041', type: 'Erasure', principal: 'Priya Raghunathan',
-    relationship: 'Ex-employee — exited 22 Mar 2024', received: '08 Oct 2026',
+    relationship: 'Ex-employee — exited 22 Mar 2024', received: '08 Oct 2026', channel: 'Privacy centre',
     daysLeft: 27, status: 'In progress',
     conflicts: [
       { record: 'Provident Fund member records', statute: 'EPF & MP Act, 1952', until: 'Statutory — not erasable' },
@@ -352,12 +363,12 @@ export const DSRS: Dsr[] = [
   },
   {
     id: 'DSR-2026-0040', type: 'Access', principal: 'Arun Kelkar',
-    relationship: 'Ex-employee — exited 11 Jan 2026', received: '30 Sep 2026',
+    relationship: 'Ex-employee — exited 11 Jan 2026', received: '30 Sep 2026', channel: 'Email',
     daysLeft: 19, status: 'In progress',
   },
   {
     id: 'DSR-2026-0039', type: 'Grievance', principal: 'Sneha Dutta',
-    relationship: 'Current employee', received: '23 Sep 2026',
+    relationship: 'Current employee', received: '23 Sep 2026', channel: 'Privacy centre',
     daysLeft: 12, status: 'Awaiting client',
     outcome: 'Objects to fingerprint capture for attendance; asks for a card-based alternative',
   },
@@ -387,6 +398,7 @@ export const INCIDENTS: Incident[] = [
     title: 'Monthly payroll register emailed to the wrong distribution list',
     awareness: '10 Oct 2026, 14:20 IST',
     deadline: '13 Oct 2026, 14:20 IST',
+    deadlineIso: '2026-10-13T14:20:00+05:30',
     affected: 240,
     categories: 'Name, employee ID, designation, gross and net salary, PAN, bank account number, PF number',
     status: 'Open',
@@ -475,32 +487,299 @@ export const QUESTIONNAIRE = {
   ],
 };
 
-export const FLOWS = {
-  sources: [
-    { id: 'ats', label: 'Zoho Recruit', note: 'Candidate', x: 60, y: 40 },
-    { id: 'hrms', label: 'Keka HR', note: 'Employee', x: 60, y: 130 },
-    { id: 'payroll', label: 'Zoho Payroll', note: 'Employee', x: 60, y: 220 },
-    { id: 'biometric', label: 'Matrix COSEC', note: 'Employee', x: 60, y: 310 },
-    { id: 'vdi', label: 'Client VDI', note: 'Client end-users', x: 60, y: 440 },
+/**
+ * Northstar's data-flow map, drawn from RoPA v4. Three trust boundaries:
+ * Northstar's own systems, third parties in India, and parties outside India.
+ * Categories are named as they are; the DPDP Act has no "sensitive personal
+ * data" class, so nothing is labelled sensitive.
+ */
+export const FLOW_NODES: FlowNode[] = [
+  { id: 'ats', label: 'Zoho Recruit', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
+  { id: 'hrms', label: 'Keka HR', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
+  { id: 'payroll', label: 'Zoho Payroll', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'biometric', label: 'Matrix COSEC', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees', finding: 'G-10', note: 'On-premises · data stays in Northstar · retention not stated' },
+  { id: 'endpoints', label: 'Laptops & email', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'vdi', label: 'Client VDI desks', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Client end-users' },
+  { id: 'authbridge', label: 'AuthBridge', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'No DPA', principals: 'Candidates', finding: 'G-02' },
+  { id: 'insurer', label: 'Niva Bupa', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
+  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', zone: 'india', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
+  { id: 'mailchimp', label: 'Mailchimp', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'Terms only', principals: 'Ex-employees', finding: 'G-06' },
+  { id: 'forcepoint', label: 'Forcepoint DLP', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'DPA in place', principals: 'Employees' },
+  { id: 'ukclient', label: 'UK retail client', kind: 'client', zone: 'abroad', region: 'UK', safeguard: 'Exempt', principals: 'Client end-users' },
+];
+
+export const FLOW_EDGES: FlowEdge[] = [
+  { id: 'f1', from: 'ats', to: 'authbridge', activity: 'PA-02 Pre-employment background verification', label: 'ID, criminal record', categories: ['Identity documents', 'Education records', 'Employment history', 'Criminal record'], principals: 'Candidates', basis: 'Consent', finding: 'G-02' },
+  { id: 'f2', from: 'hrms', to: 'insurer', activity: 'PA-09 Group mediclaim & dependant enrolment', label: 'Health, dependants', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees', basis: 'Consent' },
+  { id: 'f3', from: 'hrms', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'UAN, wages', categories: ['UAN', 'Aadhaar-linked KYC', 'Wages'], principals: 'Employees', basis: 'Legal obligation' },
+  { id: 'f4', from: 'payroll', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'PAN, PF number', categories: ['PAN', 'PF number', 'Contribution amounts'], principals: 'Employees', basis: 'Legal obligation' },
+  { id: 'f5', from: 'hrms', to: 'mailchimp', activity: 'PA-12 Alumni communications', label: '1,340 alumni contacts', categories: ['Name', 'Personal email', 'Last role'], principals: 'Ex-employees', basis: 'Not determined', finding: 'G-06' },
+  { id: 'f6', from: 'endpoints', to: 'forcepoint', activity: 'PA-15 IT monitoring & DLP', label: 'DLP and activity logs', categories: ['Device and user IDs', 'File and email activity'], principals: 'Employees', basis: 's.7(i) safeguarding' },
+  { id: 'f7', from: 'vdi', to: 'ukclient', activity: 'PA-17 Client delivery — UK retailer', label: 'Client end-user records', categories: ['Customer account data handled on the client’s systems'], principals: 'Client end-users', basis: 's.17(1)(d) exempt' },
+];
+
+
+/* ---------------------------------------------------------------------------
+   Intake without integrations (docs/dpdp-mvp-scope.md). Nothing below came from
+   an export or a connector: it was observed on a screen-share, attested by an
+   owner, or arrived through a channel the platform runs itself.
+   ------------------------------------------------------------------------- */
+
+/** The client's public privacy centre and request inbox — run by the platform. */
+export const PRIVACY_CENTRE = {
+  url: 'privacy.northstarbpo.in',
+  contactEmail: 'privacy@northstarbpo.in',
+  /** Forwarding address: requests that arrive by email land in the DSR desk. */
+  inbox: 'requests.northstar@in.datasentry.in',
+  /** Not designated yet — finding G-09. Shown as a gap on the public page. */
+  grievanceOfficer: null as string | null,
+  responseDays: 30,
+  languages: ['English', 'हिन्दी', 'मराठी', 'ಕನ್ನಡ'],
+  consentSnippet: '<script src="https://datasentry.in/c/northstar.js" async></script>',
+};
+
+/** The latest consultant walkthrough — what was seen, not what was sent. */
+export const WALKTHROUGH: Walkthrough = {
+  id: 'WT-2026-02',
+  date: '09 Oct 2026, 16:30–17:20 IST',
+  consultant: 'Dharita Gada',
+  attendees: ['HR Operations Manager', 'IT Manager', 'Head of Talent Acquisition'],
+  next: '08 Jan 2027',
+  observations: [
+    { system: 'Zoho Recruit', looked: 'Candidate records held', declared: 'About 1,500, kept 180 days', observed: '6,431 records; oldest created Aug 2022', result: 'differs', finding: 'G-01' },
+    { system: 'Zoho Recruit', looked: 'Records older than 180 days', declared: null, observed: '4,812 — list filtered on screen by created date', result: 'new', finding: 'G-01' },
+    { system: 'Zoho Recruit', looked: 'Automatic purge rule', declared: 'Purged after 180 days', observed: 'No rule configured; no purge has ever run', result: 'differs', finding: 'G-01' },
+    { system: 'Google Workspace', looked: 'Accounts of people who have left', declared: 'Disabled on the last working day', observed: '23 still enabled; oldest exit 14 months ago', result: 'differs', finding: 'G-07' },
+    { system: 'Google Drive', looked: 'Sharing on HR/Payroll/FY26', declared: 'Restricted to the HR team', observed: 'Anyone with the link — Viewer', result: 'differs', finding: 'G-08' },
+    { system: 'Mailchimp', looked: 'Alumni audience', declared: 'About 1,000 contacts', observed: '1,340 contacts; no consent field on the audience', result: 'differs', finding: 'G-06' },
+    { system: 'Keka HR', looked: 'Active employees', declared: '240', observed: '240', result: 'matches' },
   ],
-  processors: [
-    { id: 'authbridge', label: 'AuthBridge', note: 'BGV — no DPA', x: 330, y: 40, flag: true },
-    { id: 'insurer', label: 'Niva Bupa', note: 'Mediclaim', x: 330, y: 150 },
-    { id: 'epfo', label: 'EPFO / ESIC', note: 'Statutory', x: 330, y: 260 },
-    { id: 'mailchimp', label: 'Mailchimp', note: 'Alumni — no basis', x: 330, y: 345, flag: true },
+};
+
+const DSR_0041 = { kind: 'Request' as const, ref: 'DSR-2026-0041', label: 'Erasure · Priya Raghunathan, ex-employee' };
+const WITHDRAWAL = { kind: 'Consent withdrawal' as const, ref: 'CW-0412', label: 'Deepa Krishnan, candidate — withdrawn 09 Oct' };
+const EXPIRY = { kind: 'Retention expiry' as const, ref: 'RX-2026-10', label: '212 candidates past the 180-day talent pool' };
+const G08 = { kind: 'Finding' as const, ref: 'G-08', label: 'Payroll folder shared by link' };
+
+/**
+ * Per-system work the platform cannot do itself, generated from the RoPA.
+ * An owner does it in their own system and attests it; nothing is verified by
+ * machine, and the evidence pack says so.
+ */
+export const TASKS: FulfilmentTask[] = [
+  { id: 'T-101', source: DSR_0041, system: 'Keka HR', action: 'Erase the personnel file — appraisals and training records', owner: 'HR Operations Manager', due: '20 Oct 2026', status: 'Attested',
+    attestation: { by: 'Meera Joshi, HR Operations Manager', at: '10 Oct 2026, 16:05 IST', note: 'Personnel file and appraisal history deleted. Keka audit log entry 8812.', proof: 'keka-file-deleted.png' } },
+  { id: 'T-102', source: DSR_0041, system: 'Mailchimp', action: 'Remove from the alumni audience and suppress', owner: 'Marketing Lead', due: '20 Oct 2026', status: 'Attested',
+    attestation: { by: 'Farhan Qureshi, Marketing Lead', at: '10 Oct 2026, 11:20 IST', note: 'Contact archived, deleted and added to the suppression list.', proof: null } },
+  { id: 'T-103', source: DSR_0041, system: 'Zoho Recruit', action: 'Erase the original application record', owner: 'Head of Talent Acquisition', due: '20 Oct 2026', status: 'Open' },
+  { id: 'T-104', source: DSR_0041, system: 'Google Drive', action: 'Delete the 2023 marketing photograph', owner: 'Marketing Lead', due: '20 Oct 2026', status: 'Open' },
+  { id: 'T-105', source: DSR_0041, system: 'Zoho Payroll', action: 'Keep the FY24 payroll register and cite the ground in the response', owner: 'HR Operations Manager', due: '20 Oct 2026', status: 'Retained',
+    retainedFor: 'Maharashtra Shops & Establishments Act — until 31 Mar 2032' },
+  { id: 'T-098', source: WITHDRAWAL, system: 'Zoho Recruit', action: 'Erase the candidate record', owner: 'Head of Talent Acquisition', due: '16 Oct 2026', status: 'Attested',
+    attestation: { by: 'Ritu Sharma, Head of Talent Acquisition', at: '11 Oct 2026, 09:40 IST', note: 'Candidate record deleted, including attachments.', proof: 'recruit-record-deleted.png' } },
+  { id: 'T-099', source: WITHDRAWAL, system: 'AuthBridge (processor)', action: 'Instruct the vendor to erase the BGV file and confirm in writing', owner: 'Legal & Compliance', due: '16 Oct 2026', status: 'Open' },
+  { id: 'T-100', source: WITHDRAWAL, system: 'Google Drive', action: 'Delete the CV copy in Recruitment/2026', owner: 'Head of Talent Acquisition', due: '16 Oct 2026', status: 'Open' },
+  { id: 'T-091', source: EXPIRY, system: 'Zoho Recruit', action: 'Purge 212 candidate records past the talent-pool period', owner: 'Head of Talent Acquisition', due: '08 Oct 2026', status: 'Overdue' },
+  { id: 'T-087', source: G08, system: 'Google Drive', action: 'Restrict HR/Payroll/FY26 to the HR group', owner: 'IT Manager', due: '18 Oct 2026', status: 'Attested',
+    attestation: { by: 'Anil Deshmukh, IT Manager', at: '10 Oct 2026, 12:45 IST', note: 'Link sharing turned off; access limited to hr-team@.', proof: 'drive-sharing-restricted.png' } },
+];
+
+/** The quarterly re-attestation that keeps the register current. */
+export const CHECK_IN = {
+  label: 'Q3 2026 check-in',
+  due: '15 Oct 2026',
+  sentTo: 'HR Operations Manager',
+  sentOn: '01 Oct 2026',
+  last: { on: '10 Jul 2026', changes: 2 },
+  questions: [
+    { id: 'tools', kind: 'yesno' as const, text: 'Have you started using any new tool or vendor that holds employee, candidate or customer data?', register: 'The register lists 11 systems and 10 processors.', placeholder: 'e.g. Moved payroll to RazorpayX in September' },
+    { id: 'retired', kind: 'yesno' as const, text: 'Has any tool been replaced or switched off?', register: 'Payroll runs on Zoho Payroll; attendance on Matrix COSEC.', placeholder: 'e.g. Stopped using Mailchimp in August' },
+    { id: 'headcount', kind: 'number' as const, text: 'Roughly how many people are on the payroll today?', register: '240 at the last check-in.', placeholder: '240' },
+    { id: 'purposes', kind: 'yesno' as const, text: 'Are you using existing data for anything new — monitoring, marketing, analytics?', register: '19 activities, each with one stated purpose.', placeholder: 'e.g. Started productivity reports from the DLP agent' },
+    { id: 'clients', kind: 'yesno' as const, text: 'Any new client, or a change in where client work is contracted?', register: 'Two offshore clients, both contracted outside India.', placeholder: 'e.g. New Indian telco client from November' },
+    { id: 'offplatform', kind: 'yesno' as const, text: 'Did any privacy request, complaint or incident reach you outside this platform?', register: 'Requests come in through the privacy centre or the request inbox.', placeholder: 'e.g. An ex-employee asked HR by phone for their records' },
   ],
-  destinations: [
-    { id: 'india', label: 'India', note: '9 systems', x: 600, y: 90 },
-    { id: 'us', label: 'United States', note: '4 transfers', x: 600, y: 230 },
-    { id: 'uk', label: 'United Kingdom', note: '1 transfer — exempt', x: 600, y: 440 },
+};
+
+/** Who holds each owner role — attestations are signed by a person, not a role. */
+export const OWNERS: Record<string, string> = {
+  'HR Operations Manager': 'Meera Joshi',
+  'Head of Talent Acquisition': 'Ritu Sharma',
+  'Marketing Lead': 'Farhan Qureshi',
+  'Legal & Compliance': 'Kiran Rao',
+  'IT Manager': 'Anil Deshmukh',
+};
+
+/**
+ * The next walkthrough's agenda, generated from the register: for each system,
+ * what to look at and what the register currently says. Open findings and
+ * attested fixes both land here, so a fix is looked at, not just taken on trust.
+ */
+export const WALKTHROUGH_AGENDA = [
+  { id: 'A1', system: 'Zoho Recruit', looked: 'Records older than 180 days', register: '4,812 on 09 Oct; purge task T-091 overdue', why: 'Confirms the purge happened', finding: 'G-01' },
+  { id: 'A2', system: 'Google Workspace', looked: 'Accounts of people who have left', register: '23 enabled on 09 Oct', why: 'Open finding', finding: 'G-07' },
+  { id: 'A3', system: 'Google Drive', looked: 'Sharing on HR/Payroll/FY26', register: 'Restricted to HR — attested 10 Oct (T-087)', why: 'Looks at an attested fix', finding: 'G-08' },
+  { id: 'A4', system: 'Matrix COSEC', looked: 'Template retention setting', register: 'No purge configured', why: 'Open finding', finding: 'G-10' },
+  { id: 'A5', system: 'Mailchimp', looked: 'Consent field on the alumni audience', register: 'No consent field; 1,340 contacts', why: 'Open finding', finding: 'G-06' },
+  { id: 'A6', system: 'Keka HR', looked: 'Active employees', register: '240', why: 'Scope check' },
+];
+
+/**
+ * Client-facing pages are white-labelled: the client's colour replaces the
+ * DataSentry accent through the same tokens, so every component follows.
+ */
+export const CLIENT_THEME: Record<string, { accent: string; hover: string; weak: string; border: string; initials: string }> = {
+  northstar: { accent: '#1d4f73', hover: '#163d59', weak: '#eaf1f7', border: '#c6d8e8', initials: 'NB' },
+  quadrant: { accent: '#5b3f8c', hover: '#47306f', weak: '#f1ecf8', border: '#d9cdec', initials: 'QA' },
+  meridian: { accent: '#0f6b62', hover: '#0b544d', weak: '#e8f4f2', border: '#c3e1dc', initials: 'MS' },
+};
+
+/** Readiness score at each review, oldest first — for the trend line. */
+export const SCORE_HISTORY: Record<string, { on: string; score: number }[]> = {
+  northstar: [
+    { on: '12 Aug 2026', score: 31 }, { on: '29 Aug 2026', score: 34 }, { on: '12 Sep 2026', score: 36 },
+    { on: '26 Sep 2026', score: 39 }, { on: '08 Oct 2026', score: 42 },
   ],
-  edges: [
-    ['ats', 'authbridge'], ['ats', 'india'],
-    ['hrms', 'insurer'], ['hrms', 'epfo'], ['hrms', 'india'],
-    ['payroll', 'epfo'], ['payroll', 'india'],
-    ['biometric', 'india'],
-    ['vdi', 'uk'],
-    ['authbridge', 'india'], ['insurer', 'india'], ['epfo', 'india'],
-    ['mailchimp', 'us'], ['hrms', 'mailchimp'],
-  ] as [string, string][],
+  quadrant: [
+    { on: '18 Jul 2026', score: 43 }, { on: '08 Aug 2026', score: 51 }, { on: '29 Aug 2026', score: 58 },
+    { on: '19 Sep 2026', score: 63 }, { on: '06 Oct 2026', score: 67 },
+  ],
+  meridian: [{ on: '09 Oct 2026', score: 19 }],
+};
+
+/**
+ * The append-only audit trail, newest first. A field change records the old
+ * and the new value, so the history says exactly what changed, not
+ * "record updated". `ref` ties an entry to a record (an activity, finding,
+ * request or incident).
+ */
+export type AuditEntry = {
+  at: string;
+  who: string;
+  ref: string;
+  what: string;
+  change?: { field: string; from: string; to: string };
+};
+
+export const AUDIT: AuditEntry[] = [
+  { at: '10 Oct 2026, 16:05', who: 'Meera Joshi', ref: 'DSR-2026-0041', what: 'Erasure attested — Keka HR personnel file' },
+  { at: '10 Oct 2026, 14:22', who: 'CISO', ref: 'INC-2026-003', what: 'Incident opened — 72-hour clock started' },
+  { at: '10 Oct 2026, 11:42', who: 'Careers portal', ref: 'PA-01', what: 'Candidate consent recorded — notice v3, English' },
+  { at: '09 Oct 2026, 17:20', who: 'Dharita Gada', ref: 'G-01', what: 'Walkthrough observation attached', change: { field: 'Basis', from: 'Declared', to: 'Observed' } },
+  { at: '09 Oct 2026, 17:05', who: 'Dharita Gada', ref: 'PA-01', what: 'Retention checked on screen in Zoho Recruit', change: { field: 'Records past retention', from: 'Unknown', to: '4,812' } },
+  { at: '08 Oct 2026, 16:40', who: 'Meera Joshi', ref: 'RoPA', what: 'RoPA confirmed', change: { field: 'Version', from: 'v3', to: 'v4' } },
+  { at: '08 Oct 2026, 15:56', who: 'Rule engine v1.4', ref: 'G-06', what: 'Finding raised from PA-12', change: { field: 'Status', from: '—', to: 'Open' } },
+  { at: '08 Oct 2026, 15:55', who: 'Dharita Gada', ref: 'PA-12', what: 'Lawful basis reviewed', change: { field: 'Lawful basis', from: 'Consent', to: 'Not determined' } },
+  { at: '07 Oct 2026, 12:10', who: 'Dharita Gada', ref: 'PA-02', what: 'Processor DPA checked', change: { field: 'AuthBridge DPA', from: 'Assumed', to: 'Missing' } },
+  { at: '06 Oct 2026, 10:30', who: 'Kiran Rao', ref: 'G-02', what: 'Owner assigned', change: { field: 'Owner', from: 'Unassigned', to: 'Legal & Compliance' } },
+  { at: '03 Oct 2026, 18:02', who: 'Dharita Gada', ref: 'PA-06', what: 'Retention reviewed', change: { field: 'Retention', from: '7 years', to: 'Not stated' } },
+];
+
+export const auditFor = (ref: string) => AUDIT.filter((e) => e.ref === ref || e.what.includes(ref));
+
+/** Everyone who can be @mentioned: the consultant team and the client's owners. */
+export const PEOPLE: { name: string; role: string; side: 'DataSentry' | 'Client' }[] = [
+  { name: 'Dharita Gada', role: 'Consultant Admin', side: 'DataSentry' },
+  { name: 'Rohan Mehta', role: 'Consultant', side: 'DataSentry' },
+  { name: 'Meera Joshi', role: 'HR Operations Manager', side: 'Client' },
+  { name: 'Ritu Sharma', role: 'Head of Talent Acquisition', side: 'Client' },
+  { name: 'Farhan Qureshi', role: 'Marketing Lead', side: 'Client' },
+  { name: 'Kiran Rao', role: 'Legal & Compliance', side: 'Client' },
+  { name: 'Anil Deshmukh', role: 'IT Manager', side: 'Client' },
+  { name: 'Vikram Iyer', role: 'Chief Information Security Officer', side: 'Client' },
+];
+
+/**
+ * Comments on a record. `visibility` decides who sees it: an internal note stays
+ * with the DataSentry team; a shared comment is visible to the client's owners.
+ */
+export type RecordComment = {
+  id: string;
+  ref: string;
+  who: string;
+  at: string;
+  text: string;
+  visibility: 'internal' | 'shared';
+};
+
+export const COMMENTS: RecordComment[] = [
+  { id: 'c1', ref: 'G-01', who: 'Ritu Sharma', at: '10 Oct 2026, 11:05', visibility: 'shared', text: 'Zoho support says the purge rule can run monthly. Can we keep campus hires for 12 months instead of 180 days?' },
+  { id: 'c2', ref: 'G-01', who: 'Dharita Gada', at: '10 Oct 2026, 12:20', visibility: 'shared', text: '@Ritu Sharma 12 months works if the notice says so — we would update the candidate notice to v4 first. Drafting it this week.' },
+  { id: 'c3', ref: 'G-01', who: 'Rohan Mehta', at: '10 Oct 2026, 12:41', visibility: 'internal', text: 'Watch the scope: notice change pushes the evidence pack to v5.' },
+  { id: 'c4', ref: 'G-06', who: 'Farhan Qureshi', at: '09 Oct 2026, 16:10', visibility: 'shared', text: 'We could add an opt-in to the exit form. Would that cover the people already on the list?' },
+  { id: 'c5', ref: 'G-06', who: 'Dharita Gada', at: '09 Oct 2026, 17:02', visibility: 'shared', text: 'It covers future leavers. The 1,340 already on the list need a one-time re-permission email — or we stop mailing them. @Kiran Rao to confirm.' },
+  { id: 'c6', ref: 'PA-12', who: 'Rohan Mehta', at: '08 Oct 2026, 16:02', visibility: 'internal', text: 'Basis set to Not determined on purpose so the finding fires. Revisit after the re-permission campaign.' },
+  { id: 'c7', ref: 'INC-2026-003', who: 'Vikram Iyer', at: '13 Oct 2026, 10:15', visibility: 'shared', text: 'Recall confirmed for all 34 recipients. Please add that to section 3.' },
+  { id: 'c8', ref: 'INC-2026-003', who: 'Dharita Gada', at: '13 Oct 2026, 10:40', visibility: 'shared', text: '@Vikram Iyer done — section 3 updated. Ready for your sign-off.' },
+];
+
+/**
+ * A generated compliance document, opened as a page. Sections carry their own
+ * provenance: AI-drafted from the record, or reviewed by the consultant.
+ * Editing a drafted section marks it reviewed.
+ */
+export type DocSection = { heading: string; text: string; provenance: Provenance; source?: string };
+export type ComplianceDoc = {
+  id: string;
+  ref: string;
+  title: string;
+  kind: string;
+  provision: string;
+  owner: string;
+  approver: string;
+  due: string;
+  version: number;
+  sections: DocSection[];
+  versions: { v: number; at: string; who: string; note: string }[];
+};
+
+export const BOARD_INTIMATION: ComplianceDoc = {
+  id: 'board-intimation',
+  ref: 'INC-2026-003',
+  title: 'Intimation to the Data Protection Board',
+  kind: 'Personal data breach — intimation',
+  provision: 'Rule 7(2)',
+  owner: 'Dharita Gada',
+  approver: 'Vikram Iyer',
+  due: '13 Oct 2026, 14:20',
+  version: 2,
+  sections: [
+    {
+      heading: 'Who is notifying',
+      provenance: 'consultant_reviewed',
+      text: 'Northstar BPO Services Pvt Ltd, Pune, Maharashtra, as Data Fiduciary. Contact for this intimation: Vikram Iyer, Chief Information Security Officer — privacy@northstarbpo.in.',
+    },
+    {
+      heading: 'What happened',
+      provenance: 'ai_suggested',
+      source: 'Drafted from incident record INC-2026-003',
+      text: 'On 10 October 2026 the September 2026 payroll register was sent by email to an internal distribution list that included 34 recipients with no need to access it. The register held the name, employee ID, designation, gross and net salary, PAN, bank account number and PF number of 240 employees.',
+    },
+    {
+      heading: 'When we became aware, and what we did',
+      provenance: 'consultant_reviewed',
+      text: 'We became aware at 14:20 IST on 10 October 2026. The message was recalled at 14:52 IST and the distribution list was corrected the same afternoon. Recall has been confirmed for all 34 recipients. No onward disclosure has been identified.',
+    },
+    {
+      heading: 'People and personal data affected',
+      provenance: 'ai_suggested',
+      source: 'From the register — PA-04 Payroll processing',
+      text: '240 current employees. Identity data (name, employee ID, designation), financial data (salary, bank account number) and government identifiers (PAN, PF number). No data of children, and no data from outside India.',
+    },
+    {
+      heading: 'Likely consequences',
+      provenance: 'ai_suggested',
+      source: 'Suggested from the categories involved',
+      text: 'Bank account numbers alongside PAN raise the risk of targeted financial fraud and phishing. Salary disclosure inside the company may cause distress. The risk is limited by the recipients all being employees bound by confidentiality.',
+    },
+    {
+      heading: 'Measures taken and planned',
+      provenance: 'consultant_reviewed',
+      text: 'Recall and deletion confirmed by each recipient. Payroll registers now go only to a named list owned by Finance, with external-sharing blocked on the payroll folder (finding G-08). Affected employees are being told what happened and how to watch for fraud attempts.',
+    },
+  ],
+  versions: [
+    { v: 2, at: '13 Oct 2026, 10:40', who: 'Dharita Gada', note: 'Section 3 updated after the CISO confirmed recall for all 34 recipients' },
+    { v: 1, at: '13 Oct 2026, 09:30', who: 'DataSentry draft', note: 'Generated from incident record INC-2026-003 and the register' },
+  ],
 };

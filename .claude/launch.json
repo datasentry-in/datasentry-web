@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "datasentry-web", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "--", "-p", "4100"], "port": 4100 }
+  ]
+}

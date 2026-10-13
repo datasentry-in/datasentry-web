@@ -632,17 +632,17 @@ export function buildSection3(a: Answers): Section {
   if (has(a, 'candidate_retention', 'never') || has(a, 'candidate_retention', 'unsure')) {
     qs.push({
       id: 's3_ats_volume',
-      text: 'Roughly how many CVs are sitting in the system, and can you export the list with dates?',
-      why: 'The export is reconciled against what you just declared. Observed state is what moves a client, and the age distribution is usually the single biggest finding in the report.',
+      text: 'Roughly how many CVs are sitting in the system, and how old is the oldest?',
+      why: 'You don’t need to send anything. Read the count off the screen now, or show it on the next walkthrough — the age of the oldest records is usually the single biggest finding in the report.',
       kind: 'single',
       options: [
-        { value: 'export', label: 'Yes, we can export it this week' },
+        { value: 'export', label: 'We can show it on the next walkthrough' },
         { value: 'admin', label: 'Only the vendor admin can' },
         { value: 'unknown', label: 'No idea how many there are' },
       ],
       source: 'followup',
       because: 'you said the talent pool has never been purged',
-      populates: 'Evidence — ATS export',
+      populates: 'Walkthrough agenda — ATS',
     });
   }
   if (has(a, 'bgv', 'vendor_no_dpa')) {

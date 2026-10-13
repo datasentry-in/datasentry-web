@@ -1,17 +1,18 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import type { Provenance, Severity } from '@/modules/app/dpdp/types';
+import type { EvidenceBasis, Provenance, Severity } from '@/modules/app/dpdp/types';
+import TrendChart from './TrendChart';
 
 /**
  * Console design system — quiet product UI, not the brutalist marketing site.
  *
- * Surfaces are white on a near-white page, separated by 1px hairlines and a
- * barely-there shadow. Type is Inter at 13px with muted secondary text.
- * Colour is spent only where it carries meaning: red for what is overdue or
- * unlawful, amber for what needs attention, green for what is settled,
- * indigo for the single primary action on a screen. Everything else is grey,
- * so the three or four things that matter on a page are the things that
- * stand out. Tokens live in `globals.css` under `.demo-root`.
+ * A white canvas. Surfaces are separated by 1px hairlines, not shadows, and
+ * grey is kept for hover, the active nav item, table heads and disabled
+ * inputs. Type is Inter at 13px. Colour is spent only where it carries
+ * meaning: red for what is overdue or unlawful, amber for what needs
+ * attention, green for what is settled, blue for the single primary action on
+ * a screen — so the three or four things that matter on a page are the things
+ * that stand out. Tokens live in `console.css` under `.demo-root`.
  */
 
 /* ---------------------------------------------------------------- surfaces */
@@ -22,59 +23,100 @@ export function Panel({
   title?: string; sub?: string; right?: ReactNode;
   children: ReactNode; className?: string; flush?: boolean;
 }) {
-  // `min-w-0` lets a Panel shrink below its content's min-content width.
-  // Without it a grid column sizes to the widest TableWrap inside it and the
-  // whole panel overflows the viewport on a phone instead of scrolling.
+  // Two kinds of section, as in a document. A flush panel holds an object you
+  // work in — a table, a list of rows, the flow map — so it gets a frame with
+  // its heading inside. Anything else is prose and cards under a heading: no
+  // frame, the heading and white space do the separating.
+  // `min-w-0` lets a section shrink below its content's min-content width, so
+  // a grid column with a wide table scrolls instead of overflowing on a phone.
+  if (!flush) {
+    return (
+      <section className={`min-w-0 ${className}`}>
+        {title && (
+          <header className="mb-3 flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--ds-text)]">{title}</h2>
+              {sub && <p className="mt-0.5 text-[13px] leading-snug text-[var(--ds-text-3)]">{sub}</p>}
+            </div>
+            {right}
+          </header>
+        )}
+        <div>{children}</div>
+      </section>
+    );
+  }
   return (
-    <section
-      className={`min-w-0 overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow)] ${className}`}
-    >
+    <section className={`min-w-0 overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] ${className}`}>
       {title && (
         <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
           <div className="min-w-0">
-            <h2 className="text-[14px] font-semibold tracking-[-0.015em] text-[var(--ds-text)]">{title}</h2>
-            {sub && <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-2)]">{sub}</p>}
+            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--ds-text)]">{title}</h2>
+            {sub && <p className="mt-0.5 text-[13px] leading-snug text-[var(--ds-text-3)]">{sub}</p>}
           </div>
           {right}
         </header>
       )}
-      <div className={flush ? '' : 'p-4 sm:p-5'}>{children}</div>
+      <div>{children}</div>
     </section>
   );
 }
 
-/** A plain inner card — the unit used inside panels for list rows. */
+type Tone = 'plain' | 'danger' | 'warn' | 'ok' | 'accent' | 'note';
+
+/**
+ * A neutral inner box for grouped content. Toned cards are not boxes: anything
+ * that carries a meaning is marked with the accent bar (see `Callout`), never
+ * with a tinted, bordered panel.
+ */
 export function Card({
   children, className = '', tone = 'plain',
-}: { children: ReactNode; className?: string; tone?: 'plain' | 'subtle' | 'danger' | 'warn' | 'ok' | 'accent' }) {
-  const map = {
-    plain: 'border-[var(--ds-border)] bg-[var(--ds-panel)]',
-    subtle: 'border-[var(--ds-border)] bg-[var(--ds-subtle)]',
-    danger: 'border-[var(--ds-danger-border)] bg-[var(--ds-danger-weak)]',
-    warn: 'border-[var(--ds-warn-border)] bg-[var(--ds-warn-weak)]',
-    ok: 'border-[var(--ds-ok-border)] bg-[var(--ds-ok-weak)]',
-    accent: 'border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)]',
-  } as const;
-  return <div className={`rounded-md border p-3 ${map[tone]} ${className}`}>{children}</div>;
+}: { children: ReactNode; className?: string; tone?: 'plain' | 'subtle' | Exclude<Tone, 'plain' | 'note'> }) {
+  if (tone === 'plain' || tone === 'subtle') {
+    return <div className={`rounded-md border border-[var(--ds-border)] bg-[var(--ds-panel)] p-3 ${className}`}>{children}</div>;
+  }
+  return <div className={`ds-bar ds-bar-${tone} ${className}`}>{children}</div>;
 }
 
-export function PageHeader({
-  eyebrow, title, muted, sub, right,
-}: { eyebrow?: string; title: string; muted?: string; sub?: ReactNode; right?: ReactNode }) {
+/**
+ * The console's one way of flagging something: a 2px accent bar, a title, a
+ * line of detail and an optional action. No tint — the bar's colour is the
+ * meaning. `boxed` (the default for page-level alerts) sets it in a plain
+ * hairline card with the bar inset; unboxed, it sits inline (design notes,
+ * callouts inside a panel).
+ */
+export function Callout({
+  tone = 'plain', title, children, action, boxed = false, className = '',
+}: { tone?: Tone; title?: ReactNode; children?: ReactNode; action?: ReactNode; boxed?: boolean; className?: string }) {
+  const bar = (
+    <div className={`ds-bar ds-bar-${tone} flex flex-wrap items-center gap-x-6 gap-y-2 ${boxed ? '' : className}`}>
+      <div className="min-w-0 flex-1 basis-60">
+        {title && <p className="text-[14px] font-semibold leading-snug tracking-[-0.01em] text-[var(--ds-text)]">{title}</p>}
+        {children && (
+          <div className={`text-[13px] leading-relaxed text-[var(--ds-text-2)] ${title ? 'mt-0.5' : ''}`}>{children}</div>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+  return boxed ? <Box className={className}>{bar}</Box> : bar;
+}
+
+/** The plain hairline card a boxed callout sits in. */
+export function Box({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <div className={`rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 ${className}`}>{children}</div>;
+}
+
+/**
+ * One title, one line of context. Where you are lives in the header's client
+ * switcher and the sidebar, so there is no eyebrow and no second, greyed-out
+ * headline.
+ */
+export function PageHeader({ title, sub, right }: { title: string; sub?: ReactNode; right?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        {eyebrow && <p className="ds-label mb-2 text-[var(--ds-text-3)]">{eyebrow}</p>}
-        <h1 className="ds-display text-[28px] text-[var(--ds-text)] sm:text-[34px]">
-          {title}
-          {muted && (
-            <>
-              <br />
-              <span className="text-[var(--ds-text-3)]">{muted}</span>
-            </>
-          )}
-        </h1>
-        {sub && <p className="mt-2.5 max-w-2xl text-[13.5px] leading-relaxed text-[var(--ds-text-2)]">{sub}</p>}
+        <h1 className="ds-display text-[26px] text-[var(--ds-text)] sm:text-[30px]">{title}</h1>
+        {sub && <div className="mt-2 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">{sub}</div>}
       </div>
       {right}
     </div>
@@ -83,51 +125,103 @@ export function PageHeader({
 
 /* ------------------------------------------------------------------ metrics */
 
+/**
+ * One cell of a stat strip. Stats sit edge to edge in a single bordered strip
+ * (a `gap-px` grid on a border-coloured background draws the dividers), so a
+ * row of numbers reads as one instrument, not four cards. Only a number that
+ * is actually bad or due takes colour.
+ */
 export function Stat({
   label, value, note, tone = 'plain',
 }: { label: string; value: string | number; note?: string; tone?: 'plain' | 'bad' | 'warn' | 'good' }) {
-  const dot =
-    tone === 'bad' ? 'bg-[var(--ds-danger)]'
-      : tone === 'warn' ? 'bg-[var(--ds-warn)]'
-        : tone === 'good' ? 'bg-[var(--ds-ok)]'
-          : 'bg-[var(--ds-border-strong)]';
+  // Calm by default: the number stays ink; a dot by the label says it needs a look.
+  const dot = tone === 'bad' ? 'var(--ds-danger)' : tone === 'warn' ? 'var(--ds-warn)' : tone === 'good' ? 'var(--ds-ok)' : null;
+  const fg = 'text-[var(--ds-text)]';
   return (
-    <div className="rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-3.5 shadow-[var(--ds-shadow)] sm:p-4">
-      <div className="flex items-start gap-1.5">
-        <span className={`mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} aria-hidden />
-        <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">{label}</p>
-      </div>
+    <div className="min-w-0 bg-[var(--ds-panel)] px-4 py-3.5">
+      <p className="flex items-center gap-1.5 text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">
+        {dot && <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />}
+        {label}
+      </p>
       <p
-        className={`ds-figure mt-2 leading-none tracking-[-0.02em] ${
-          String(value).length > 6 ? 'text-[19px] sm:text-[21px]' : 'text-[26px] sm:text-[28px]'
+        className={`ds-figure mt-1.5 leading-none tracking-[-0.02em] ${fg} ${
+          String(value).length > 6 ? 'text-[19px] sm:text-[21px]' : 'text-[24px] sm:text-[26px]'
         }`}
       >
         {value}
       </p>
-      {note && <p className="mt-1.5 text-[11.5px] leading-snug text-[var(--ds-text-3)]">{note}</p>}
+      {note && <p className="mt-1.5 text-[12px] leading-snug text-[var(--ds-text-3)]">{note}</p>}
     </div>
   );
 }
 
-export function ScoreBlock({ score, trend }: { score: number; trend: string }) {
-  const tone =
-    score < 40 ? { fg: 'var(--ds-danger)', bg: 'var(--ds-danger-weak)', bd: 'var(--ds-danger-border)' }
-      : score < 70 ? { fg: 'var(--ds-warn)', bg: 'var(--ds-warn-weak)', bd: 'var(--ds-warn-border)' }
-        : { fg: 'var(--ds-ok)', bg: 'var(--ds-ok-weak)', bd: 'var(--ds-ok-border)' };
+/**
+ * A module page's key figures as one line of properties under its title, the
+ * way a Notion page carries its properties — so the page leads with its own
+ * content, not a dashboard strip. Stat strips are for the overview and the
+ * portfolio only. A figure that is bad or due gets a dot, not red text.
+ */
+export function Facts({ children, tight = true }: { children: ReactNode; tight?: boolean }) {
+  // `tight` tucks the row under the page title, closing the section gap.
+  return (
+    <dl className={`flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[var(--ds-border)] pb-4 ${tight ? '-mt-5' : ''}`}>
+      {children}
+    </dl>
+  );
+}
+
+export function Fact({
+  label, value, note, tone = 'plain',
+}: { label: string; value: string | number; note?: string; tone?: 'plain' | 'bad' | 'warn' | 'good' }) {
+  const dot = tone === 'bad' ? 'var(--ds-danger)' : tone === 'warn' ? 'var(--ds-warn)' : tone === 'good' ? 'var(--ds-ok)' : null;
+  return (
+    // The note is on hover: properties stay one short line.
+    <div className={`flex items-baseline gap-1.5 text-[13px] ${note ? 'cursor-help' : ''}`} title={note}>
+      <dt className="text-[var(--ds-text-3)]">{label}</dt>
+      <dd className="flex items-center gap-1.5 font-medium text-[var(--ds-text)]">
+        {dot && <span aria-hidden className="h-1.5 w-1.5 self-center rounded-full" style={{ background: dot }} />}
+        <span className="tnum">{value}</span>
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * The readiness score as the first, double-width cell of a stat strip: the
+ * number and verdict, and beside it the score at every review so far. A
+ * single review shows as a baseline instead of a chart.
+ */
+export function ScoreBlock({
+  score, trend, history = [],
+}: { score: number; trend: string; history?: { at: number; value: number; label: string }[] }) {
+  const fg = score < 40 ? 'var(--ds-danger)' : score < 70 ? 'var(--ds-warn)' : 'var(--ds-ok)';
   const verdict = score < 40 ? 'Not ready' : score < 70 ? 'Partially ready' : 'Substantially ready';
   return (
-    <div className="flex flex-col justify-between rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 shadow-[var(--ds-shadow)]">
-      <div className="flex items-baseline gap-1.5">
-        <span className="ds-figure text-[42px] leading-none tracking-[-0.04em]" style={{ color: tone.fg }}>
-          {score}
-        </span>
-        <span className="ds-figure text-[13px] text-[var(--ds-text-3)]">/ 100</span>
+    <div className="flex min-w-0 flex-col gap-3 bg-[var(--ds-panel)] px-4 py-3.5 sm:flex-row sm:items-stretch sm:gap-5">
+      <div className="shrink-0 sm:w-36">
+        <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
+        <p className="mt-1.5 flex items-baseline gap-1 leading-none">
+          <span className="ds-figure text-[24px] tracking-[-0.03em] text-[var(--ds-text)] sm:text-[26px]">{score}</span>
+          <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
+        </p>
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
+          <div className="h-full rounded-full" style={{ width: `${score}%`, background: fg }} />
+        </div>
+        <p className="mt-1.5 text-[12px] font-medium" style={{ color: fg }}>{verdict}</p>
+        <p className="text-[12px] leading-snug text-[var(--ds-text-3)]">{trend}</p>
       </div>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
-        <div className="h-full rounded-full" style={{ width: `${score}%`, background: tone.fg }} />
+      <div className="min-w-0 flex-1 sm:border-l sm:border-[var(--ds-border)] sm:pl-4">
+        {history.length > 1 ? (
+          <>
+            <p className="mb-1 text-[12px] text-[var(--ds-text-3)]">At each review</p>
+            <TrendChart points={history} color="var(--ds-accent)" label={`Readiness score at each review: ${history.map((h) => `${h.label} ${h.value}`).join(', ')}`} />
+          </>
+        ) : (
+          <p className="flex h-full items-center text-[12px] leading-relaxed text-[var(--ds-text-3)]">
+            Baseline — the trend starts at the next review.
+          </p>
+        )}
       </div>
-      <p className="mt-3 text-[13px] font-semibold tracking-[-0.01em]">{verdict}</p>
-      <p className="text-[11.5px] text-[var(--ds-text-3)]">Readiness score · {trend}</p>
     </div>
   );
 }
@@ -137,13 +231,13 @@ export function Meter({ label, pct, note }: { label: string; pct: number; note?:
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[12.5px] font-medium text-[var(--ds-text)]">{label}</span>
+        <span className="text-[13px] font-medium text-[var(--ds-text)]">{label}</span>
         <span className="ds-figure text-[12px] text-[var(--ds-text-2)]">{pct}%</span>
       </div>
       <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
         <div className="h-full rounded-full bg-[var(--ds-accent)]" style={{ width: `${pct}%` }} />
       </div>
-      {note && <p className="mt-1 text-[11.5px] text-[var(--ds-text-3)]">{note}</p>}
+      {note && <p className="mt-1 text-[12px] text-[var(--ds-text-3)]">{note}</p>}
     </div>
   );
 }
@@ -203,6 +297,48 @@ export function ProvenanceTag({ p }: { p: Provenance }) {
   return <span className={`${CHIP} ${v.cls}`}>{v.label}</span>;
 }
 
+/**
+ * What a fact rests on. With no integrations or file imports, every fact was
+ * declared by the client, observed by the consultant on a screen-share, or
+ * attested by the owner who did the work — never machine-verified.
+ */
+export function BasisTag({ b }: { b: EvidenceBasis }) {
+  const map: Record<EvidenceBasis, { label: string; title: string; cls: string; glyph: ReactNode }> = {
+    declared: {
+      label: 'Declared',
+      title: 'Stated by the client in an interview or check-in',
+      cls: 'border-[var(--ds-border)] bg-[var(--ds-panel)] text-[var(--ds-text-2)]',
+      glyph: <path d="M3 4.5h6M3 7h4" />,
+    },
+    observed: {
+      label: 'Observed',
+      title: 'Seen by the consultant on a screen-share walkthrough — nothing was exported',
+      cls: 'border-[var(--ds-border-strong)] bg-[var(--ds-subtle-2)] text-[var(--ds-text)]',
+      glyph: (
+        <>
+          <path d="M1 6s1.8-3.2 5-3.2S11 6 11 6 9.2 9.2 6 9.2 1 6 1 6z" />
+          <circle cx="6" cy="6" r="1.4" />
+        </>
+      ),
+    },
+    attested: {
+      label: 'Attested',
+      title: 'Confirmed by the owner who did the work in their own system — not machine-verified',
+      cls: 'border-[var(--ds-ok-border)] bg-[var(--ds-ok-weak)] text-[var(--ds-ok)]',
+      glyph: <path d="M2.5 6.2l2.3 2.3L9.5 3.8" />,
+    },
+  };
+  const v = map[b];
+  return (
+    <span className={`${CHIP} ${v.cls}`} title={v.title}>
+      <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        {v.glyph}
+      </svg>
+      {v.label}
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ actions */
 
 export function Button({
@@ -216,12 +352,12 @@ export function Button({
 }) {
   const map = {
     primary:
-      'border-transparent bg-[var(--ds-accent)] text-white hover:bg-[var(--ds-accent-hover)] shadow-[var(--ds-shadow)]',
+      'border-transparent bg-[var(--ds-accent)] text-white hover:bg-[var(--ds-accent-hover)]',
     secondary:
-      'border-[var(--ds-border-strong)] bg-[var(--ds-panel)] text-[var(--ds-text)] hover:bg-[var(--ds-subtle)] shadow-[var(--ds-shadow)]',
+      'border-[var(--ds-border-strong)] bg-[var(--ds-panel)] text-[var(--ds-text)] hover:bg-[var(--ds-subtle)]',
     ghost: 'border-transparent bg-transparent text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]',
   } as const;
-  const cls = `inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${map[variant]} ${className}`;
+  const cls = `inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 text-[13px] font-medium transition-colors ${map[variant]} ${className}`;
   if (as === 'link' && href) {
     return (
       <Link href={href} className={cls}>
@@ -264,7 +400,7 @@ export function Th({ children, className = '' }: { children: ReactNode; classNam
 
 export function Td({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <td className={`border-b border-[var(--ds-border)] px-3 py-2.5 align-top text-[12.5px] leading-snug ${className}`}>
+    <td className={`border-b border-[var(--ds-border)] px-3 py-2.5 align-top text-[13px] leading-snug ${className}`}>
       {children}
     </td>
   );
@@ -278,19 +414,155 @@ export function CiteLink({ provision }: { provision: string }) {
       href="https://www.meity.gov.in/writereaddata/files/Digital%20Personal%20Data%20Protection%20Act%202023.pdf"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center rounded border border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)] px-1.5 py-px text-[11.5px] font-medium text-[var(--ds-accent-hover)] transition-colors hover:border-[var(--ds-accent)] hover:bg-[#dcedf9]"
+      className="inline-flex items-center rounded border border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)] px-1.5 py-px text-[12px] font-medium text-[var(--ds-accent-hover)] transition-colors hover:border-[var(--ds-accent)] hover:bg-[#dcedf9]"
     >
       {provision}
     </a>
   );
 }
 
-export function DemoNote({ children }: { children: ReactNode }) {
+export { default as DemoNote } from './DemoNote';
+
+/** What a list shows when there is nothing in it — say why, and what next. */
+export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <p className="rounded-md border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-3 py-2.5 text-[12px] leading-relaxed text-[var(--ds-text-2)]">
-      <span className="font-medium text-[var(--ds-text)]">Design note — </span>
-      {children}
-    </p>
+    <div className="flex flex-col items-center px-6 py-10 text-center">
+      <svg viewBox="0 0 24 24" className="h-6 w-6 text-[var(--ds-ok)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12.3 2.7 2.7L16 9.7" />
+      </svg>
+      <p className="mt-3 text-[14px] font-medium text-[var(--ds-text)]">{title}</p>
+      {children && <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-[var(--ds-text-3)]">{children}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+/** A grey placeholder while a value the browser fills in (a clock, a count) loads. */
+export function Skeleton({ className = 'h-4 w-16' }: { className?: string }) {
+  return <span aria-hidden className={`ds-skeleton inline-block rounded ${className}`} />;
+}
+
+/**
+ * The one thing to do next on a page, marked in DataSentry yellow. Use once
+ * per page at most — it only means something if it is the only one.
+ */
+export function NextStep({ title, children, action }: { title: ReactNode; children?: ReactNode; action?: ReactNode }) {
+  return (
+    <Box>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="min-w-0 flex-1 basis-60">
+          <p className="mb-1.5">
+            <span className="rounded-sm bg-[var(--ds-brand-yellow)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--ds-brand-ink)]">Next step</span>
+          </p>
+          <p className="text-[14px] font-semibold leading-snug tracking-[-0.01em]">{title}</p>
+          {children && <div className="mt-0.5 text-[13px] leading-relaxed text-[var(--ds-text-2)]">{children}</div>}
+        </div>
+        {action}
+      </div>
+    </Box>
+  );
+}
+
+/** A field change as an audit trail records it: old value struck, new value after. */
+export function Change({ field, from, to }: { field: string; from: string; to: string }) {
+  return (
+    <span className="inline-flex flex-wrap items-baseline gap-x-1.5 text-[12px]">
+      <span className="text-[var(--ds-text-3)]">{field}</span>
+      <span className="text-[var(--ds-text-3)] line-through decoration-[var(--ds-text-3)]">{from}</span>
+      <span aria-hidden className="text-[var(--ds-text-3)]">→</span>
+      <span className="font-medium text-[var(--ds-text)]">{to}</span>
+    </span>
+  );
+}
+
+/** Tabs for saved views over a list, each with its count. */
+export function ViewTabs({
+  views, active, counts, onChange,
+}: { views: { id: string; label: string }[]; active: string; counts: Record<string, number>; onChange: (id: string) => void }) {
+  return (
+    <div role="tablist" className="flex flex-wrap gap-1">
+      {views.map((v) => (
+        <button
+          key={v.id}
+          type="button"
+          role="tab"
+          aria-selected={active === v.id}
+          onClick={() => onChange(v.id)}
+          className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
+            active === v.id ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
+          }`}
+        >
+          {v.label}
+          <span className="ds-figure text-[11px] text-[var(--ds-text-3)]">{counts[v.id] ?? 0}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A column head that sorts its list; shows the direction when active. */
+export function SortHead({
+  id, label, active, dir, onSort, className = '',
+}: { id: string; label: string; active: boolean; dir: 1 | -1; onSort: (id: string) => void; className?: string }) {
+  return (
+    <th
+      aria-sort={active ? (dir === 1 ? 'ascending' : 'descending') : 'none'}
+      className={`border-b border-[var(--ds-border)] bg-[var(--ds-subtle)] px-3 py-2 text-left ${className}`}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(id)}
+        className={`ds-label inline-flex items-center gap-1 ${active ? 'text-[var(--ds-text)]' : 'text-[var(--ds-text-3)] hover:text-[var(--ds-text-2)]'}`}
+      >
+        {label}
+        <span aria-hidden className="text-[10px]">{active ? (dir === 1 ? '↑' : '↓') : '↕'}</span>
+      </button>
+    </th>
+  );
+}
+
+/** A search box for filtering a list in place. */
+export function FilterInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      className="h-8 w-full rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] outline-none placeholder:text-[var(--ds-text-3)] focus:border-[var(--ds-accent)] sm:w-56"
+    />
+  );
+}
+
+/* ------------------------------------------------------------------- people */
+
+const initialsOf = (name: string) =>
+  name.split(/\s+/).filter((w) => /^[A-Za-z]/.test(w)).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+
+/** Initials in a neutral disc — people are grey; colour stays for meaning. */
+export function Avatar({ name, size = 20 }: { name: string; size?: 20 | 24 | 28 }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--ds-subtle-2)] font-semibold text-[var(--ds-text-2)]"
+      style={{ width: size, height: size, fontSize: size <= 20 ? 9 : 10.5 }}
+    >
+      {initialsOf(name)}
+    </span>
+  );
+}
+
+/** A person as the console shows them: avatar, name, and their role beneath. */
+export function Person({ name, role, compact = false }: { name: string; role?: string; compact?: boolean }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2">
+      <Avatar name={name} size={compact ? 20 : 24} />
+      <span className="min-w-0 leading-tight">
+        <span className="block truncate text-[13px] text-[var(--ds-text)]">{name}</span>
+        {role && !compact && <span className="block truncate text-[12px] text-[var(--ds-text-3)]">{role}</span>}
+      </span>
+    </span>
   );
 }
 
@@ -298,7 +570,7 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="text-[12.5px] font-medium text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]"
+      className="text-[13px] font-medium text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]"
     >
       {children}
     </Link>
