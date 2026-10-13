@@ -1,0 +1,434 @@
+'use client';
+
+import { useState, type ReactNode } from 'react';
+import { FLOW_EDGES, FLOW_NODES, GAPS, OWNERS } from '@/modules/app/dpdp/mock/data';
+import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
+import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import { CiteLink, Person, SeverityTag, Tag } from '@/modules/app/ui/ui';
+import RemindButton from './RemindButton';
+
+/**
+ * The data-flow map as a privacy reviewer reads one: three trust boundaries
+ * (Northstar's own systems, third parties in India, outside India) with the
+ * India border drawn; every system typed, located and shown with the contract
+ * that governs it; every flow labelled with what moves and on what basis; and
+ * flows the register raised a finding against drawn dashed in the finding's
+ * colour. Filter by finding, cross-border or whose data; hover a system to trace
+ * its flows; click a system or a flow for the record behind it.
+ */
+
+// SVG reads no CSS variables reliably across the static export, so the
+// console tokens are spelled out (console.css is the source of truth).
+const C = {
+  ink: '#0e0f11', text2: '#4b4f57', text3: '#757983', line: '#d7d8dc', border: '#ebebed', zone: '#fbfbfc',
+  panel: '#ffffff', danger: '#b42318', warn: '#b54708', ok: '#067647', brand: '#009FE3', accent: '#0077b0',
+};
+
+const W = 1000;
+const H = 600;
+const NODE_W = 208;
+const NODE_H = 60;
+const BORDER_X = 702;
+const COL: Record<FlowNode['zone'], number> = { internal: 36, india: 420, abroad: 756 };
+const ZONES: { zone: FlowNode['zone']; x: number; w: number; title: string; sub: string; dashed: boolean }[] = [
+  { zone: 'internal', x: 16, w: 248, title: 'NORTHSTAR — OWN SYSTEMS', sub: 'Data Fiduciary · India', dashed: false },
+  { zone: 'india', x: 400, w: 248, title: 'THIRD PARTIES — INDIA', sub: 'Processors and statutory recipients', dashed: true },
+  { zone: 'abroad', x: 736, w: 248, title: 'OUTSIDE INDIA', sub: 'Cross-border transfers', dashed: true },
+];
+// Rows chosen so no flow label sits on a box.
+const Y: Record<string, number> = {
+  ats: 72, hrms: 160, payroll: 248, biometric: 336, endpoints: 424, vdi: 512,
+  authbridge: 48, insurer: 196, epfo: 300,
+  mailchimp: 70, forcepoint: 424, ukclient: 512,
+};
+
+const byId = new Map(FLOW_NODES.map((n) => [n.id, n]));
+const gap = (id?: string): Gap | undefined => (id ? GAPS.find((g) => g.id === id) : undefined);
+const sevColor = (id?: string) => (gap(id)?.severity === 'High' ? C.danger : gap(id) ? C.warn : C.line);
+const crossBorder = (e: FlowEdge) => byId.get(e.to)?.zone === 'abroad';
+
+const SAFEGUARD_TONE: Record<FlowNode['safeguard'], string> = {
+  Internal: C.text3, 'DPA in place': C.ok, 'No DPA': C.danger, 'Terms only': C.warn, Statutory: C.text3, Exempt: C.text3,
+};
+
+type Filter = 'all' | 'finding' | 'border' | FlowEdge['principals'];
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: 'all', label: 'All flows' },
+  { id: 'finding', label: 'With a finding' },
+  { id: 'border', label: 'Cross-border' },
+  { id: 'Candidates', label: 'Candidates' },
+  { id: 'Employees', label: 'Employees' },
+  { id: 'Ex-employees', label: 'Ex-employees' },
+  { id: 'Client end-users', label: 'Client end-users' },
+];
+const matches = (e: FlowEdge, f: Filter) =>
+  f === 'all' ? true : f === 'finding' ? !!e.finding : f === 'border' ? crossBorder(e) : e.principals === f;
+
+/* ------------------------------------------------------------------ geometry */
+
+const pos = (id: string) => {
+  const n = byId.get(id)!;
+  return { x: COL[n.zone], y: Y[id] ?? 0 };
+};
+function curve(e: FlowEdge) {
+  const a = pos(e.from);
+  const b = pos(e.to);
+  const p0 = { x: a.x + NODE_W, y: a.y + NODE_H / 2 };
+  const p3 = { x: b.x, y: b.y + NODE_H / 2 };
+  const mid = (p0.x + p3.x) / 2;
+  const p1 = { x: mid, y: p0.y };
+  const p2 = { x: mid, y: p3.y };
+  const at = (t: number) => {
+    const u = 1 - t;
+    return {
+      x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+      y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+    };
+  };
+  // Where the flow crosses the India border, if it does.
+  let crossing: { x: number; y: number } | null = null;
+  if (p0.x < BORDER_X && p3.x > BORDER_X) {
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 24; i++) {
+      const m = (lo + hi) / 2;
+      if (at(m).x < BORDER_X) lo = m;
+      else hi = m;
+    }
+    crossing = at((lo + hi) / 2);
+  }
+  return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, mid: at(0.5), crossing };
+}
+
+/* --------------------------------------------------------------------- icons */
+
+function KindIcon({ kind, x, y, color }: { kind: FlowNode['kind']; x: number; y: number; color: string }) {
+  const p = { fill: 'none', stroke: color, strokeWidth: 1.3, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      {kind === 'system' && (<><rect x="1.5" y="2" width="13" height="5" rx="1" {...p} /><rect x="1.5" y="9" width="13" height="5" rx="1" {...p} /><path d="M4 4.5h.01M4 11.5h.01" {...p} /></>)}
+      {kind === 'processor' && <path d="M4.5 12.5h7a3 3 0 0 0 .4-6 4 4 0 0 0-7.7 1A2.5 2.5 0 0 0 4.5 12.5z" {...p} />}
+      {kind === 'statutory' && <path d="M2 6.5 8 3l6 3.5M3.5 7v5M6.5 7v5M9.5 7v5M12.5 7v5M2 13.5h12" {...p} />}
+      {kind === 'client' && (<><rect x="2" y="5" width="12" height="8.5" rx="1.5" {...p} /><path d="M6 5V3.5h4V5M2 9h12" {...p} /></>)}
+    </g>
+  );
+}
+
+/* ----------------------------------------------------------------- the map */
+
+type Selected = { type: 'node'; id: string } | { type: 'edge'; id: string } | null;
+
+export default function DataFlowMap() {
+  const [filter, setFilter] = useState<Filter>('all');
+  const [hover, setHover] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Selected>(null);
+
+  const edgeOn = (e: FlowEdge) => matches(e, filter) && (!hover || e.from === hover || e.to === hover);
+  const nodeOn = (n: FlowNode) => {
+    const active = FLOW_EDGES.filter(edgeOn);
+    if (hover) return n.id === hover || active.some((e) => e.from === n.id || e.to === n.id);
+    if (filter === 'all') return true;
+    if (filter === 'finding' && n.finding) return true;
+    return active.some((e) => e.from === n.id || e.to === n.id);
+  };
+  const count = (f: Filter) => FLOW_EDGES.filter((e) => matches(e, f)).length;
+  const press = (s: Selected) => (ev: React.KeyboardEvent) => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      ev.preventDefault();
+      setSelected(s);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-1 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5" role="tablist" aria-label="Filter flows">
+        {FILTERS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            role="tab"
+            aria-selected={filter === f.id}
+            onClick={() => setFilter(f.id)}
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
+              filter === f.id ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
+            }`}
+          >
+            {f.label}
+            <span className="ds-figure text-[11px] text-[var(--ds-text-3)]">{count(f.id)}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="min-w-[60rem] px-4 py-4 sm:px-5">
+          <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" fontFamily="Inter, sans-serif" aria-label="Data flow map across three trust boundaries">
+            <defs>
+              {[['arrow', C.line], ['arrowHigh', C.danger], ['arrowMed', C.warn], ['arrowOn', C.text2]].map(([id, fill]) => (
+                <marker key={id} id={id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M0 0 L10 5 L0 10z" fill={fill} />
+                </marker>
+              ))}
+            </defs>
+
+            {/* Trust boundaries */}
+            {ZONES.map((z) => (
+              <g key={z.zone}>
+                <rect x={z.x} y={8} width={z.w} height={H - 16} rx={10} fill={C.zone} stroke={C.line} strokeDasharray={z.dashed ? '4 4' : undefined} />
+                <text x={z.x + 20} y={30} fontSize="10.5" fontWeight="600" letterSpacing="0.06em" fill={C.text2}>{z.title}</text>
+                <text x={z.x + 20} y={45} fontSize="10.5" fill={C.text3}>{z.sub}</text>
+              </g>
+            ))}
+
+            {/* The India border */}
+            <line x1={BORDER_X} x2={BORDER_X} y1={8} y2={H - 8} stroke={C.brand} strokeWidth="1.25" strokeDasharray="6 5" />
+            <g transform={`translate(${BORDER_X} ${H - 20}) rotate(-90)`}>
+              <rect x={0} y={-9} width={88} height={18} rx={9} fill={C.panel} stroke={C.brand} />
+              <text x={44} y={3.5} textAnchor="middle" fontSize="10" fontWeight="600" fill={C.accent}>INDIA BORDER</text>
+            </g>
+
+            {/* Flows */}
+            {FLOW_EDGES.map((e) => {
+              const { d } = curve(e);
+              const on = edgeOn(e);
+              const color = e.finding ? sevColor(e.finding) : on && hover ? C.text2 : C.line;
+              const marker = e.finding ? (gap(e.finding)?.severity === 'High' ? 'arrowHigh' : 'arrowMed') : on && hover ? 'arrowOn' : 'arrow';
+              return (
+                <path
+                  key={e.id}
+                  d={d}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={e.finding ? 1.75 : 1.4}
+                  strokeDasharray={e.finding ? '6 4' : undefined}
+                  markerEnd={`url(#${marker})`}
+                  opacity={on ? 1 : 0.15}
+                  style={{ transition: 'opacity .15s' }}
+                />
+              );
+            })}
+
+            {/* Systems and parties */}
+            {FLOW_NODES.map((n) => {
+              const { x, y } = pos(n.id);
+              const flag = n.finding ? sevColor(n.finding) : null;
+              const on = nodeOn(n);
+              return (
+                <g
+                  key={n.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${n.label}, ${n.region}, ${n.safeguard}`}
+                  onMouseEnter={() => setHover(n.id)}
+                  onMouseLeave={() => setHover(null)}
+                  onFocus={() => setHover(n.id)}
+                  onBlur={() => setHover(null)}
+                  onClick={() => setSelected({ type: 'node', id: n.id })}
+                  onKeyDown={press({ type: 'node', id: n.id })}
+                  opacity={on ? 1 : 0.25}
+                  style={{ cursor: 'pointer', transition: 'opacity .15s', outline: 'none' }}
+                >
+                  <rect x={x} y={y} width={NODE_W} height={NODE_H} rx={8} fill={C.panel} stroke={hover === n.id ? C.text3 : C.line} />
+                  {flag && <rect x={x + 6} y={y + 10} width={2.5} height={NODE_H - 20} rx={1.25} fill={flag} />}
+                  <KindIcon kind={n.kind} x={x + 14} y={y + 12} color={C.text3} />
+                  <text x={x + 38} y={y + 24} fontSize="12.5" fontWeight="600" fill={C.ink}>{n.label}</text>
+                  <rect x={x + NODE_W - 34} y={y + 11} width={24} height={16} rx={4} fill={n.region === 'IN' ? '#f1f1f3' : '#e8f4fb'} />
+                  <text x={x + NODE_W - 22} y={y + 22.5} textAnchor="middle" fontSize="9.5" fontWeight="600" fill={n.region === 'IN' ? C.text2 : C.accent}>{n.region}</text>
+                  <text x={x + 38} y={y + 43} fontSize="11">
+                    <tspan fill={SAFEGUARD_TONE[n.safeguard]} fontWeight={n.safeguard === 'No DPA' || n.safeguard === 'Terms only' ? 600 : 400}>{n.safeguard}</tspan>
+                    <tspan fill={C.text3}> · {n.principals.length > 18 ? `${n.principals.slice(0, 17)}…` : n.principals}</tspan>
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Flow labels and border crossings, above the boxes */}
+            {FLOW_EDGES.map((e) => {
+              const { mid, crossing } = curve(e);
+              const on = edgeOn(e);
+              const label = e.label;
+              const basisBad = e.basis === 'Not determined';
+              const w = Math.max(label.length * 5.6, e.basis.length * 5.2) + 18;
+              const tone = e.finding ? sevColor(e.finding) : C.line;
+              return (
+                <g
+                  key={e.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${byId.get(e.from)?.label} to ${byId.get(e.to)?.label}: ${label}, basis ${e.basis}`}
+                  onClick={() => setSelected({ type: 'edge', id: e.id })}
+                  onKeyDown={press({ type: 'edge', id: e.id })}
+                  opacity={on ? 1 : 0.15}
+                  style={{ cursor: 'pointer', transition: 'opacity .15s', outline: 'none' }}
+                >
+                  {crossing && (
+                    <g transform={`translate(${crossing.x} ${crossing.y})`}>
+                      <circle r="7" fill={C.panel} stroke={C.brand} strokeWidth="1.25" />
+                      <path d="M-4 0h8M0 -4c-2 2.4-2 5.6 0 8M0 -4c2 2.4 2 5.6 0 8" fill="none" stroke={C.accent} strokeWidth="0.9" />
+                    </g>
+                  )}
+                  <rect x={mid.x - w / 2} y={mid.y - 15} width={w} height={30} rx={6} fill={C.panel} stroke={tone} />
+                  <text x={mid.x} y={mid.y - 2} textAnchor="middle" fontSize="10.5" fontWeight="500" fill={C.ink}>{label}</text>
+                  <text x={mid.x} y={mid.y + 10} textAnchor="middle" fontSize="9.5" fontWeight={basisBad ? 600 : 400} fill={basisBad ? C.danger : C.text3}>
+                    {e.basis}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </div>
+
+      <Legend />
+
+      <FlowSheet selected={selected} onSelect={setSelected} />
+    </>
+  );
+}
+
+/* --------------------------------------------------------------- the legend */
+
+function Legend() {
+  const item = (glyph: ReactNode, text: string) => (
+    <span key={text} className="flex items-center gap-1.5">
+      <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden>{glyph}</svg>
+      {text}
+    </span>
+  );
+  return (
+    <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[var(--ds-border)] px-4 py-3 text-[12px] text-[var(--ds-text-2)] sm:px-5">
+      {(['system', 'processor', 'statutory', 'client'] as const).map((k) =>
+        item(<KindIcon kind={k} x={3} y={0} color={C.text3} />, { system: 'Own system', processor: 'Processor', statutory: 'Statutory recipient', client: 'Client (exempt delivery)' }[k]),
+      )}
+      {item(<path d="M1 8h20" stroke={C.line} strokeWidth="1.5" />, 'Flow')}
+      {item(<path d="M1 8h20" stroke={C.danger} strokeWidth="1.75" strokeDasharray="5 3" />, 'Finding — high')}
+      {item(<path d="M1 8h20" stroke={C.warn} strokeWidth="1.75" strokeDasharray="5 3" />, 'Finding — medium')}
+      {item(<g transform="translate(11 8)"><circle r="6" fill="#fff" stroke={C.brand} /><path d="M-3.5 0h7" stroke={C.accent} strokeWidth="0.9" /></g>, 'Crosses the India border')}
+      <span className="flex items-center gap-1.5">
+        Safeguard:
+        <span className="font-medium text-[var(--ds-ok)]">DPA in place</span> ·
+        <span className="font-medium text-[var(--ds-warn)]">Terms only</span> ·
+        <span className="font-medium text-[var(--ds-danger)]">No DPA</span>
+      </span>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- the sheet */
+
+function FindingBlock({ id }: { id: string }) {
+  const g = gap(id);
+  if (!g) return null;
+  const person = OWNERS[g.owner] ?? g.owner;
+  return (
+    <SheetSection title="Finding">
+      <div className="ds-bar" style={{ ['--bar' as string]: g.severity === 'High' ? C.danger : C.warn }}>
+        <p className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium">
+          <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{g.id}</span> {g.title} <SeverityTag s={g.severity} />
+        </p>
+        <p className="mt-1 text-[12px] text-[var(--ds-text-2)]">{g.detail}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <CiteLink provision={g.provision} />
+          <Person name={person} compact />
+          <span className="text-[12px] text-[var(--ds-text-3)]">due {g.due}</span>
+          <RemindButton person={person} what={`${g.id} — ${g.title}`} />
+        </div>
+      </div>
+    </SheetSection>
+  );
+}
+
+function Rows({ rows }: { rows: [string, ReactNode][] }) {
+  return (
+    <dl className="grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2.5 text-[13px]">
+      {rows.map(([k, v]) => (
+        <div key={k} className="contents">
+          <dt className="ds-meta pt-px text-[var(--ds-text-3)]">{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+const safeguardText = (s: FlowNode['safeguard']) => <span className="font-medium" style={{ color: SAFEGUARD_TONE[s] }}>{s}</span>;
+const where = (n: FlowNode) => ({ IN: 'India', US: 'United States', UK: 'United Kingdom' })[n.region];
+
+function FlowSheet({ selected, onSelect }: { selected: Selected; onSelect: (s: Selected) => void }) {
+  const edge = selected?.type === 'edge' ? FLOW_EDGES.find((e) => e.id === selected.id) : undefined;
+  const node = selected?.type === 'node' ? byId.get(selected.id) : undefined;
+  const close = () => onSelect(null);
+
+  if (edge) {
+    const a = byId.get(edge.from)!;
+    const b = byId.get(edge.to)!;
+    return (
+      <Sheet
+        open
+        onClose={close}
+        title={`${a.label} → ${b.label}`}
+        meta={<><Tag>{edge.activity.split(' ')[0]}</Tag>{crossBorder(edge) && <Tag tone="info">Cross-border · {where(b)}</Tag>}</>}
+      >
+        <SheetSection title="What moves">
+          <Rows
+            rows={[
+              ['Activity', edge.activity],
+              ['Whose data', edge.principals],
+              ['Data categories', <ul key="c" className="space-y-0.5">{edge.categories.map((c) => <li key={c}>{c}</li>)}</ul>],
+              ['Lawful basis', <span key="b" className={edge.basis === 'Not determined' ? 'font-medium text-[var(--ds-danger)]' : ''}>{edge.basis}</span>],
+            ]}
+          />
+        </SheetSection>
+        <SheetSection title="Where it goes">
+          <Rows
+            rows={[
+              ['Recipient', `${b.label} — ${b.kind === 'statutory' ? 'statutory recipient' : b.kind}`],
+              ['Held in', where(b)],
+              ['Safeguard', safeguardText(b.safeguard)],
+              ['Transfer', crossBorder(edge) ? (b.safeguard === 'Exempt' ? 'Outside India — exempt under s.17(1)(d)' : 'Outside India — recorded; s.16 list not yet notified') : 'Stays in India'],
+            ]}
+          />
+        </SheetSection>
+        {edge.finding && <FindingBlock id={edge.finding} />}
+      </Sheet>
+    );
+  }
+
+  if (node) {
+    const out = FLOW_EDGES.filter((e) => e.from === node.id);
+    const inn = FLOW_EDGES.filter((e) => e.to === node.id);
+    const list = (es: FlowEdge[], dir: 'to' | 'from') =>
+      es.map((e) => {
+        const other = byId.get(dir === 'to' ? e.to : e.from)!;
+        return (
+          <li key={e.id}>
+            <button type="button" onClick={() => onSelect({ type: 'edge', id: e.id })} className="text-left text-[13px] hover:text-[var(--ds-accent-hover)] hover:underline">
+              {dir === 'to' ? '→' : '←'} {other.label} <span className="text-[var(--ds-text-3)]">· {e.label}</span>
+            </button>
+          </li>
+        );
+      });
+    return (
+      <Sheet open onClose={close} title={node.label} meta={<><Tag>{node.kind === 'statutory' ? 'Statutory recipient' : node.kind === 'system' ? 'Own system' : node.kind === 'client' ? 'Client' : 'Processor'}</Tag><Tag tone={node.region === 'IN' ? 'plain' : 'info'}>{where(node)}</Tag></>}>
+        <SheetSection title="Details">
+          <Rows
+            rows={[
+              ['Trust boundary', { internal: 'Northstar — own systems', india: 'Third party — India', abroad: 'Outside India' }[node.zone]],
+              ['Safeguard', safeguardText(node.safeguard)],
+              ['Whose data', node.principals],
+              ...(node.note ? [['Note', node.note] as [string, ReactNode]] : []),
+            ]}
+          />
+        </SheetSection>
+        <SheetSection title={`Flows (${out.length + inn.length})`}>
+          {out.length + inn.length === 0 ? (
+            <p className="text-[13px] text-[var(--ds-text-3)]">No flows out — the data stays in this system.</p>
+          ) : (
+            <ul className="space-y-1.5">{list(inn, 'from')}{list(out, 'to')}</ul>
+          )}
+        </SheetSection>
+        {node.finding && <FindingBlock id={node.finding} />}
+      </Sheet>
+    );
+  }
+  return null;
+}

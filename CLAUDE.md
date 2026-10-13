@@ -90,6 +90,11 @@ src/modules/app/dpdp/    the DPDP product
 - **Show change, not just status**: `TrendChart` for the score at each review (time-scaled, month labels, values on hover), `SlaBar` for a request's
   response window, the draining bar in `Countdown`. Values the browser fills in show a `Skeleton`
   until mounted.
+- **The data flow map** (`DataFlowMap.tsx`, data in `FLOW_NODES`/`FLOW_EDGES`) draws three trust
+  boundaries (own systems · third parties in India · outside India) with the India border; every node
+  carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
+  its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
+  personal data" class, so never label anything sensitive.
 - **The audit trail** (`AUDIT` in mock data) records field changes as old → new, never "record updated".
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the

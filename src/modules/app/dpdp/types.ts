@@ -134,3 +134,35 @@ export type Org = {
   engagement: string;
   lastReview: string;
 };
+
+/**
+ * The data-flow map, derived from the register. A node is a system or a party
+ * that holds personal data; `zone` is the trust boundary it sits in.
+ */
+export type FlowZone = 'internal' | 'india' | 'abroad';
+export type FlowNode = {
+  id: string;
+  label: string;
+  kind: 'system' | 'processor' | 'statutory' | 'client';
+  zone: FlowZone;
+  /** Where the data is held: ISO country code. */
+  region: 'IN' | 'US' | 'UK';
+  /** The contract that governs the party's handling of the data. */
+  safeguard: 'Internal' | 'DPA in place' | 'No DPA' | 'Terms only' | 'Statutory' | 'Exempt';
+  principals: string;
+  /** A finding raised on the node itself (e.g. retention not stated). */
+  finding?: string;
+  note?: string;
+};
+export type FlowEdge = {
+  id: string;
+  from: string;
+  to: string;
+  activity: string;
+  /** Short label drawn on the arrow. */
+  label: string;
+  categories: string[];
+  principals: 'Candidates' | 'Employees' | 'Ex-employees' | 'Client end-users';
+  basis: string;
+  finding?: string;
+};

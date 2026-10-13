@@ -2,7 +2,8 @@
 // Figures are illustrative and shaped to look like a real 240-seat ITES firm.
 // The live app replaces this module with a real data layer; the types stay.
 
-import type { Activity, Dsr, FulfilmentTask, Gap, Incident, Org, Provenance, Walkthrough } from '../types';
+import type {
+  FlowEdge, FlowNode, Activity, Dsr, FulfilmentTask, Gap, Incident, Org, Provenance, Walkthrough } from '../types';
 
 export * from '../types';
 
@@ -485,35 +486,37 @@ export const QUESTIONNAIRE = {
   ],
 };
 
-export const FLOWS = {
-  sources: [
-    { id: 'ats', label: 'Zoho Recruit', note: 'Candidate', x: 60, y: 40 },
-    { id: 'hrms', label: 'Keka HR', note: 'Employee', x: 60, y: 130 },
-    { id: 'payroll', label: 'Zoho Payroll', note: 'Employee', x: 60, y: 220 },
-    { id: 'biometric', label: 'Matrix COSEC', note: 'Employee', x: 60, y: 310 },
-    { id: 'vdi', label: 'Client VDI', note: 'Client end-users', x: 60, y: 440 },
-  ],
-  processors: [
-    { id: 'authbridge', label: 'AuthBridge', note: 'BGV — no DPA', x: 330, y: 40, flag: true },
-    { id: 'insurer', label: 'Niva Bupa', note: 'Mediclaim', x: 330, y: 150 },
-    { id: 'epfo', label: 'EPFO / ESIC', note: 'Statutory', x: 330, y: 260 },
-    { id: 'mailchimp', label: 'Mailchimp', note: 'Alumni — no basis', x: 330, y: 345, flag: true },
-  ],
-  destinations: [
-    { id: 'india', label: 'India', note: '9 systems', x: 600, y: 90 },
-    { id: 'us', label: 'United States', note: '4 transfers', x: 600, y: 230 },
-    { id: 'uk', label: 'United Kingdom', note: '1 transfer — exempt', x: 600, y: 440 },
-  ],
-  edges: [
-    ['ats', 'authbridge'], ['ats', 'india'],
-    ['hrms', 'insurer'], ['hrms', 'epfo'], ['hrms', 'india'],
-    ['payroll', 'epfo'], ['payroll', 'india'],
-    ['biometric', 'india'],
-    ['vdi', 'uk'],
-    ['authbridge', 'india'], ['insurer', 'india'], ['epfo', 'india'],
-    ['mailchimp', 'us'], ['hrms', 'mailchimp'],
-  ] as [string, string][],
-};
+/**
+ * Northstar's data-flow map, drawn from RoPA v4. Three trust boundaries:
+ * Northstar's own systems, third parties in India, and parties outside India.
+ * Categories are named as they are; the DPDP Act has no "sensitive personal
+ * data" class, so nothing is labelled sensitive.
+ */
+export const FLOW_NODES: FlowNode[] = [
+  { id: 'ats', label: 'Zoho Recruit', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
+  { id: 'hrms', label: 'Keka HR', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
+  { id: 'payroll', label: 'Zoho Payroll', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'biometric', label: 'Matrix COSEC', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees', finding: 'G-10', note: 'On-premises · data stays in Northstar · retention not stated' },
+  { id: 'endpoints', label: 'Laptops & email', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'vdi', label: 'Client VDI desks', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Client end-users' },
+  { id: 'authbridge', label: 'AuthBridge', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'No DPA', principals: 'Candidates', finding: 'G-02' },
+  { id: 'insurer', label: 'Niva Bupa', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
+  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', zone: 'india', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
+  { id: 'mailchimp', label: 'Mailchimp', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'Terms only', principals: 'Ex-employees', finding: 'G-06' },
+  { id: 'forcepoint', label: 'Forcepoint DLP', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'DPA in place', principals: 'Employees' },
+  { id: 'ukclient', label: 'UK retail client', kind: 'client', zone: 'abroad', region: 'UK', safeguard: 'Exempt', principals: 'Client end-users' },
+];
+
+export const FLOW_EDGES: FlowEdge[] = [
+  { id: 'f1', from: 'ats', to: 'authbridge', activity: 'PA-02 Pre-employment background verification', label: 'ID, criminal record', categories: ['Identity documents', 'Education records', 'Employment history', 'Criminal record'], principals: 'Candidates', basis: 'Consent', finding: 'G-02' },
+  { id: 'f2', from: 'hrms', to: 'insurer', activity: 'PA-09 Group mediclaim & dependant enrolment', label: 'Health, dependants', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees', basis: 'Consent' },
+  { id: 'f3', from: 'hrms', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'UAN, wages', categories: ['UAN', 'Aadhaar-linked KYC', 'Wages'], principals: 'Employees', basis: 'Legal obligation' },
+  { id: 'f4', from: 'payroll', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'PAN, PF number', categories: ['PAN', 'PF number', 'Contribution amounts'], principals: 'Employees', basis: 'Legal obligation' },
+  { id: 'f5', from: 'hrms', to: 'mailchimp', activity: 'PA-12 Alumni communications', label: '1,340 alumni contacts', categories: ['Name', 'Personal email', 'Last role'], principals: 'Ex-employees', basis: 'Not determined', finding: 'G-06' },
+  { id: 'f6', from: 'endpoints', to: 'forcepoint', activity: 'PA-15 IT monitoring & DLP', label: 'DLP and activity logs', categories: ['Device and user IDs', 'File and email activity'], principals: 'Employees', basis: 's.7(i) safeguarding' },
+  { id: 'f7', from: 'vdi', to: 'ukclient', activity: 'PA-17 Client delivery — UK retailer', label: 'Client end-user records', categories: ['Customer account data handled on the client’s systems'], principals: 'Client end-users', basis: 's.17(1)(d) exempt' },
+];
+
 
 /* ---------------------------------------------------------------------------
    Intake without integrations (docs/dpdp-mvp-scope.md). Nothing below came from
