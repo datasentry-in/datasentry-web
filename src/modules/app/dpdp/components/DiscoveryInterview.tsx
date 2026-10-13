@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Org } from '@/modules/app/dpdp/mock/data';
+import type { Org } from '@/modules/app/dpdp/types';
 import {
   CALL_META, SECTION_1, buildSection2, buildSection3, fireRules, proposeActivities,
 } from '@/modules/app/dpdp/mock/interview';
 import type { Answers, Question, Section } from '@/modules/app/dpdp/mock/interview';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { Box, Button, Card, CiteLink, DemoNote, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
+import { ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
+import {
+  Box, Button, Card, CiteLink, DemoNote, Panel, Tag,
+} from '@/modules/app/ui/ui';
 
 /* --------------------------------------------------------------- controls */
 
@@ -489,7 +492,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
               ['Exemptions identified', String(exemptions.length), 's.17(1)(d) candidates'],
               ['Findings raised', String(findings.length), 'each citing a provision'],
             ].map(([k, v, note]) => (
-              <Card key={k} tone="subtle">
+              <Card key={k} tone="plain">
                 <p className="text-[12px] font-medium text-[var(--ds-text-2)]">{k}</p>
                 <p className="ds-figure mt-1 text-[26px] leading-none tracking-[-0.03em]">{v}</p>
                 <p className="mt-1 text-[12px] text-[var(--ds-text-3)]">{note}</p>

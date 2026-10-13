@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  BasisTag, Fact, Facts, Panel, Person, Tag,
+  Fact, Facts, Panel, Person, Tag,
 } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
@@ -34,7 +35,7 @@ function AttestForm({ task, owners: OWNERS, onAttest }: { task: FulfilmentTask; 
   const [note, setNote] = useState('');
   const [proof, setProof] = useState<string | null>(null);
   const [sure, setSure] = useState(false);
-  const person = OWNERS[task.owner] ?? task.owner;
+  const person = personFor(OWNERS, task.owner).name;
   return (
     <div className="mt-3 space-y-3 rounded-md border border-[var(--ds-border)] bg-white p-3.5">
       <label className="block">
@@ -83,7 +84,7 @@ export default function TaskBoard({ org }: { org: string }) {
     setTasks((ts) =>
       ts.map((t) =>
         t.id === id
-          ? { ...t, status: 'Attested', attestation: { by: `${OWNERS[t.owner] ?? t.owner}, ${t.owner}`, at: formatIst(new Date()), note, proof } }
+          ? { ...t, status: 'Attested', attestation: { by: `${personFor(OWNERS, t.owner).name}, ${t.owner}`, at: formatIst(new Date()), note, proof } }
           : t,
       ),
     );
@@ -118,7 +119,7 @@ export default function TaskBoard({ org }: { org: string }) {
                 : 'border-[var(--ds-border-strong)] bg-white text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
             }`}
           >
-            {o === 'all' ? 'Consultant — all owners' : `${OWNERS[o] ?? o} · ${o}`}
+            {o === 'all' ? 'Consultant — all owners' : `${personFor(OWNERS, o).name} · ${o}`}
           </button>
         ))}
       </div>
@@ -148,14 +149,14 @@ export default function TaskBoard({ org }: { org: string }) {
                       </p>
                       <p className="mt-0.5 text-[13px] text-[var(--ds-text-2)]">{t.action}</p>
                     </div>
-                    <Person name={OWNERS[t.owner] ?? t.owner} role={OWNERS[t.owner] ? t.owner : undefined} />
+                    <Person {...personFor(OWNERS, t.owner)} />
                     <p className="text-[12px] font-medium text-[var(--ds-text-2)]">
                       {t.status === 'Open' || t.status === 'Overdue' ? <When date={t.due} /> : t.due}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 lg:justify-end">
                       {(t.status === 'Open' || t.status === 'Overdue') && (
                         <span className="ds-row-actions">
-                          <RemindButton person={OWNERS[t.owner] ?? t.owner} what={`${t.id} — ${t.action}`} />
+                          <RemindButton person={personFor(OWNERS, t.owner).name} what={`${t.id} — ${t.action}`} />
                         </span>
                       )}
                       {statusTag(t.status)}

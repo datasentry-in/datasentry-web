@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from 'react';
 
 /**
- * Tabs for saved views over a list, each with its count. The highlight is one
+ * Saved views over a list, each with its count — toggle buttons, one pressed. The highlight is one
  * pill that slides to the active tab (measured after layout, moved with a
  * transform — no state, no re-render).
  */
@@ -30,15 +30,14 @@ export default function ViewTabs({
   }, [active, counts]);
 
   return (
-    <div ref={list} role="tablist" aria-label={label} className="relative flex flex-wrap gap-1">
+    <div ref={list} role="group" aria-label={label} className="relative flex flex-wrap gap-1">
       <span ref={pill} aria-hidden className="ds-tab-pill pointer-events-none absolute left-0 top-0 rounded-md bg-[var(--ds-subtle-2)] opacity-0" />
       {views.map((v) => (
         <button
           key={v.id}
           type="button"
-          role="tab"
           data-tab={v.id}
-          aria-selected={active === v.id}
+          aria-pressed={active === v.id}
           onClick={() => onChange(v.id)}
           className={`relative flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
             active === v.id ? 'font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'

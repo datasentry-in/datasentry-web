@@ -97,7 +97,6 @@ export type Dsr = {
   received: string;
   /** Where it came in — the platform is the system of record for both. */
   channel?: 'Privacy centre' | 'Email';
-  daysLeft: number | null;
   status: 'New' | 'In progress' | 'Awaiting client' | 'Closed';
   outcome?: string;
   conflicts?: { record: string; statute: string; until: string }[];
@@ -117,7 +116,8 @@ export type Incident = {
   principalNotice: string;
 };
 
-export type Org = {
+/** Who a client is and where the engagement stands — entered, not derived. */
+export type OrgProfile = {
   slug: string;
   name: string;
   sector: string;
@@ -125,14 +125,21 @@ export type Org = {
   locations: string;
   score: number;
   trend: string;
+  engagement: string;
+  lastReview: string;
+};
+
+/**
+ * A client as the console shows it: its profile plus counts computed from its
+ * own data (`summaryFor` in mock/clients.ts), so there is one source of truth.
+ * Lateness is not here — it depends on the clock (see sla.ts).
+ */
+export type Org = OrgProfile & {
   openGaps: { high: number; medium: number; low: number };
   activities: number;
   exemptActivities: number;
   dsrOpen: number;
-  dsrBreaching: number;
   incidentOpen: number;
-  engagement: string;
-  lastReview: string;
 };
 
 /**
@@ -163,6 +170,174 @@ export type FlowEdge = {
   label: string;
   categories: string[];
   principals: 'Candidates' | 'Employees' | 'Ex-employees' | 'Client end-users';
-  basis: string;
+  basis: Basis;
   finding?: string;
+};
+
+/**
+ * The append-only audit trail, newest first. A field change records the old
+ * and the new value, so the history says exactly what changed, not
+ * "record updated". `ref` ties an entry to a record (an activity, finding,
+ * request or incident).
+ */
+export type AuditEntry = {
+  at: string;
+  who: string;
+  ref: string;
+  what: string;
+  change?: { field: string; from: string; to: string };
+};
+
+/**
+ * Comments on a record. `visibility` decides who sees it: an internal note stays
+ * with the DataSentry team; a shared comment is visible to the client's owners.
+ */
+export type RecordComment = {
+  id: string;
+  ref: string;
+  who: string;
+  at: string;
+  text: string;
+  visibility: 'internal' | 'shared';
+};
+
+/**
+ * A generated compliance document, opened as a page. Sections carry their own
+ * provenance: AI-drafted from the record, or reviewed by the consultant.
+ * Editing a drafted section marks it reviewed.
+ */
+export type DocSection = { heading: string; text: string; provenance: Provenance; source?: string };
+
+export type ComplianceDoc = {
+  id: string;
+  ref: string;
+  title: string;
+  kind: string;
+  provision: string;
+  owner: string;
+  approver: string;
+  due: string;
+  version: number;
+  sections: DocSection[];
+  versions: { v: number; at: string; who: string; note: string }[];
+};
+
+/** An artefact in the evidence pack, generated from the register. */
+export type EvidenceItem = { name: string; status: 'Generated' | 'Review pending' | 'Incomplete' | 'Not started'; detail: string; ts: string };
+
+export type ConsentSummary = {
+  activeCandidate: number;
+  withdrawn: number;
+  expiredClock: number;
+  pendingErasureTasks: number;
+  employeeExceptions: number;
+  noticeVersion: string;
+  languages: string[];
+};
+export type ConsentRow = {
+  ts: string;
+  principal: string;
+  type: 'Candidate' | 'Employee';
+  purposes: string;
+  notice: string;
+  lang: string;
+  action: 'Granted' | 'Withdrawn' | 'Clock expired';
+};
+
+/** The client's hosted privacy centre and request inbox. */
+export type PrivacyCentre = {
+  url: string;
+  contactEmail: string;
+  /** Forwarding address: requests that arrive by email land in the DSR desk. */
+  inbox: string;
+  /** Null until designated — shown as a gap on the public page. */
+  grievanceOfficer: string | null;
+  responseDays: number;
+  languages: string[];
+  consentSnippet: string;
+};
+
+export type CheckInQuestion = {
+  id: 'tools' | 'retired' | 'headcount' | 'purposes' | 'clients' | 'offplatform';
+  kind: 'yesno' | 'number';
+  text: string;
+  register: string;
+  placeholder: string;
+};
+/** The quarterly re-attestation that keeps the register current. */
+export type CheckIn = {
+  label: string;
+  due: string;
+  sentTo: string;
+  sentOn: string;
+  last: { on: string; changes: number };
+  questions: CheckInQuestion[];
+};
+
+/** One item on the next walkthrough's agenda, generated from the register. */
+export type AgendaItem = { id: string; system: string; looked: string; register: string; why: string; finding?: string };
+
+/** Where the discovery interview stands, and the question in front of the client. */
+export type Questionnaire = {
+  section: number;
+  sections: number;
+  sectionName: string;
+  answered: number;
+  total: number;
+  question: string;
+  why: string;
+  suggestion: string;
+  followUps: string[];
+  derived: { field: string; value: string; provenance: Provenance }[];
+};
+
+/**
+ * One client's data, as every console page reads it. The mock serves it from
+ * mock/clients.ts; a live app's data layer returns the same shape.
+ */
+export type ClientData = {
+  /** False until discovery has produced a register: modules built from it show "not started". */
+  registerBuilt: boolean;
+  /** Who holds each owner role in the client. */
+  owners: Record<string, string>;
+  /** The client's people who can be @mentioned. */
+  people: { name: string; role: string }[];
+
+  activities: Activity[];
+  gaps: Gap[];
+  dsrs: Dsr[];
+  incidents: Incident[];
+  tasks: FulfilmentTask[];
+  evidence: EvidenceItem[];
+  questionnaire: Questionnaire | null;
+  flowNodes: FlowNode[];
+  flowEdges: FlowEdge[];
+  privacyCentre: PrivacyCentre | null;
+  walkthrough: Walkthrough | null;
+  walkthroughAgenda: AgendaItem[];
+  checkIn: CheckIn | null;
+  audit: AuditEntry[];
+  comments: RecordComment[];
+  scoreHistory: { on: string; score: number }[];
+  boardIntimation: ComplianceDoc | null;
+
+  consent: {
+    summary: ConsentSummary;
+    ledger: ConsentRow[];
+    /** Purposes that need consent rather than the employment exemption. */
+    employeeConsentPurposes: string[];
+  } | null;
+
+  /** Overview: module completion, as the consultant last assessed it. */
+  progress: { module: string; seg: string; pct: number; note: string }[];
+  /** Overview: role determination, as counted on the register. */
+  roles: { fiduciary: { count: number; text: string }; exempt: { count: number; text: string } } | null;
+  /** RoPA: how lawful bases break down, with a line on each. */
+  basisBreakdown: { label: string; count: number; note: string }[];
+  /** RoPA: processors and their contract status. */
+  processors: { name: string; activities: string; dpa: string }[];
+  /** DSR desk: the request worked through in detail, when there is one. */
+  dsrFocus: string | null;
+  /** Data flows: the cross-border position in words. */
+  crossBorder: { title: string; text: string; tone: 'plain' | 'ok' }[];
 };

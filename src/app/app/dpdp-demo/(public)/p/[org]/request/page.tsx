@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getOrg } from '@/modules/app/dpdp/mock/data';
+import { getOrg } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { RIGHTS, type RightType } from '@/modules/app/dpdp/statute';
 import RequestForm from '@/modules/app/dpdp/components/RequestForm';

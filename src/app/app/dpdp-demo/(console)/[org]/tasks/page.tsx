@@ -1,23 +1,18 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
+import { personFor } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import TaskBoard from '@/modules/app/dpdp/components/TaskBoard';
 import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import { DemoNote, NextStep, PageHeader } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Tasks({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
+  const { org, d } = await loadClient(params);
   // The next step: an overdue task first, else the open task due soonest.
   const due = (x: string) => parseDisplayDate(x)?.getTime() ?? 0;
   const next = d.tasks.find((t) => t.status === 'Overdue') ?? [...d.tasks].filter((t) => t.status === 'Open').sort((a, b) => due(a.due) - due(b.due))[0];
-  const person = next ? d.owners[next.owner] ?? next.owner : '';
+  const person = next ? personFor(d.owners, next.owner).name : '';
 
   return (
     <div className="space-y-8">
@@ -27,7 +22,7 @@ export default async function Tasks({ params }: { params: Promise<{ org: string 
       />
 
       {!d.registerBuilt ? (
-        <ModulePending org={org.slug} what="Fulfilment work per system" />
+        <ModulePending org={org} what="Fulfilment work per system" />
       ) : (
         <>
           {next && (

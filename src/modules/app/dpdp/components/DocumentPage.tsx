@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { PEOPLE, type ComplianceDoc, type DocSection } from '@/modules/app/dpdp/mock/data';
-import { formatIst } from '@/modules/app/dpdp/time';
+import { clientData, currentUser } from '@/modules/app/dpdp/mock/clients';
+import type { ComplianceDoc, DocSection } from '@/modules/app/dpdp/types';
+import { formatIst, formatIstShort } from '@/modules/app/dpdp/time';
+import Timeline from '@/modules/app/ui/Timeline';
 import { useToast } from '@/modules/app/ui/Toast';
-import { Avatar, CiteLink, Person, ProvenanceTag } from '@/modules/app/ui/ui';
+import { ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
+import {
+  Avatar, CiteLink, Person,
+} from '@/modules/app/ui/ui';
 import Discussion from './Discussion';
 import When from './When';
 
@@ -88,7 +93,7 @@ function Section({ n, s, onSave, locked }: { n: number; s: DocSection; onSave: (
           </div>
         </div>
       ) : (
-        <p className={`mt-2 text-[15px] leading-[1.7] text-[var(--ds-text)] ${ai ? 'border-l-2 border-[#d9d5f3] pl-3' : ''}`}>{s.text}</p>
+        <p className={`mt-2 text-[15px] leading-[1.7] text-[var(--ds-text)] ${ai ? 'border-l-2 border-[var(--ds-ai-rule)] pl-3' : ''}`}>{s.text}</p>
       )}
       {ai && !editing && <p className="mt-1.5 text-[12px] text-[var(--ds-text-3)]">{s.source} — check it before sign-off.</p>}
     </section>
@@ -100,14 +105,14 @@ export default function DocumentPage({ org, doc, backHref, backLabel, client }: 
   const [sections, setSections] = useState(doc.sections);
   const [versions, setVersions] = useState(doc.versions);
   const [status, setStatus] = useState<Status>('Draft');
-  const approver = PEOPLE.find((p) => p.name === doc.approver);
+  const approver = clientData(org).people.find((p) => p.name === doc.approver);
   const drafted = sections.filter((s) => s.provenance === 'ai_suggested').length;
 
   const save = (i: number, text: string) => {
     if (!text || text === sections[i].text) return;
     setSections((ss) => ss.map((s, j) => (j === i ? { ...s, text, provenance: 'consultant_reviewed' } : s)));
     const v = versions[0].v + 1;
-    setVersions((vs) => [{ v, at: formatIst(new Date()).replace(' IST', ''), who: 'Dharita Gada', note: `Section ${i + 1} edited — now consultant-reviewed` }, ...vs]);
+    setVersions((vs) => [{ v, at: formatIstShort(new Date()), who: currentUser.name, note: `Section ${i + 1} edited — now consultant-reviewed` }, ...vs]);
     if (status !== 'Draft') setStatus('Draft');
     toast(`Saved as v${v}`, status === 'Draft' ? 'Section marked consultant-reviewed' : 'Edited after review — sign-off is needed again');
   };
@@ -142,7 +147,7 @@ export default function DocumentPage({ org, doc, backHref, backLabel, client }: 
           <span className="flex items-center gap-1.5 text-[12px] text-[var(--ds-text-3)]" title={`${doc.approver} is viewing`}>
             <span className="flex -space-x-1.5">
               <span className="rounded-full ring-2 ring-white"><Avatar name={doc.approver} size={24} /></span>
-              <span className="rounded-full ring-2 ring-white"><Avatar name="Dharita Gada" size={24} /></span>
+              <span className="rounded-full ring-2 ring-white"><Avatar name={currentUser.name} size={24} /></span>
             </span>
             {doc.approver.split(' ')[0]} is viewing
           </span>
@@ -195,16 +200,10 @@ export default function DocumentPage({ org, doc, backHref, backLabel, client }: 
           </section>
           <section>
             <h2 className="mb-3 text-[15px] font-semibold">Versions</h2>
-            <ol className="space-y-3 border-l border-[var(--ds-border)] pl-4">
-              {versions.map((v) => (
-                <li key={v.v} className="relative">
-                  <span aria-hidden className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full border border-[var(--ds-border-strong)] bg-[var(--ds-panel)]" />
-                  <p className="text-[13px] font-medium">v{v.v}</p>
-                  <p className="text-[13px] text-[var(--ds-text-2)]">{v.note}</p>
-                  <p className="text-[11px] text-[var(--ds-text-3)]">{v.who} · {v.at}</p>
-                </li>
-              ))}
-            </ol>
+            <Timeline
+              empty="No versions yet."
+              items={versions.map((v) => ({ key: `v${v.v}`, title: <span className="font-medium">v{v.v}</span>, body: <p className="text-[13px] text-[var(--ds-text-2)]">{v.note}</p>, meta: `${v.who} · ${v.at}` }))}
+            />
           </section>
         </aside>
       </div>

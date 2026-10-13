@@ -1,10 +1,12 @@
 'use client';
 
+import { clientData, currentUser } from '@/modules/app/dpdp/mock/clients';
 import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { CONSULTANT } from '@/modules/app/dpdp/mock/data';
 import { formatIst } from '@/modules/app/dpdp/time';
-import { BasisTag, Panel, Tag } from '@/modules/app/ui/ui';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
+import {
+  Panel, Tag,
+} from '@/modules/app/ui/ui';
 
 /**
  * The consultant's side of a walkthrough: the register generates an agenda —
@@ -112,7 +114,7 @@ export default function WalkthroughAgenda({ org }: { org: string }) {
                     {s.observed}
                   </p>
                   <p className="mt-0.5 text-[12px] text-[var(--ds-text-3)]">
-                    {consequence(s.result, a.finding)} · by {CONSULTANT.name}, {s.at} ·{' '}
+                    {consequence(s.result, a.finding)} · by {currentUser.name}, {s.at} ·{' '}
                     <button type="button" onClick={() => undo(a.id)} className="font-medium text-[var(--ds-accent-hover)] hover:underline">
                       Undo
                     </button>
@@ -161,7 +163,7 @@ export default function WalkthroughAgenda({ org }: { org: string }) {
                       Record observation
                     </button>
                     <span className="text-[12px] text-[var(--ds-text-3)]">
-                      Saved as observed by {CONSULTANT.name}, with the time. No file, no credential.
+                      Saved as observed by {currentUser.name}, with the time. No file, no credential.
                     </span>
                   </div>
                 </div>

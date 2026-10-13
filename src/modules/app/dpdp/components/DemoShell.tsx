@@ -1,18 +1,19 @@
 'use client';
 
+import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink, ProductLockup } from '@/modules/app/ui/Brand';
 import { ToastProvider } from '@/modules/app/ui/Toast';
+import { lateRequests } from '@/modules/app/dpdp/sla';
+import { useNow } from '@/modules/app/dpdp/useNow';
 import AccountMenu from './AccountMenu';
 import ClientSwitcher from './ClientSwitcher';
 import CommandPalette from './CommandPalette';
 import Shortcuts from './Shortcuts';
 import Sidebar from './Sidebar';
-import { readCollapsed, serverCollapsed, subscribeSidebar } from './sidebarState';
+import { SIDEBAR_COLLAPSED, usePref } from '@/modules/app/ui/prefs';
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 
@@ -51,10 +52,10 @@ const writeSession = (on: boolean) => {
 const serverSnapshot = () => null;
 
 /** Badges beside a nav item: what needs attention there. */
-const countsFor = (slug: string): Record<string, string> => {
+const countsFor = (slug: string, now: number | null): Record<string, string> => {
   const d = clientData(slug);
   const open = d.tasks.filter((t) => t.status === 'Open' || t.status === 'Overdue').length;
-  const late = d.dsrs.filter((r) => r.status !== 'Closed' && r.daysLeft !== null && r.daysLeft < 0).length;
+  const late = lateRequests(d.dsrs, d.privacyCentre?.responseDays ?? 30, now).length;
   const c: Record<string, string> = {};
   if (open) c.tasks = String(open);
   if (d.checkIn) c['check-in'] = 'Due';
@@ -69,7 +70,8 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   // `null` on the server and during hydration; a boolean once the session is
   // readable in the browser.
   const signedIn = useSyncExternalStore(subscribe, readSession, serverSnapshot);
-  const collapsed = useSyncExternalStore(subscribeSidebar, readCollapsed, serverCollapsed);
+  const collapsed = usePref(SIDEBAR_COLLAPSED, false);
+  const now = useNow(60_000);
 
   const signIn = () => {
     writeSession(true);
@@ -132,7 +134,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex w-full flex-1 flex-col lg:flex-row">
         {org && (
-          <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug)} open={navOpen} onNavigate={() => setNavOpen(false)} />
+          <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug, now)} open={navOpen} onNavigate={() => setNavOpen(false)} />
         )}
         <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
           {/* Keyed by path so each page eases in as you arrive (texts reveal). */}

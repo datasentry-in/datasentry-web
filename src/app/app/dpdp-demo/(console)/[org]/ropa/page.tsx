@@ -1,27 +1,14 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import RopaRegister from '@/modules/app/dpdp/components/RopaRegister';
 import {
   Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Ropa({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
-  if (!d.registerBuilt) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Record of processing activities" sub={org.name} />
-        <ModulePending org={org.slug} what="The record of processing activities" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  if (!d.registerBuilt) return <ModulePending org={org} title="Record of processing activities" what="The record of processing activities" />;
   const ACTIVITIES = d.activities;
   const items = ACTIVITIES.reduce((n, a) => n + a.items, 0);
   const legitimate = d.basisBreakdown.filter((b) => b.label.startsWith('s.7(i)') || b.label === 'Legal obligation').reduce((n, b) => n + b.count, 0);

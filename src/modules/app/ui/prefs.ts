@@ -36,5 +36,10 @@ export function usePref(key: string, fallback: boolean) {
   return useSyncExternalStore(subscribe, () => read(key, fallback), () => fallback);
 }
 
+/** Flip a boolean preference. */
+export const togglePref = (key: string, fallback: boolean) => setPref(key, !read(key, fallback));
+
 /** Presenter mode: show the "Design note" lines written for walkthroughs. */
 export const PRESENTER = 'ds-console-presenter';
+/** The client sidebar collapsed to an icon rail. */
+export const SIDEBAR_COLLAPSED = 'ds-console-sidebar-collapsed';

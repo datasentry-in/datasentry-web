@@ -1,15 +1,12 @@
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import Link from 'next/link';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import type { EvidenceBasis } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  BasisTag, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
+  DemoNote, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 type Channel = {
   name: string;
@@ -53,10 +50,8 @@ function ChannelRow({ c }: { c: Channel }) {
 }
 
 export default async function Intake({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
+  const { org, d } = await loadClient(params);
 
-  const d = clientData(slug);
   const pc = d.privacyCentre;
   const inbox = pc?.inbox ?? `requests.${org.slug}@in.datasentry.in`;
   const byChannel = (c: 'Privacy centre' | 'Email') => d.dsrs.filter((r) => r.channel === c).length;

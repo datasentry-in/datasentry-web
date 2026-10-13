@@ -1,14 +1,15 @@
 import Link from 'next/link';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
+import { ORGS } from '@/modules/app/dpdp/mock/clients';
+import { PortfolioRequestsStat, RequestsTag } from '@/modules/app/dpdp/components/RequestsLive';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import { scoreTone } from '@/modules/app/dpdp/score';
 import ClientMark from '@/modules/app/dpdp/components/ClientMark';
 import DeadlineCountdown from '@/modules/app/dpdp/components/DeadlineCountdown';
 import { DemoNote, PageHeader, Panel, Stat, Tag } from '@/modules/app/ui/ui';
 
 export default function Portfolio() {
   const totalHigh = ORGS.reduce((n, o) => n + o.openGaps.high, 0);
-  const totalDsr = ORGS.reduce((n, o) => n + o.dsrOpen, 0);
-  const breaching = ORGS.reduce((n, o) => n + o.dsrBreaching, 0);
+  const discovery = ORGS.filter((o) => o.engagement.startsWith('Discovery')).length;
   const incidents = ORGS.reduce((n, o) => n + o.incidentOpen, 0);
 
   return (
@@ -22,10 +23,10 @@ export default function Portfolio() {
       <DeadlineCountdown />
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Clients engaged" value={ORGS.length} note="2 in assessment, 1 in discovery" />
-        <Stat label="High-severity gaps" value={totalHigh} note="across all clients" tone="bad" />
-        <Stat label="Open DSRs" value={totalDsr} note={`${breaching} past SLA`} tone={breaching ? 'bad' : 'warn'} />
-        <Stat label="Open incidents" value={incidents} note="72-hour clock running" tone="bad" />
+        <Stat label="Clients engaged" value={ORGS.length} note={`${ORGS.length - discovery} in assessment, ${discovery} in discovery`} />
+        <Stat label="High-severity gaps" value={totalHigh} note="across all clients" tone={totalHigh ? 'bad' : 'plain'} />
+        <PortfolioRequestsStat />
+        <Stat label="Open incidents" value={incidents} note={incidents ? '72-hour clock running' : 'none open'} tone={incidents ? 'bad' : 'plain'} />
       </div>
 
       <Panel
@@ -35,8 +36,7 @@ export default function Portfolio() {
       >
         <ul>
           {ORGS.map((o) => {
-            const fg =
-              o.score < 40 ? 'var(--ds-danger)' : o.score < 70 ? 'var(--ds-warn)' : 'var(--ds-ok)';
+            const fg = scoreTone(o.score);
             return (
               <li key={o.slug} className="border-b border-[var(--ds-border)] last:border-b-0">
                 <Link
@@ -69,7 +69,7 @@ export default function Portfolio() {
                           {o.exemptActivities > 0 && <Tag tone="ok">{o.exemptActivities} exempt s.17(1)(d)</Tag>}
                         </>
                       ) : null}
-                      {o.dsrOpen > 0 && <Tag tone={o.dsrBreaching ? 'alert' : 'dark'}>{o.dsrOpen} open DSR{o.dsrBreaching ? ` · ${o.dsrBreaching} late` : ''}</Tag>}
+                      <RequestsTag org={o.slug} />
                       {o.incidentOpen > 0 && <Tag tone="alert">Incident open</Tag>}
                       {o.engagement.startsWith('Discovery') && <Tag tone="watch">Interview not started</Tag>}
                     </div>

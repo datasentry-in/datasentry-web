@@ -1,9 +1,9 @@
 'use client';
 
+import { ORGS, TEAM, clientData, currentUser } from '@/modules/app/dpdp/mock/clients';
 import { useRef, useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, PEOPLE, type RecordComment } from '@/modules/app/dpdp/mock/data';
-import { formatIst } from '@/modules/app/dpdp/time';
+import type { RecordComment } from '@/modules/app/dpdp/types';
+import { formatIstShort } from '@/modules/app/dpdp/time';
 import { useToast } from '@/modules/app/ui/Toast';
 import { Avatar } from '@/modules/app/ui/ui';
 import When from './When';
@@ -15,9 +15,7 @@ import When from './When';
  * the record, not in email. In the mock, posting notifies no one and says so.
  */
 
-const ME = 'Dharita Gada';
-/** The DataSentry team, who can be mentioned on any client's records. */
-const TEAM = PEOPLE.filter((p) => p.side === 'DataSentry');
+const ME = currentUser.name;
 const mentionPattern = (names: string[]) => new RegExp(`@(${names.map((n) => n.replace(/ /g, '\\s')).join('|')})`, 'g');
 
 function Body({ text, names }: { text: string; names: string[] }) {
@@ -76,7 +74,7 @@ export default function Discussion({ org, refId }: { org: string; refId: string 
   const post = () => {
     const body = text.trim();
     if (!body) return;
-    setAdded((a) => [...a, { id: `n${a.length}`, ref: refId, who: ME, at: formatIst(new Date()).replace(' IST', ''), text: body, visibility }]);
+    setAdded((a) => [...a, { id: `n${a.length}`, ref: refId, who: ME, at: formatIstShort(new Date()), text: body, visibility }]);
     setText('');
     const mentioned = names.filter((n) => body.includes(`@${n}`));
     toast(
@@ -110,7 +108,11 @@ export default function Discussion({ org, refId }: { org: string; refId: string 
           onChange={(e) => onType(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) post();
-            if (e.key === 'Escape') setPicking(null);
+            if (e.key === 'Escape' && picking !== null) {
+              // Close the list only — not the panel around the composer.
+              e.preventDefault();
+              setPicking(null);
+            }
           }}
           placeholder="Comment, or @mention someone…"
           aria-label="Add a comment"

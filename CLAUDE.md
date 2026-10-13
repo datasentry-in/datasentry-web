@@ -31,22 +31,30 @@ src/modules/web/         marketing components
 src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, Icons.tsx, console.css
 src/modules/app/dpdp/    the DPDP product
   components/            shell, sign-in, data map, countdowns, discovery interview, command palette
-  types.ts, statute.ts   domain types, statutory dates and the data principal's rights — real, reused by a live app
+  types.ts               every domain type, incl. ClientData (the shape a live data layer returns)
+  statute.ts             statutory dates and the data principal's rights — real, reused by a live app
+  routeData.ts           loadClient(params) — resolves a route's client or 404s; orgParams for static params
+  sla.ts                 responseWindow / lateRequests — the one live calculation of request deadlines
+  score.ts               readiness score bands (colour, verdict)
   nav.ts                 modules and intake pages — the sidebar, ⌘K palette and shortcuts all read it
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock, null until mounted
   mock/                  illustrative data; the only part a live app replaces
-    clients.ts           clientData(slug) — every page reads a client's data through this
+    clients.ts           the facade: ORGS (with counts computed from data), findOrg/getOrg, clientData,
+                         clientTheme, currentUser, TEAM, auditFor, personFor, publicCentre
     quadrant.ts, meridian.ts  per-client datasets; Northstar's lives in data.ts
 ```
 
 - **Web and app don't import each other.** Shared needs go through the root layout.
 - **The live app** goes at `src/app/app/dpdp/` (→ `/app/dpdp`), beside `dpdp-demo/`, reusing
   `@/modules/app` and swapping `dpdp/mock` for a real data layer.
-- **Pages read a client's data through `clientData(org.slug)`** (`mock/clients.ts`), never a
-  dataset constant — that is how Northstar's data stopped leaking onto other clients. Components that
+- **Only `mock/clients.ts` imports `mock/data.ts`.** Everything else goes through the facade, and
+  types come from `types.ts`. Client pages start `const { org, d } = await loadClient(params);` —
+  static params live once in `[org]/layout.tsx` with `dynamicParams = false`, so an unknown client
+  is a 404, never Northstar. Counts on `Org` are computed from the client's data (one source of
+  truth); request lateness is never stored — it is live from `sla.ts` (`RequestsLive.tsx`). Components that
   show records take an `org` prop. A client still in discovery has `registerBuilt: false`: modules
   built from the register render `ModulePending`, never another client's data.
 - **Links inside the mock use `demoPath(...)`**, never a hard-coded `/app/dpdp-demo`. Public pages are
@@ -65,7 +73,7 @@ src/modules/app/dpdp/    the DPDP product
   `font-mono` does **not** work inside `.demo-root` — a font reset outranks it.
 - **Pages read like documents (Notion).** A `Panel` that holds an object you work in (table, row
   list, map) is `flush` and framed; any other `Panel` is a heading over content with no frame.
-  Sections are `space-y-8` apart; prose stops at ~46rem (`p.leading-relaxed`, `.ds-prose`).
+  Sections are `space-y-8` apart; prose stops at ~46rem (`p.leading-relaxed`).
 - **Stat strips only on the overview and portfolio.** Module pages carry their figures as one row
   of properties under the title (`Facts`/`Fact`; notes on hover).
 - **White canvas, hairlines, no shadows.** Grey is for hover, the active nav item, table heads
@@ -85,8 +93,17 @@ src/modules/app/dpdp/    the DPDP product
   and event times — exact date in the prerendered HTML, relative after mount, red only when overdue.
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
-- **Overlays** use `Dialog` (`ui/Dialog.tsx`), which portals into `.demo-root` — the header's
-  backdrop blur traps `position: fixed`. Confirmations use `useToast()` (`ui/Toast.tsx`).
+- **Overlays** use `Dialog` / `Sheet`, both on `useOverlay`: portal into `.demo-root` (the header's
+  backdrop blur traps `position: fixed`), focus in, Tab trapped, focus restored, Escape ignored when an
+  inner control already handled it (`preventDefault`). Menus use `useClosable` (Escape, focus return).
+  Confirmations use `useToast()`.
+- **Layering**: `ui/` is generic and never imports `dpdp/`. Domain chips (`SeverityTag`,
+  `ProvenanceTag`, `BasisTag`) live in `dpdp/components/Tags.tsx`; `ScoreBlock` in `dpdp/components`.
+- **No dead buttons**: `Button` is a link (`as="link"`) or a real `<button>`. An action the mock
+  shows but does not perform is a `MockButton`, which says so when clicked.
+- **Zero is never flagged**: `Stat`/`Fact` drop the tone dot for a value of 0.
+- **Owners**: `personFor(owners, role)` gives `Person` props; never re-implement `owners[r] ?? r`.
+- **Histories** render through `ui/Timeline` (`AuditTimeline` for audit entries).
 - **Row actions** (e.g. `RemindButton`) appear on hover: `ds-row` on the row, `ds-row-link` on its
   main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
@@ -123,11 +140,13 @@ src/modules/app/dpdp/    the DPDP product
   menus grow from their corner (`ds-origin-tr/tl`), `ViewTabs` slides one pill, accordions use
   `ds-collapse`. Never `transition: all`.
 - **The audit trail** (`AUDIT` in mock data) records field changes as old → new, never "record updated".
+- **Known debt**: dates in the mock are display strings ("15 Nov 2026") re-parsed with
+  `parseDisplayDate`; a live data layer should store ISO dates and format at render.
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
   sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,
   details and the other clients) + search, alerts, account. Inside a client, `Sidebar` is the left
-  rail: collapsible to icons (`[`, state in localStorage via `sidebarState.ts`), "Powered by
+  rail: collapsible to icons (`[`, state in localStorage via `ui/prefs.ts`), "Powered by
   DataSentry" at its foot. Pages without a sidebar carry "Powered by" in the footer.
 - **Overview order**: next step → "What needs doing" (one worklist) → "Where things stand" (score,
   headline figures, module cards) → context (role determination, recent activity). Action before status.

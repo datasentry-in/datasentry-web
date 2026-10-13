@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { attentionAt } from '@/modules/app/dpdp/attention';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
+import { ORGS } from '@/modules/app/dpdp/mock/clients';
 import { NAV } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import Dialog from '@/modules/app/ui/Dialog';
@@ -104,7 +104,6 @@ export default function CommandPalette({ org }: { org: string | null }) {
     if (e.key === 'ArrowDown') { e.preventDefault(); move(active + 1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); move(active - 1); }
     else if (e.key === 'Enter') { e.preventDefault(); go(shown[active]); }
-    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
   };
 
   return (
@@ -162,7 +161,7 @@ export default function CommandPalette({ org }: { org: string | null }) {
                       {c.hint && <span className="hidden max-w-[45%] truncate text-[12px] text-[var(--ds-text-3)] sm:block">{c.hint}</span>}
                       {c.keys && (
                         <span className="hidden gap-1 sm:flex">
-                          {c.keys.split(' ').map((k) => <kbd key={k} className="ds-kbd">{k}</kbd>)}
+                          {c.keys.split(' ').map((k, i) => <kbd key={i} className="ds-kbd">{k}</kbd>)}
                         </span>
                       )}
                     </div>

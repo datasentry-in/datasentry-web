@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { Gap, Severity } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { BasisTag, SeverityTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  BasisTag, CiteLink, FilterInput, Person, SeverityTag, SortHead, TableWrap, Th, ViewTabs,
+  CiteLink, FilterInput, Person, SortHead, TableWrap, Th, ViewTabs,
 } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
@@ -24,17 +25,22 @@ const RANK: Record<Severity, number> = { High: 0, Medium: 1, Low: 2 };
 const due = (g: Gap) => parseDisplayDate(g.due)?.getTime() ?? 0;
 const DAY = 86_400_000;
 
-// "Due in 30 days" is measured from the mock's review date, so the view is
-// stable in a prerendered page; the relative labels use the real clock.
-const REVIEWED = parseDisplayDate('08 Oct 2026')!.getTime();
-
-const VIEWS: View<Gap>[] = [
-  { id: 'all', label: 'All', test: () => true },
-  { id: 'high', label: 'High', test: (g) => g.severity === 'High' },
-  { id: 'soon', label: 'Due in 30 days', test: (g) => due(g) - REVIEWED <= 30 * DAY },
-  { id: 'legal', label: 'Legal & Compliance', test: (g) => g.owner === 'Legal & Compliance' },
-  { id: 'unobserved', label: 'Not yet observed', test: (g) => g.basis !== 'observed' },
-];
+/**
+ * Saved views for one client. "Due in 30 days" is measured from the client's
+ * last review, so the view is stable in a prerendered page (the relative labels
+ * use the real clock). The owner view is whoever holds the most findings.
+ */
+function viewsFor(gaps: Gap[], reviewed: number): View<Gap>[] {
+  const byOwner = gaps.reduce<Record<string, number>>((m, g) => ({ ...m, [g.owner]: (m[g.owner] ?? 0) + 1 }), {});
+  const topOwner = Object.entries(byOwner).sort((x, y) => y[1] - x[1])[0]?.[0];
+  return [
+    { id: 'all', label: 'All', test: () => true },
+    { id: 'high', label: 'High', test: (g) => g.severity === 'High' },
+    { id: 'soon', label: 'Due in 30 days', test: (g) => due(g) - reviewed <= 30 * DAY },
+    ...(topOwner ? [{ id: 'owner', label: topOwner, test: (g: Gap) => g.owner === topOwner }] : []),
+    { id: 'unobserved', label: 'Not yet observed', test: (g) => g.basis !== 'observed' },
+  ];
+}
 const SORTS: Sort<Gap>[] = [
   { id: 'severity', label: 'Severity', compare: (a, b) => RANK[a.severity] - RANK[b.severity] || due(a) - due(b) },
   { id: 'due', label: 'Due', compare: (a, b) => due(a) - due(b) },
@@ -45,12 +51,12 @@ export default function FindingsList({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
   const OWNERS = d.owners;
-  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
+  const VIEWS = viewsFor(d.gaps, parseDisplayDate(getOrg(org).lastReview)?.getTime() ?? 0);
   const search = (g: Gap) => `${g.id} ${g.title} ${g.provision} ${g.activity} ${g.owner} ${OWNERS[g.owner] ?? ''}`;
   const [openId, setOpenId] = useState<string | null>(null);
   const t = useTableView({ rows: GAPS, views: VIEWS, sorts: SORTS, search });
   const open = GAPS.find((g) => g.id === openId) ?? null;
-  const person = (g: Gap) => OWNERS[g.owner] ?? g.owner;
+  const person = (g: Gap) => personFor(OWNERS, g.owner).name;
 
   return (
     <>
@@ -83,7 +89,7 @@ export default function FindingsList({ org }: { org: string }) {
                   </span>
                 </td>
                 <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><SeverityTag s={g.severity} /></td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><Person name={person(g)} role={OWNERS[g.owner] ? g.owner : undefined} /></td>
+                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><Person {...personFor(OWNERS, g.owner)} /></td>
                 <td className="whitespace-nowrap border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px]">
                   <span className="block font-medium">{g.due}</span>
                   <When date={g.due} className="text-[12px]" />
@@ -114,7 +120,7 @@ export default function FindingsList({ org }: { org: string }) {
             <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
             <SheetSection title="Ownership">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Person name={person(open)} role={OWNERS[open.owner] ? open.owner : undefined} />
+                <Person {...personFor(OWNERS, open.owner)} />
                 <p className="text-right text-[13px]">
                   <span className="block font-medium">{open.due}</span>
                   <When date={open.due} className="text-[12px]" />
@@ -142,7 +148,7 @@ export default function FindingsList({ org }: { org: string }) {
               <Discussion org={org} refId={open.id} />
             </SheetSection>
             <SheetSection title="History">
-              <AuditTimeline entries={auditFor(open.id)} empty="Raised 08 Oct 2026 by rule engine v1.4. No changes since." />
+              <AuditTimeline entries={auditFor(d, open.id)} empty={`Raised ${getOrg(org).lastReview} by rule engine v1.4. No changes since.`} />
             </SheetSection>   </>
         )}
       </Sheet>

@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useSyncExternalStore } from 'react';
 import { NAV } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
 import { ICONS } from '@/modules/app/ui/Icons';
-import { readCollapsed, serverCollapsed, subscribeSidebar, toggleSidebar } from './sidebarState';
+import { SIDEBAR_COLLAPSED, togglePref, usePref } from '@/modules/app/ui/prefs';
 
 /**
  * A client's modules, flush to the left edge and full height below the header.
@@ -27,7 +26,7 @@ type Props = {
 
 export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Props) {
   // Collapsing is a desktop affordance; the phone drawer always shows labels.
-  const collapsed = useSyncExternalStore(subscribeSidebar, readCollapsed, serverCollapsed);
+  const collapsed = usePref(SIDEBAR_COLLAPSED, false);
   const rail = collapsed ? 'lg:w-14 lg:px-2' : 'lg:w-60 lg:px-3';
   const hideOnRail = collapsed ? 'lg:hidden' : '';
 
@@ -45,7 +44,7 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
               {gi === 0 && (
                 <button
                   type="button"
-                  onClick={toggleSidebar}
+                  onClick={() => togglePref(SIDEBAR_COLLAPSED, false)}
                   aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                   title={`${collapsed ? 'Expand' : 'Collapse'} sidebar — [`}
                   className="hidden h-7 w-7 items-center justify-center rounded-md text-[var(--ds-text-3)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)] lg:flex"

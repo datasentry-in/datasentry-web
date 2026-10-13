@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { workFor } from '@/modules/app/dpdp/attention';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { EmptyState, Panel, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
@@ -31,7 +31,7 @@ export default function AttentionList({ org, exclude = [] }: { org: string; excl
       ) : (
         <ul>
           {items.map((a) => {
-            const person = a.owner ? owners[a.owner] ?? a.owner : null;
+            const person = a.owner ? personFor(owners, a.owner).name : null;
             return (
               <li
                 key={a.id}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ALL_CLIENTS_KEY, NAV } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import Dialog from '@/modules/app/ui/Dialog';
-import { toggleSidebar } from './sidebarState';
+import { SIDEBAR_COLLAPSED, togglePref } from '@/modules/app/ui/prefs';
 
 /**
  * Two-key navigation — "g" then a letter, as in Linear and GitHub — "[" to
@@ -42,7 +42,7 @@ export default function Shortcuts({ org }: { org: string | null }) {
       }
       if (e.key === '[' && org) {
         e.preventDefault();
-        toggleSidebar();
+        togglePref(SIDEBAR_COLLAPSED, false);
       } else if (k === 'g') pending.current = window.setTimeout(() => (pending.current = null), 1200);
       else if (e.key === '?') setHelp((h) => !h);
     };
@@ -71,8 +71,8 @@ export default function Shortcuts({ org }: { org: string | null }) {
           <li key={label} className="flex items-center justify-between rounded-md px-2 py-1.5 text-[13px] text-[var(--ds-text-2)]">
             {label}
             <span className="flex gap-1">
-              {keys.split(' ').map((k) => (
-                <kbd key={k} className="ds-kbd">{k}</kbd>
+              {keys.split(' ').map((k, i) => (
+                <kbd key={i} className="ds-kbd">{k}</kbd>
               ))}
             </span>
           </li>

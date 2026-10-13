@@ -1,7 +1,7 @@
 'use client';
 
 import { useClosable } from '@/modules/app/ui/useClosable';
-import { CONSULTANT, lastSignIn } from '@/modules/app/dpdp/mock/data';
+import { currentUser, lastSignIn } from '@/modules/app/dpdp/mock/clients';
 import { PRESENTER, setPref, usePref } from '@/modules/app/ui/prefs';
 
 /** The signed-in consultant: name beside the avatar on wide screens, and a menu to sign out. */
@@ -12,9 +12,9 @@ export default function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
       <div className="hidden text-right xl:block">
-        <p className="text-[13px] font-medium leading-tight">{CONSULTANT.name}</p>
+        <p className="text-[13px] font-medium leading-tight">{currentUser.name}</p>
         <p className="text-[11px] leading-tight text-[var(--ds-text-3)]">
-          {CONSULTANT.firm} · {CONSULTANT.role}
+          {currentUser.firm} · {currentUser.role}
         </p>
       </div>
       <div className="relative">
@@ -25,16 +25,16 @@ export default function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
           aria-label="Account menu"
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--ds-accent)] text-[11px] font-semibold text-white transition-opacity hover:opacity-90"
         >
-          {CONSULTANT.initials}
+          {currentUser.initials}
         </button>
         {open && (
           <>
             <div aria-hidden className="fixed inset-0 z-40" onClick={close} />
             <div data-state={menu.state} className="ds-pop ds-origin-tr absolute right-0 z-50 mt-2 w-60 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-1 shadow-[var(--ds-shadow-md)]">
               <div className="px-2.5 py-2">
-                <p className="text-[13px] font-medium">{CONSULTANT.name}</p>
-                <p className="truncate text-[12px] text-[var(--ds-text-2)]">{CONSULTANT.email}</p>
-                <p className="mt-1 text-[12px] text-[var(--ds-text-3)]">{CONSULTANT.role}</p>
+                <p className="text-[13px] font-medium">{currentUser.name}</p>
+                <p className="truncate text-[12px] text-[var(--ds-text-2)]">{currentUser.email}</p>
+                <p className="mt-1 text-[12px] text-[var(--ds-text-3)]">{currentUser.role}</p>
               </div>
               <div className="my-1 h-px bg-[var(--ds-border)]" />
               <button

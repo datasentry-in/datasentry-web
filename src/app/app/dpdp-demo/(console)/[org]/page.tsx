@@ -1,19 +1,17 @@
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import Link from 'next/link';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import { MODULES } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import AttentionList from '@/modules/app/dpdp/components/AttentionList';
+import { RequestsStat } from '@/modules/app/dpdp/components/RequestsLive';
 import When from '@/modules/app/dpdp/components/When';
 import { ICONS } from '@/modules/app/ui/Icons';
+import ScoreBlock from '@/modules/app/dpdp/components/ScoreBlock';
 import {
-  Button, Change, CiteLink, DemoNote, NextStep, Person, PageHeader, Panel, ScoreBlock, Stat,
+  Button, Change, CiteLink, DemoNote, NextStep, Person, PageHeader, Panel, Stat,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 /**
  * The client's home: the one next step, the score, one worklist (what needs
@@ -21,9 +19,7 @@ export function generateStaticParams() {
  * changed. Everything comes from the client's own data.
  */
 export default async function Overview({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
+  const { org, d } = await loadClient(params);
   const openIncident = d.incidents.find((i) => i.status === 'Open' && i.deadlineIso);
   const left = d.evidence.filter((e) => e.status !== 'Generated' && e.status !== 'Not started');
 
@@ -75,7 +71,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         </div>
         <Stat label="Processing activities" value={d.registerBuilt ? org.activities : '—'} note={d.registerBuilt ? `${org.exemptActivities} exempt s.17(1)(d)` : 'after discovery'} />
         <Stat label="High gaps" value={d.registerBuilt ? org.openGaps.high : '—'} note={d.registerBuilt ? `${org.openGaps.medium} medium, ${org.openGaps.low} low` : 'after discovery'} tone={org.openGaps.high ? 'bad' : 'plain'} />
-        <Stat label="Open requests" value={org.dsrOpen} note={org.dsrBreaching ? `${org.dsrBreaching} past the response window` : 'none past the window'} tone={org.dsrBreaching ? 'bad' : 'plain'} />
+        <RequestsStat org={org.slug} />
       </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {d.progress.map((p) => {

@@ -1,54 +1,39 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { EXIT_MS } from './motion';
+import { useOverlay } from './useOverlay';
 
 /**
  * A record opened beside its list — the list stays where it was. Slides in
- * from the right, closes on Esc, the backdrop or the close button. Portals into
+ * from the right and out again; closes on Esc, the backdrop or the close
+ * button; keeps focus inside and returns it on close. Portals into
  * `.demo-root` for the same reason as `Dialog`.
  */
 export default function Sheet({
   open, onClose, title, meta, children, footer,
 }: { open: boolean; onClose: () => void; title: ReactNode; meta?: ReactNode; children: ReactNode; footer?: ReactNode }) {
-  // Slide out, then tell the parent — the record stays visible while it goes.
-  const [leaving, setLeaving] = useState(false);
-  const close = () => {
-    setLeaving(true);
-    window.setTimeout(() => {
-      setLeaving(false);
-      onClose();
-    }, 180);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      setLeaving(true);
-      window.setTimeout(() => {
-        setLeaving(false);
-        onClose();
-      }, 180);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  const { panel, close, state } = useOverlay({ open, onClose, exitMs: EXIT_MS.base });
+  const titleId = useId();
 
   if (!open) return null;
   return createPortal(
     <div className="fixed inset-0 z-[60]">
-      <div aria-hidden data-state={leaving ? 'closing' : 'open'} className="ds-scrim absolute inset-0 bg-[rgba(14,15,17,0.16)]" onClick={close} />
+      <div aria-hidden data-state={state} className="ds-scrim absolute inset-0 bg-[rgba(14,15,17,0.16)]" onClick={close} />
       <aside
+        ref={panel as React.RefObject<HTMLElement>}
         role="dialog"
         aria-modal="true"
-        data-state={leaving ? 'closing' : 'open'}
-        className="ds-sheet absolute inset-y-0 right-0 flex w-full max-w-[34rem] flex-col border-l border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[0_0_48px_rgba(14,15,17,0.14)]"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        data-state={state}
+        className="ds-sheet absolute inset-y-0 right-0 flex w-full max-w-[34rem] flex-col border-l border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[0_0_48px_rgba(14,15,17,0.14)] outline-none"
       >
         <header className="flex items-start justify-between gap-4 border-b border-[var(--ds-border)] px-5 py-4">
           <div className="min-w-0">
             {meta && <div className="mb-1 flex flex-wrap items-center gap-1.5">{meta}</div>}
-            <h2 className="text-[16px] font-semibold leading-snug tracking-[-0.015em]">{title}</h2>
+            <h2 id={titleId} className="text-[15px] font-semibold leading-snug tracking-[-0.015em]">{title}</h2>
           </div>
           <button
             type="button"

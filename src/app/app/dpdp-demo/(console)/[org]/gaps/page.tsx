@@ -1,5 +1,5 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
+import { personFor } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import FindingsList from '@/modules/app/dpdp/components/FindingsList';
@@ -7,28 +7,17 @@ import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import {
   DemoNote, Fact, Facts, NextStep, PageHeader, Panel,
 } from '@/modules/app/ui/ui';
+import PresenterOnly from '@/modules/app/ui/PresenterOnly';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Gaps({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
-  if (!d.registerBuilt) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Gap report" sub={org.name} />
-        <ModulePending org={org.slug} what="The gap report" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  if (!d.registerBuilt) return <ModulePending org={org} title="Gap report" what="The gap report" />;
   const GAPS = d.gaps;
   // The next step is the most severe finding that falls due first.
   const rank = { High: 0, Medium: 1, Low: 2 } as const;
   const top = [...GAPS].sort((a, b) => rank[a.severity] - rank[b.severity] || (parseDisplayDate(a.due)?.getTime() ?? 0) - (parseDisplayDate(b.due)?.getTime() ?? 0))[0];
-  const topOwner = top ? d.owners[top.owner] ?? top.owner : '';
+  const topOwner = top ? personFor(d.owners, top.owner).name : '';
   const counts = {
     High: GAPS.filter((g) => g.severity === 'High').length,
     Medium: GAPS.filter((g) => g.severity === 'Medium').length,
@@ -62,6 +51,7 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
         <FindingsList org={org.slug} />
       </Panel>
 
+      <PresenterOnly>
       <Panel title="What this report is not">
         <DemoNote>
           Every finding above is a computed consequence of a register field plus a rule, so it can be explained
@@ -71,6 +61,7 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
           rules here.
         </DemoNote>
       </Panel>
+      </PresenterOnly>
     </div>
   );
 }

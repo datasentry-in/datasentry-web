@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import type { AuditEntry } from '@/modules/app/dpdp/mock/data';
+import { auditFor, clientData, currentUser, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { formatIst } from '@/modules/app/dpdp/time';
-import type { Activity, Basis } from '@/modules/app/dpdp/types';
+import type { Activity, AuditEntry, Basis, Role } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { ProvenanceTag, SeverityTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  CiteLink, FilterInput, Person, ProvenanceTag, SeverityTag, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
+  CiteLink, FilterInput, Person, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
 } from '@/modules/app/ui/ui';
 
 /**
@@ -23,7 +23,7 @@ import {
  */
 
 const BASES: Basis[] = ['s.7(i) employment', 's.7(i) safeguarding', 'Consent', 'Legal obligation', 's.17(1)(d) exempt', 'Not determined'];
-const roleTone = (r: string) => (r === 'Exempt' ? 'ok' : r === 'Processor' ? 'info' : 'dark');
+const roleTone = (r: Role) => (r === 'Exempt' ? 'ok' : r === 'Processor' ? 'info' : 'dark');
 const flagged = (a: Activity) => a.basis === 'Not determined' || a.retention === 'Not stated';
 
 const VIEWS: View<Activity>[] = [
@@ -39,6 +39,23 @@ const SORTS: Sort<Activity>[] = [
   { id: 'items', label: 'Items', compare: (a, b) => a.items - b.items },
 ];
 const search = (a: Activity) => `${a.id} ${a.name} ${a.purpose} ${a.department} ${a.systems.join(' ')} ${a.processors.join(' ')}`;
+
+/**
+ * The basis as plain text, for inside the edit button — a button cannot hold
+ * the citation link. The side panel shows the linked version.
+ */
+function BasisText({ basis }: { basis: Basis }) {
+  if (basis === 'Not determined') return <span className="font-medium text-[var(--ds-danger)]">Not determined</span>;
+  if (basis.startsWith('s.7(i)'))
+    return (
+      <span className="inline-flex flex-col items-start gap-0.5">
+        <span className="font-medium text-[var(--ds-accent-hover)]">s.7(i)</span>
+        <span className="text-[11px] text-[var(--ds-text-3)]">{basis.includes('safeguard') ? 'safeguarding' : 'employment'}</span>
+      </span>
+    );
+  if (basis === 's.17(1)(d) exempt') return <span className="font-medium text-[var(--ds-accent-hover)]">s.17(1)(d)</span>;
+  return <span className="text-[var(--ds-text-2)]">{basis}</span>;
+}
 
 function BasisValue({ basis }: { basis: Basis }) {
   if (basis === 'Not determined') return <span className="font-medium text-[var(--ds-danger)]">Not determined</span>;
@@ -60,7 +77,6 @@ export default function RopaRegister({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
   const OWNERS = d.owners;
-  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
   const toast = useToast();
   const [rows, setRows] = useState<Activity[]>(d.activities);
   const [edits, setEdits] = useState<AuditEntry[]>([]);
@@ -75,7 +91,7 @@ export default function RopaRegister({ org }: { org: string }) {
     if (!value.trim() || value === from) return;
     setRows((rs) => rs.map((r) => (r.id === a.id ? { ...r, [field]: value, provenance: 'consultant_reviewed' } : r)));
     const label = field === 'basis' ? 'Lawful basis' : 'Retention';
-    setEdits((es) => [{ at: formatIst(new Date()), who: 'Dharita Gada', ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
+    setEdits((es) => [{ at: formatIst(new Date()), who: currentUser.name, ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
 
     const bad = field === 'basis' ? 'Not determined' : 'Not stated';
     const finding = GAPS.find((g) => g.activity.startsWith(a.id));
@@ -86,7 +102,7 @@ export default function RopaRegister({ org }: { org: string }) {
 
   const open = rows.find((r) => r.id === openId) ?? null;
   const findings = open ? GAPS.filter((g) => g.activity.startsWith(open.id)) : [];
-  const history = open ? [...edits.filter((e) => e.ref === open.id), ...auditFor(open.id)] : [];
+  const history = open ? [...edits.filter((e) => e.ref === open.id), ...auditFor(d, open.id)] : [];
 
   return (
     <>
@@ -114,7 +130,12 @@ export default function RopaRegister({ org }: { org: string }) {
               <tr key={a.id} className="hover:bg-[var(--ds-subtle)]">
                 <Td className="ds-id whitespace-nowrap text-[12px] text-[var(--ds-text-2)]">
                   <span className="flex items-center gap-1.5">
-                    {flagged(a) && <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-label="Needs attention" />}
+                    {flagged(a) && (
+                      <>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-hidden />
+                        <span className="sr-only">Needs attention</span>
+                      </>
+                    )}
                     {a.id}
                   </span>
                 </Td>
@@ -144,7 +165,7 @@ export default function RopaRegister({ org }: { org: string }) {
                     </select>
                   ) : (
                     <button type="button" className={editable} onClick={() => setEditing({ id: a.id, field: 'basis' })} title="Click to change">
-                      <BasisValue basis={a.basis} />
+                      <BasisText basis={a.basis} />
                     </button>
                   )}
                 </Td>
@@ -244,7 +265,7 @@ export default function RopaRegister({ org }: { org: string }) {
                         {g.title} <SeverityTag s={g.severity} />
                       </p>
                       <p className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ds-text-3)]">
-                        <Person name={OWNERS[g.owner] ?? g.owner} compact /> due {g.due}
+                        <Person name={personFor(OWNERS, g.owner).name} compact /> due {g.due}
                       </p>
                     </li>
                   ))}
@@ -256,7 +277,7 @@ export default function RopaRegister({ org }: { org: string }) {
               <Discussion org={org} refId={open.id} />
             </SheetSection>
             <SheetSection title="History">
-              <AuditTimeline entries={history} empty="No changes since RoPA v4 was confirmed." />
+              <AuditTimeline entries={history} empty={`No changes since the register was confirmed on ${getOrg(org).lastReview}.`} />
             </SheetSection>   </>
         )}
       </Sheet>

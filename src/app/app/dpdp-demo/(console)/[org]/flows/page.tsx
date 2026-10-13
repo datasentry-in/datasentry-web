@@ -1,28 +1,15 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import DataFlowMap from '@/modules/app/dpdp/components/DataFlowMap';
 import {
   Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Flows({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
+  const { org, d } = await loadClient(params);
 
-  const d = clientData(slug);
-  if (!d.registerBuilt) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Data flow map" sub={org.name} />
-        <ModulePending org={org.slug} what="The data flow map" />
-      </div>
-    );
-  }
+  if (!d.registerBuilt) return <ModulePending org={org} title="Data flow map" what="The data flow map" />;
   const FLOW_NODES = d.flowNodes;
   const FLOW_EDGES = d.flowEdges;
   const GAPS = d.gaps;

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { attentionAt } from '@/modules/app/dpdp/attention';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { DEADLINE } from '@/modules/app/dpdp/statute';
+import { formatDate } from '@/modules/app/dpdp/time';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { Skeleton } from '@/modules/app/ui/ui';
 import When from './When';
@@ -17,6 +18,7 @@ import When from './When';
  */
 
 const COMMENCES = new Date(`${DEADLINE.date}T00:00:00+05:30`).getTime();
+const COMMENCES_LABEL = formatDate(new Date(COMMENCES));
 
 function Bell() {
   return (
@@ -41,9 +43,9 @@ export default function HeaderAlerts() {
       <Link
         href={demoPath()}
         className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-white px-2.5 py-1 text-[12px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] 2xl:inline-flex"
-        title="DPDP substantive obligations commence 13 May 2027"
+        title={`DPDP substantive obligations commence ${COMMENCES_LABEL}`}
       >
-        {days === null ? <Skeleton className="h-3 w-7" /> : <span className="ds-figure ds-fade-in text-[var(--ds-text)]">{days}</span>} days to 13 May 2027
+        {days === null ? <Skeleton className="h-3 w-7" /> : <span className="ds-figure ds-fade-in text-[var(--ds-text)]">{days}</span>} days to {COMMENCES_LABEL}
       </Link>
 
       <div className="relative">
@@ -56,7 +58,7 @@ export default function HeaderAlerts() {
         >
           <Bell />
           <span
-            className={`ds-figure ds-badge absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9.5px] text-white ${
+            className={`ds-figure ds-badge absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] text-white ${
               urgent ? 'bg-[var(--ds-danger)]' : 'bg-[var(--ds-warn)]'
             }`}
             aria-hidden

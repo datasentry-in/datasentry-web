@@ -1,19 +1,15 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
   Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, NextStep, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
+import PresenterOnly from '@/modules/app/ui/PresenterOnly';
+import MockButton from '@/modules/app/ui/MockButton';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Breach({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
+  const { org, d } = await loadClient(params);
   const INCIDENTS = d.incidents;
   const open = INCIDENTS.find((i) => i.status === 'Open');
   const sop = d.evidence.find((e) => e.name === 'Breach response SOP');
@@ -128,7 +124,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button as="link" href={demoPath(org.slug, 'breach', 'intimation')}>Open as a document to edit and sign off</Button>
-              <Button variant="ghost">Notify 240 principals</Button>
+              <MockButton variant="ghost" what="Notify the affected principals">Notify {open.affected} principals</MockButton>
             </div>
           </Card>
 
@@ -168,6 +164,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
         </ul>
       </Panel>
 
+      <PresenterOnly>
       <Panel title="Why this module is in the MVP">
         <DemoNote>
           It was not in the original three-module sketch. Rule 7 carries no severity threshold, the s.8(6) penalty
@@ -176,6 +173,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           product, and the thing most likely to be needed in anger.
         </DemoNote>
       </Panel>
+      </PresenterOnly>
     </div>
   );
 }

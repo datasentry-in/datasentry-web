@@ -6,71 +6,15 @@
  * returns the same shape — pages never import a client's data directly.
  */
 import type {
-  Activity, Dsr, FlowEdge, FlowNode, FulfilmentTask, Gap, Incident, Provenance, Walkthrough,
+  AuditEntry, ClientData, Org, OrgProfile, PrivacyCentre,
 } from '../types';
 import {
-  ACTIVITIES, AUDIT, BOARD_INTIMATION, CHECK_IN, COMMENTS, CONSENT_LEDGER, CONSENT_SUMMARY, DSRS, EVIDENCE_PACK,
-  FLOW_EDGES, FLOW_NODES, GAPS, INCIDENTS, OWNERS, PRIVACY_CENTRE, QUESTIONNAIRE, SCORE_HISTORY, TASKS, WALKTHROUGH,
-  WALKTHROUGH_AGENDA, type AuditEntry, type ComplianceDoc, type RecordComment,
+  ACTIVITIES, AUDIT, BOARD_INTIMATION, CHECK_IN, CLIENT_THEME, COMMENTS, CONSENT_LEDGER, CONSENT_SUMMARY, CONSULTANT,
+  DSRS, EVIDENCE_PACK, FLOW_EDGES, FLOW_NODES, GAPS, INCIDENTS, OWNERS, PEOPLE, PRIVACY_CENTRE, PROFILES, QUESTIONNAIRE,
+  SCORE_HISTORY, TASKS, WALKTHROUGH, WALKTHROUGH_AGENDA, lastSignIn,
 } from './data';
 import { MERIDIAN } from './meridian';
 import { QUADRANT } from './quadrant';
-
-export type EvidenceItem = { name: string; status: 'Generated' | 'Review pending' | 'Incomplete' | 'Not started'; detail: string; ts: string };
-export type ConsentRow = { ts: string; principal: string; type: string; purposes: string; notice: string; lang: string; action: string };
-export type CheckIn = typeof CHECK_IN;
-export type Questionnaire = Omit<typeof QUESTIONNAIRE, 'derived'> & {
-  derived: { field: string; value: string; provenance: Provenance }[];
-};
-export type PrivacyCentre = typeof PRIVACY_CENTRE;
-export type AgendaItem = (typeof WALKTHROUGH_AGENDA)[number];
-
-export type ClientData = {
-  /** False until discovery has produced a register: modules built from it show "not started". */
-  registerBuilt: boolean;
-  /** Who holds each owner role in the client. */
-  owners: Record<string, string>;
-  /** The client's people who can be @mentioned. */
-  people: { name: string; role: string }[];
-
-  activities: Activity[];
-  gaps: Gap[];
-  dsrs: Dsr[];
-  incidents: Incident[];
-  tasks: FulfilmentTask[];
-  evidence: EvidenceItem[];
-  questionnaire: Questionnaire | null;
-  flowNodes: FlowNode[];
-  flowEdges: FlowEdge[];
-  privacyCentre: PrivacyCentre | null;
-  walkthrough: Walkthrough | null;
-  walkthroughAgenda: AgendaItem[];
-  checkIn: CheckIn | null;
-  audit: AuditEntry[];
-  comments: RecordComment[];
-  scoreHistory: { on: string; score: number }[];
-  boardIntimation: ComplianceDoc | null;
-
-  consent: {
-    summary: typeof CONSENT_SUMMARY;
-    ledger: ConsentRow[];
-    /** Purposes that need consent rather than the employment exemption. */
-    employeeConsentPurposes: string[];
-  } | null;
-
-  /** Overview: module completion, as the consultant last assessed it. */
-  progress: { module: string; seg: string; pct: number; note: string }[];
-  /** Overview: role determination, as counted on the register. */
-  roles: { fiduciary: { count: number; text: string }; exempt: { count: number; text: string } } | null;
-  /** RoPA: how lawful bases break down, with a line on each. */
-  basisBreakdown: { label: string; count: number; note: string }[];
-  /** RoPA: processors and their contract status. */
-  processors: { name: string; activities: string; dpa: string }[];
-  /** DSR desk: the request worked through in detail, when there is one. */
-  dsrFocus: string | null;
-  /** Data flows: the cross-border position in words. */
-  crossBorder: { title: string; text: string; tone: 'plain' | 'ok' }[];
-};
 
 const NORTHSTAR: ClientData = {
   registerBuilt: true,
@@ -88,7 +32,7 @@ const NORTHSTAR: ClientData = {
   dsrs: DSRS,
   incidents: INCIDENTS,
   tasks: TASKS,
-  evidence: EVIDENCE_PACK as EvidenceItem[],
+  evidence: EVIDENCE_PACK,
   questionnaire: QUESTIONNAIRE,
   flowNodes: FLOW_NODES,
   flowEdges: FLOW_EDGES,
@@ -98,7 +42,7 @@ const NORTHSTAR: ClientData = {
   checkIn: CHECK_IN,
   audit: AUDIT,
   comments: COMMENTS,
-  scoreHistory: SCORE_HISTORY.northstar,
+  scoreHistory: SCORE_HISTORY,
   boardIntimation: BOARD_INTIMATION,
   consent: {
     summary: CONSENT_SUMMARY,
@@ -151,7 +95,48 @@ const NORTHSTAR: ClientData = {
 
 const BY_SLUG: Record<string, ClientData> = { northstar: NORTHSTAR, quadrant: QUADRANT, meridian: MERIDIAN };
 
-export const clientData = (slug: string): ClientData => BY_SLUG[slug] ?? NORTHSTAR;
+/** A client's data. Callers resolve the slug with `findOrg` first; unknown slugs are a 404. */
+export const clientData = (slug: string): ClientData => BY_SLUG[slug];
+
+/** A client's counts, computed from its own data so they can never disagree with the pages. */
+function summaryOf(p: OrgProfile): Org {
+  const d = BY_SLUG[p.slug];
+  const sev = (s: 'High' | 'Medium' | 'Low') => d.gaps.filter((g) => g.severity === s).length;
+  return {
+    ...p,
+    openGaps: { high: sev('High'), medium: sev('Medium'), low: sev('Low') },
+    activities: d.activities.length,
+    exemptActivities: d.activities.filter((a) => a.role === 'Exempt').length,
+    dsrOpen: d.dsrs.filter((r) => r.status !== 'Closed').length,
+    incidentOpen: d.incidents.filter((i) => i.status === 'Open').length,
+  };
+}
+
+/** Every client, with computed counts — the portfolio, switcher and palette read this. */
+export const ORGS: Org[] = PROFILES.map(summaryOf);
+
+/** The client for a slug, or undefined — pages turn undefined into a 404. */
+export const findOrg = (slug: string): Org | undefined => ORGS.find((o) => o.slug === slug);
+
+/** The client for a slug that is known to exist (inside a resolved route). */
+export const getOrg = (slug: string): Org => findOrg(slug) ?? ORGS[0];
+
+/** The client's brand colours, for white-labelled public pages and the client mark. */
+export const clientTheme = (slug: string) => CLIENT_THEME[slug] ?? CLIENT_THEME.northstar;
+
+/** The signed-in consultant. */
+export const currentUser = CONSULTANT;
+export { lastSignIn };
+
+/** The DataSentry team — mentionable on every client's records. */
+export const TEAM = PEOPLE.filter((p) => p.side === 'DataSentry');
+
+/** A record's audit trail: entries on the record, or that name it. */
+export const auditFor = (d: ClientData, ref: string): AuditEntry[] => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
+
+/** The person who holds an owner role, as `Person` props; the role itself when no one is named. */
+export const personFor = (owners: Record<string, string>, role: string): { name: string; role?: string } =>
+  owners[role] ? { name: owners[role], role } : { name: role };
 
 /**
  * What the client-branded public pages show. A client without a hosted privacy

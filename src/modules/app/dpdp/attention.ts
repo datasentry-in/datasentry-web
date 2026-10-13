@@ -1,6 +1,6 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
+import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import { lateRequests } from '@/modules/app/dpdp/sla';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 
 /**
@@ -51,7 +51,7 @@ function forClient(slug: string, now: number | null): Attention[] {
       owner: 'CISO',
     });
   }
-  const late = d.dsrs.filter((x) => x.status !== 'Closed' && x.daysLeft !== null && x.daysLeft < 0);
+  const late = lateRequests(d.dsrs, d.privacyCentre?.responseDays ?? 30, now).map((w) => w.dsr);
   if (late.length) {
     out.push({
       id: `dsr-${slug}`, org: slug, tone: 'danger', title: `${late.length} request${late.length === 1 ? '' : 's'} past the response window`, client: o.name,
@@ -104,6 +104,3 @@ export function workFor(slug: string, now: number | null): Attention[] {
   return [...urgent, ...findings.sort((a, b) => time(a.due) - time(b.due))];
 }
 
-/** The open incident whose Board-intimation clock is running, if any, across clients. */
-export const runningBreach = () =>
-  ORGS.flatMap((o) => clientData(o.slug).incidents).find((x) => x.status === 'Open' && x.deadlineIso) ?? null;

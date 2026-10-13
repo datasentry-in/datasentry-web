@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { CONSULTANT, lastSignIn } from '@/modules/app/dpdp/mock/data';
+import { currentUser, lastSignIn } from '@/modules/app/dpdp/mock/clients';
 import { ProductLockup } from '@/modules/app/ui/Brand';
 import DataMapScan from './DataMapScan';
 import { DeadlineStrip } from './DeadlineCountdown';
@@ -24,7 +24,7 @@ import { DeadlineStrip } from './DeadlineCountdown';
  * with a password or a one-time code.
  */
 export default function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
-  const [email, setEmail] = useState(CONSULTANT.email);
+  const [email, setEmail] = useState(currentUser.email);
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
 

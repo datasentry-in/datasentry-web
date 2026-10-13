@@ -31,6 +31,12 @@
   --ds-accent-hover: #00618f;
   --ds-accent-weak: #e8f4fb;
   --ds-accent-border: #bfe0f2;
+  --ds-accent-weak-2: #dcedf9;
+  /* Model-drafted text (provenance: AI suggested). */
+  --ds-ai-rule: #d9d5f3;
+  /* Accent-bar tones: brighter than the text tones, so a 2px bar still reads. */
+  --ds-warn-bar: #f5a524;
+  --ds-ok-bar: #3fb37f;
   --ds-danger: #b42318;
   --ds-danger-weak: #fef3f2;
   --ds-danger-border: #fcd9d4;
@@ -104,7 +110,7 @@ html:has(.demo-root) ::-webkit-scrollbar-thumb {
 
 /* ---- Console motion and mono ----------------------------------------------
    The sign-in entrance. The register visual animates on a canvas (see
-   RegisterField.tsx). Off for viewers who ask for reduced motion. */
+   DataMapScan.tsx). Off for viewers who ask for reduced motion. */
 @keyframes ds-rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
@@ -123,10 +129,12 @@ html:has(.demo-root) ::-webkit-scrollbar-thumb {
 }
 
 /* ---- Console type roles ------------------------------------------------------
-   Three roles, taken from the sign-in screen, used on every console page:
+   Roles used on every console page:
      ds-display  tight Inter headlines (size set where used)
-     ds-label    DM Mono uppercase for technical labels, column heads, meta
-     ds-figure   DM Mono tabular numerals for every headline number
+     ds-figure   Inter with tabular numerals for every headline number
+     ds-id       DM Mono for record IDs (PA-01, G-06) — nothing else
+     ds-label    DM Mono uppercase on the sign-in screen; sentence-case Inter in table heads
+     ds-meta     sentence-case labels inside a page body
    Colour and size stay with utilities; these set only the voice. */
 .demo-root .ds-display {
   font-weight: 600;
@@ -190,8 +198,8 @@ body:has(.demo-root) {
   padding: 2px 0 2px 12px;
 }
 .demo-root .ds-bar-danger { --bar: var(--ds-danger); }
-.demo-root .ds-bar-warn { --bar: #f5a524; }
-.demo-root .ds-bar-ok { --bar: #3fb37f; }
+.demo-root .ds-bar-warn { --bar: var(--ds-warn-bar); }
+.demo-root .ds-bar-ok { --bar: var(--ds-ok-bar); }
 .demo-root .ds-bar-accent { --bar: var(--ds-brand); }
 .demo-root .ds-bar-note { --bar: var(--ds-brand-yellow); }
 .demo-root .ds-bar-plain { --bar: var(--ds-border-strong); }
@@ -269,8 +277,7 @@ body:has(.demo-root) {
   text-transform: none;
 }
 .demo-root p.leading-relaxed,
-.demo-root .ds-bar > p,
-.demo-root .ds-prose { max-width: 46rem; }
+.demo-root .ds-bar > p { max-width: 46rem; }
 
 /* ---- Motion ------------------------------------------------------------------
    Subtle, quick, and only on transform / opacity (plus a small blur on numbers
@@ -306,8 +313,8 @@ body:has(.demo-root) {
 @keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
 .demo-root .ds-fade-in { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
 
-/* Overlays leave faster than they arrive. `data-state="closing"` is set by
-   usePresence for the length of the exit. */
+/* Overlays leave faster than they arrive. `data-state="closing"` is set for the
+   length of the exit by useClosable (menus) and useOverlay (Dialog, Sheet). */
 @keyframes ds-pop-out { to { opacity: 0; transform: translateY(-2px) scale(0.98); } }
 @keyframes ds-slide-out { to { opacity: 0; transform: translateX(16px); } }
 @keyframes ds-fade-out { to { opacity: 0; } }
