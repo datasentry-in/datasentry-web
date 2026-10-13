@@ -95,7 +95,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
             <ProductLockup href={demoPath()} byline={false} />
             <span className="absolute right-0 top-1/2 h-5 w-px -translate-y-1/2 bg-[var(--ds-border)]" aria-hidden />
           </div>
-          <div className="min-w-0 flex-1 pl-1 sm:pl-2">
+          <div className="min-w-[5rem] flex-1 pl-1 sm:pl-2">
             <ClientSwitcher org={org} />
           </div>
 

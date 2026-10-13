@@ -45,8 +45,8 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
         className="flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--ds-subtle)]"
       >
         {org && <ClientMark slug={org.slug} />}
-        <span className="min-w-0 truncate text-[13px] font-medium text-[var(--ds-text)]">{org ? org.name : 'All clients'}</span>
-        {org && <span className="hidden shrink-0 text-[12px] text-[var(--ds-text-3)] md:inline">· {phase(org)}</span>}
+        <span className="min-w-[2.5rem] truncate text-[13px] font-medium text-[var(--ds-text)]">{org ? org.name : 'All clients'}</span>
+        {org && <span className="hidden shrink-0 text-[12px] text-[var(--ds-text-3)] xl:inline">· {phase(org)}</span>}
         <Chevron />
       </button>
 

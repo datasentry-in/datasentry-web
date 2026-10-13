@@ -50,9 +50,11 @@ export function ProductLockup({
   const lg = size === 'lg';
   const name = (
     <span
-      className={`${lg ? 'text-[18px]' : 'text-[14.5px]'} whitespace-nowrap font-semibold leading-none tracking-[-0.025em] text-[var(--ds-text)]`}
+      className={`${lg ? 'text-[18px]' : 'text-[14.5px]'} whitespace-nowrap font-bold leading-none tracking-[-0.025em]`}
     >
-      DPDP Console
+      {/* The wordmark's two colours: brand blue as in DATA, ink as in SENTRY.
+          A logotype, so the blue is the brand's own, not the darker UI accent. */}
+      <span className="text-[var(--ds-brand)]">DPDP</span> <span className="text-[var(--ds-brand-ink)]">Console</span>
     </span>
   );
   // The product name and the maker are separate links: the name goes home

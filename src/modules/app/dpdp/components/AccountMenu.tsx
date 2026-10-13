@@ -8,7 +8,7 @@ export default function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <div className="hidden text-right lg:block">
+      <div className="hidden text-right xl:block">
         <p className="text-[13px] font-medium leading-tight">{CONSULTANT.name}</p>
         <p className="text-[11px] leading-tight text-[var(--ds-text-3)]">
           {CONSULTANT.firm} · {CONSULTANT.role}
