@@ -1,9 +1,10 @@
 import { loadClient } from '@/modules/app/dpdp/routeData';
 import { DsrHeader } from '@/modules/app/dpdp/components/RequestsLive';
+import ListHeader from '@/modules/app/ui/ListHeader';
 import RequestList from '@/modules/app/dpdp/components/RequestList';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, PageHeader, Panel, TableWrap, Tag, Td, Th,
+  Button, Card, CiteLink, DemoNote, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 import MockButton from '@/modules/app/ui/MockButton';
 
@@ -21,9 +22,16 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
 
   return (
     <div className="space-y-8">
-      <PageHeader
+      <ListHeader
         title="Data principal requests"
-        sub={`Access, correction, erasure, grievance and nomination · ${org.name}`}
+        meta="Access, correction, erasure, grievance and nomination"
+        about={
+          <>
+            Every request to {org.name} lands here, whichever way it arrived — the privacy centre or the published
+            email address. The response window runs from receipt and the platform keeps the clock; the owners do
+            the work in their own systems and attest it on a task.
+          </>
+        }
       />
 
       <DsrHeader org={slug} />

@@ -81,8 +81,8 @@ src/modules/app/dpdp/    the DPDP product
   and disabled inputs — never a surface. `PageHeader` is one title plus one line:
   no eyebrow, no second greyed-out headline. There is no breadcrumb: the header's client switcher
   and the highlighted sidebar item say where you are.
-- **Type scale**: 11 / 12 / 13 / 14px for UI, 15px for document body, 17px section headings, 30px
-  page titles. Prose paragraphs are 14px. No half-pixel sizes.
+- **Type scale**: 11 / 12 / 13 / 14px for UI, 15px for document body, 17px section headings, 20px
+  worklist titles, 30px page titles. Prose paragraphs are 14px. No half-pixel sizes.
 - **Nav icons** live in `Icons.tsx` (inline SVG, 16px, `currentColor`).
 - **Flag things with the accent bar, never a tinted box.** `.ds-bar` / `.ds-bar-<tone>` in
   `console.css` is a plain hairline card (the same frame as a plain `Card`) with a 2px coloured bar
@@ -124,13 +124,21 @@ src/modules/app/dpdp/    the DPDP product
 - **Records open beside their list** in a `Sheet` (`ui/Sheet.tsx`) — details, linked findings and the
   `AuditTimeline` — so the list keeps its place. RoPA, the gap report, tasks (with the attest form) and
   requests do this.
-- **Lists are worklists**: `useTableView` (`ui/useTableView.ts`) gives saved views with counts
-  (`ViewTabs`), a filter box (`FilterInput`) and the order (`DisplayMenu` on worklists; `SortHead` on
-  register tables).
+- **Two page types (70/30).** *Worklists* (gap report, tasks, DSR desk, RoPA) are Linear-style: a
+  compact `ListHeader` (title, what the list is behind an info button, one line of context), then the
+  list — no paragraph of explanation, no `NextStep`, no properties row that repeats the view counts.
+  *Documents* (the overview, notices, the Board intimation) are Notion-style with `PageHeader`.
+  Pages a client's staff use are guided.
+- **Lists are worklists**: `useTableView` (`ui/useTableView.ts`) keeps saved views with counts, search,
+  field filters, order and grouping; `FilterBar` (`ui/FilterBar.tsx`) draws them in one bar — views on
+  the left; + Filter (field, then value; active filters as removable chips), search and `DisplayMenu`
+  (grouping, ordering) on the right. Anything narrower than a saved view — one owner, one status — is a
+  filter, not a view. Register tables (RoPA) keep `SortHead` chevrons.
 - **Edits happen in place** (RoPA lawful basis and retention): the row turns consultant-reviewed, an
   audit entry records old → new (`Change`), and a toast says what the rule engine does with it.
-- **One `NextStep` per page at most**, in yellow, with a button named for the action ("Draft the
-  Board intimation", not "Open breach register").
+- **`NextStep` lives on the overview only**, in yellow, with a button named for the action ("Draft the
+  Board intimation", not "Open breach register"). A module's own action sits where its object is (the
+  Board intimation button is in the breach clock card).
 - **Show change, not just status**: `TrendChart` for the score at each review (time-scaled, month labels, values on hover), `SlaBar` for a request's
   response window, the draining bar in `Countdown`. Values the browser fills in show a `Skeleton`
   until mounted.

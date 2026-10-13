@@ -1,8 +1,9 @@
 import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import RopaRegister from '@/modules/app/dpdp/components/RopaRegister';
+import ListHeader from '@/modules/app/ui/ListHeader';
 import {
-  Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
+  Card, DemoNote, Fact, Facts, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
 
@@ -18,9 +19,16 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
 
   return (
     <div className="space-y-8">
-      <PageHeader
+      <ListHeader
         title="Record of processing activities"
-        sub={`Register confirmed ${org.lastReview} · ${org.name}`}
+        meta={`Register confirmed ${org.lastReview}`}
+        about={
+          <>
+            Every processing activity at {org.name}, with its purpose, data items, lawful basis, retention, systems and
+            processors — built from the discovery interview and confirmed by walkthroughs. Click a lawful basis or a
+            retention period to change it in place; open an activity for its findings and history.
+          </>
+        }
       />
 
       <Facts>

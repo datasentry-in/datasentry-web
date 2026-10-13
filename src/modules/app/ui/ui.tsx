@@ -377,10 +377,17 @@ export function SortHead({
       <button
         type="button"
         onClick={() => onSort(id)}
-        className={`ds-label inline-flex items-center gap-1 ${active ? 'text-[var(--ds-text)]' : 'text-[var(--ds-text-3)] hover:text-[var(--ds-text-2)]'}`}
+        className={`group ds-label inline-flex items-center gap-1 ${active ? 'text-[var(--ds-text)]' : 'text-[var(--ds-text-3)] hover:text-[var(--ds-text-2)]'}`}
       >
         {label}
-        <span aria-hidden className="text-[10px]">{active ? (dir === 1 ? '↑' : '↓') : '↕'}</span>
+        {/* A small chevron: the direction when sorted, a hint on hover otherwise. */}
+        <svg
+          viewBox="0 0 12 12"
+          aria-hidden
+          className={`h-3 w-3 transition-[opacity,transform] duration-150 ${active ? '' : 'opacity-0 group-hover:opacity-60 group-focus-visible:opacity-60'} ${active && dir === -1 ? 'rotate-180' : ''}`}
+        >
+          <path d="m3.5 7.5 2.5-2.5 2.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
     </th>
   );

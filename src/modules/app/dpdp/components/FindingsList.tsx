@@ -1,94 +1,109 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { Gap, GapStatus, Severity } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
-import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
 import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import { FINDING_STATUS, SEVERITY_PRIORITY } from '@/modules/app/dpdp/workStatus';
-import DisplayMenu from '@/modules/app/ui/DisplayMenu';
-import { PriorityIcon, StatusIcon, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
-import { CiteLink, FilterInput, Person, ViewTabs } from '@/modules/app/ui/ui';
+import FilterBar from '@/modules/app/ui/FilterBar';
+import { PriorityIcon, StatusIcon, WorkGroup, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
+import { CiteLink, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
 /**
- * The gap report as a worklist: saved views (by severity, by what is due soon,
- * by owner), one row per finding — severity, ID, status, title, citation, due,
- * owner — and each finding opened beside the list with its evidence, provision
- * and history.
+ * The gap report as a worklist: saved views, filters (owner, severity, status,
+ * evidence), grouping and order, one row per finding — severity, ID, status,
+ * title, citation, due, owner — and each finding opened beside the list with
+ * its evidence, provision and history.
  */
 
 const RANK: Record<Severity, number> = { High: 0, Medium: 1, Low: 2 };
 const due = (g: Gap) => parseDisplayDate(g.due)?.getTime() ?? 0;
 const statusOf = (g: Gap): GapStatus => g.status ?? 'Open';
 const DAY = 86_400_000;
+const BASIS: Record<string, string> = { observed: 'Observed on a walkthrough', declared: 'Declared', attested: 'Attested', none: 'No evidence yet' };
 
 /**
  * Saved views for one client. "Due in 30 days" is measured from the client's
  * last review, so the view is stable in a prerendered page (the relative labels
- * use the real clock). The owner view is whoever holds the most findings.
+ * use the real clock). Anything narrower — one owner, one status — is a filter.
  */
-function viewsFor(gaps: Gap[], reviewed: number): View<Gap>[] {
-  const byOwner = gaps.reduce<Record<string, number>>((m, g) => ({ ...m, [g.owner]: (m[g.owner] ?? 0) + 1 }), {});
-  const topOwner = Object.entries(byOwner).sort((x, y) => y[1] - x[1])[0]?.[0];
+function viewsFor(reviewed: number): View<Gap>[] {
   return [
     { id: 'all', label: 'All', test: () => true },
     { id: 'high', label: 'High', test: (g) => g.severity === 'High' },
     { id: 'soon', label: 'Due in 30 days', test: (g) => due(g) - reviewed <= 30 * DAY },
-    ...(topOwner ? [{ id: 'owner', label: topOwner, test: (g: Gap) => g.owner === topOwner }] : []),
     { id: 'unobserved', label: 'Not yet observed', test: (g) => g.basis !== 'observed' },
   ];
 }
 const SORTS: Sort<Gap>[] = [
   { id: 'severity', label: 'Severity', compare: (a, b) => RANK[a.severity] - RANK[b.severity] || due(a) - due(b) },
-  { id: 'due', label: 'Due', compare: (a, b) => due(a) - due(b) },
+  { id: 'due', label: 'Due date', compare: (a, b) => due(a) - due(b) },
   { id: 'id', label: 'ID', compare: (a, b) => a.id.localeCompare(b.id) },
+];
+const GROUPINGS: Grouping<Gap>[] = [
+  { id: 'severity', label: 'Severity', key: (g) => g.severity, order: ['High', 'Medium', 'Low'] },
+  { id: 'status', label: 'Status', key: statusOf, order: ['Open', 'In progress', 'Resolved'] },
+  { id: 'owner', label: 'Owner', key: (g) => g.owner },
 ];
 
 export default function FindingsList({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
   const OWNERS = d.owners;
-  const VIEWS = viewsFor(d.gaps, parseDisplayDate(getOrg(org).lastReview)?.getTime() ?? 0);
+  const VIEWS = viewsFor(parseDisplayDate(getOrg(org).lastReview)?.getTime() ?? 0);
+  const ownerName = (role: string) => personFor(OWNERS, role).name;
+  const FIELDS: Field<Gap>[] = [
+    { id: 'owner', label: 'Owner', value: (g) => g.owner, display: ownerName },
+    { id: 'severity', label: 'Severity', value: (g) => g.severity },
+    { id: 'status', label: 'Status', value: statusOf },
+    { id: 'basis', label: 'Evidence', value: (g) => g.basis ?? 'none', display: (v) => BASIS[v] ?? v },
+  ];
   const search = (g: Gap) => `${g.id} ${g.title} ${g.provision} ${g.activity} ${g.owner} ${OWNERS[g.owner] ?? ''}`;
   const [openId, setOpenId] = useState<string | null>(null);
-  const t = useTableView({ rows: GAPS, views: VIEWS, sorts: SORTS, search });
+  const t = useTableView({ rows: GAPS, views: VIEWS, sorts: SORTS, search, fields: FIELDS, groupings: GROUPINGS });
   const open = GAPS.find((g) => g.id === openId) ?? null;
-  const person = (g: Gap) => personFor(OWNERS, g.owner).name;
+
+  const row = (g: Gap) => {
+    const status = statusOf(g);
+    return (
+      <WorkRow
+        key={g.id}
+        priority={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
+        id={g.id}
+        status={<StatusIcon status={FINDING_STATUS[status]} label={status} />}
+        title={g.title}
+        onOpen={() => setOpenId(g.id)}
+        current={openId === g.id}
+        meta={<><CiteLink provision={g.provision} /> · {g.activity}</>}
+        actions={<RemindButton person={ownerName(g.owner)} what={`${g.id} — ${g.title}`} />}
+        due={<When date={g.due} />}
+        owner={personFor(OWNERS, g.owner)}
+      />
+    );
+  };
+  const groupTitle = (key: string): ReactNode =>
+    t.grouping === 'severity' ? <span className="inline-flex items-center gap-2"><PriorityIcon level={SEVERITY_PRIORITY[key as Severity]} />{key}</span>
+      : t.grouping === 'status' ? <span className="inline-flex items-center gap-2"><StatusIcon status={FINDING_STATUS[key as GapStatus]} label={key} />{key}</span>
+        : `${ownerName(key)}${OWNERS[key] ? ` · ${key}` : ''}`;
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
-        <ViewTabs views={VIEWS} active={t.view} counts={t.counts} onChange={t.setView} />
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <FilterInput value={t.query} onChange={t.setQuery} placeholder="Filter findings, owners…" />
-          <DisplayMenu orders={SORTS} order={t.sort} dir={t.dir} onOrder={t.orderBy} onFlip={t.flip} />
-        </div>
-      </div>
+      <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search findings…" />
       <WorkList>
-        {t.shown.map((g) => {
-          const status = statusOf(g);
-          return (
-            <WorkRow
-              key={g.id}
-              priority={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
-              id={g.id}
-              status={<StatusIcon status={FINDING_STATUS[status]} label={status} />}
-              title={g.title}
-              onOpen={() => setOpenId(g.id)}
-              current={openId === g.id}
-              meta={<><CiteLink provision={g.provision} /> · {g.activity}</>}
-              actions={<RemindButton person={person(g)} what={`${g.id} — ${g.title}`} />}
-              due={<When date={g.due} />}
-              owner={personFor(OWNERS, g.owner)}
-            />
-          );
-        })}
+        {t.groups
+          ? t.groups.map((g) => (
+            <WorkGroup key={g.key} title={groupTitle(g.key)} count={g.rows.length}>
+              {g.rows.map(row)}
+            </WorkGroup>
+          ))
+          : t.shown.map(row)}
         {t.shown.length === 0 && (
           <li className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No findings match this view.</li>
         )}
@@ -106,7 +121,7 @@ export default function FindingsList({ org }: { org: string }) {
             <CiteLink provision={open.provision} />
           </>
         )}
-        footer={open && <RemindButton person={person(open)} what={`${open.id} — ${open.title}`} />}
+        footer={open && <RemindButton person={ownerName(open.owner)} what={`${open.id} — ${open.title}`} />}
       >
         {open && (
           <>

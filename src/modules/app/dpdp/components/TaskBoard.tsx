@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { formatIst } from '@/modules/app/dpdp/time';
+import { formatIst, parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
 import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import { TASK_LABEL, TASK_STATUS } from '@/modules/app/dpdp/workStatus';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import { useToast } from '@/modules/app/ui/Toast';
 import { StatusIcon, WorkGroup, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
-import { Fact, Facts, Panel, Person } from '@/modules/app/ui/ui';
+import FilterBar from '@/modules/app/ui/FilterBar';
+import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { Panel, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
@@ -25,6 +27,26 @@ import When from './When';
 /** Still waiting on its owner — the only state that can be reminded or attested. */
 const live = (t: FulfilmentTask) => t.status === 'Open' || t.status === 'Overdue';
 const SHORT: Record<FulfilmentTask['status'], string> = { Open: 'Open', Overdue: 'Overdue', Attested: 'Attested', Retained: 'Kept — statutory' };
+const due = (t: FulfilmentTask) => parseDisplayDate(t.due)?.getTime() ?? 0;
+const RANK: Record<FulfilmentTask['status'], number> = { Overdue: 0, Open: 1, Attested: 2, Retained: 3 };
+
+const VIEWS: View<FulfilmentTask>[] = [
+  { id: 'active', label: 'Active', test: live },
+  { id: 'overdue', label: 'Overdue', test: (t) => t.status === 'Overdue' },
+  { id: 'done', label: 'Attested or kept', test: (t) => !live(t) },
+  { id: 'all', label: 'All', test: () => true },
+];
+const SORTS: Sort<FulfilmentTask>[] = [
+  { id: 'due', label: 'Due date', compare: (a, b) => due(a) - due(b) },
+  { id: 'status', label: 'Status', compare: (a, b) => RANK[a.status] - RANK[b.status] || due(a) - due(b) },
+  { id: 'id', label: 'ID', compare: (a, b) => a.id.localeCompare(b.id) },
+];
+const GROUPINGS: Grouping<FulfilmentTask>[] = [
+  { id: 'source', label: 'What raised it', key: (t) => t.source.ref },
+  { id: 'owner', label: 'Owner', key: (t) => t.owner },
+  { id: 'status', label: 'Status', key: (t) => t.status, order: ['Overdue', 'Open', 'Attested', 'Retained'] },
+  { id: 'system', label: 'System', key: (t) => t.system },
+];
 
 const sourceHref = (org: string, t: FulfilmentTask) =>
   t.source.kind === 'Request' ? demoPath(org, 'dsr')
@@ -78,10 +100,10 @@ export default function TaskBoard({ org }: { org: string }) {
   const OWNERS = d.owners;
   const toast = useToast();
   const [tasks, setTasks] = useState<FulfilmentTask[]>(TASKS);
-  const [viewer, setViewer] = useState<string>('all');
   const [openId, setOpenId] = useState<string | null>(null);
   const open = tasks.find((t) => t.id === openId) ?? null;
   const nameOf = (t: FulfilmentTask) => personFor(OWNERS, t.owner).name;
+  const ownerName = (role: string) => personFor(OWNERS, role).name;
 
   const attest = (id: string, note: string, proof: string | null) => {
     const t = tasks.find((x) => x.id === id)!;
@@ -95,86 +117,85 @@ export default function TaskBoard({ org }: { org: string }) {
     toast(`${id} attested`, `Recorded as attested by ${nameOf(t)} — not machine-verified. The next walkthrough looks at it on screen.`);
   };
 
-  const owners = [...new Set(TASKS.map((t) => t.owner))];
-  const shown = viewer === 'all' ? tasks : tasks.filter((t) => t.owner === viewer);
-  const count = (s: FulfilmentTask['status']) => shown.filter((t) => t.status === s).length;
-  const groups = [...new Set(shown.map((t) => t.source.ref))].map((ref) => shown.filter((t) => t.source.ref === ref));
+  // Who a task waits on is a filter ("Owner is Ritu Sharma") — the view an owner sees of their own work.
+  const FIELDS: Field<FulfilmentTask>[] = [
+    { id: 'owner', label: 'Owner', value: (t) => t.owner, display: ownerName },
+    { id: 'status', label: 'Status', value: (t) => t.status, display: (v) => SHORT[v as FulfilmentTask['status']] },
+    { id: 'system', label: 'System', value: (t) => t.system },
+    { id: 'source', label: 'Raised by', value: (t) => t.source.kind },
+  ];
+  const t = useTableView({
+    rows: tasks, views: VIEWS, sorts: SORTS, fields: FIELDS, groupings: GROUPINGS, initialGrouping: 'source',
+    search: (x) => `${x.id} ${x.action} ${x.system} ${x.owner} ${nameOf(x)} ${x.source.ref} ${x.source.label}`,
+  });
+
+  const row = (x: FulfilmentTask) => (
+    <WorkRow
+      key={x.id}
+      id={x.id}
+      status={<StatusIcon status={TASK_STATUS[x.status]} label={TASK_LABEL[x.status]} />}
+      title={x.action}
+      onOpen={() => setOpenId(x.id)}
+      current={openId === x.id}
+      meta={t.grouping === 'system' ? x.source.label : x.system}
+      actions={live(x) && (
+        <>
+          <RemindButton person={nameOf(x)} what={`${x.id} — ${x.action}`} />
+          <button
+            type="button"
+            onClick={() => setOpenId(x.id)}
+            className="rounded-md border border-[var(--ds-border-strong)] bg-[var(--ds-panel)] px-2.5 py-1 text-[12px] font-medium transition-colors hover:bg-[var(--ds-subtle)]"
+          >
+            Attest
+          </button>
+        </>
+      )}
+      due={
+        live(x) ? <When date={x.due} />
+          : x.attestation ? <When date={x.attestation.at} kind="event" className="text-[var(--ds-text-3)]" />
+            : <span className="text-[var(--ds-text-3)]">kept</span>
+      }
+      owner={personFor(OWNERS, x.owner)}
+    />
+  );
+
+  const group = (key: string, rows: FulfilmentTask[]) => {
+    if (t.grouping === 'source') {
+      const src = rows[0].source;
+      return (
+        <WorkGroup
+          key={key}
+          title={<><span className="ds-id mr-1.5 text-[var(--ds-text-3)]">{src.ref}</span>{src.label}</>}
+          count={rows.length}
+          right={
+            <Link href={sourceHref(org, rows[0])} className="text-[12px] text-[var(--ds-text-2)] hover:text-[var(--ds-accent-hover)]">
+              {src.kind === 'Finding' ? 'Finding' : src.kind === 'Request' ? 'Request' : 'Consent ledger'} →
+            </Link>
+          }
+        >
+          {rows.map(row)}
+        </WorkGroup>
+      );
+    }
+    const title = t.grouping === 'owner' ? `${ownerName(key)}${OWNERS[key] ? ` · ${key}` : ''}`
+      : t.grouping === 'status' ? (
+        <span className="inline-flex items-center gap-2">
+          <StatusIcon status={TASK_STATUS[key as FulfilmentTask['status']]} label={TASK_LABEL[key as FulfilmentTask['status']]} />
+          {SHORT[key as FulfilmentTask['status']]}
+        </span>
+      ) : key;
+    return <WorkGroup key={key} title={title} count={rows.length}>{rows.map(row)}</WorkGroup>;
+  };
 
   return (
-    <div className="space-y-5">
-      <Facts tight={false}>
-        <Fact label="Open" value={count('Open')} note="awaiting the owner" tone="warn" />
-        <Fact label="Overdue" value={count('Overdue')} note="past due — escalated" tone={count('Overdue') ? 'bad' : 'plain'} />
-        <Fact label="Attested" value={count('Attested')} note="by the person who did it" tone="good" />
-        <Fact label="Kept — statutory" value={count('Retained')} note="cited in the response" />
-      </Facts>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="ds-meta mr-1 text-[var(--ds-text-3)]">Viewing as</span>
-        {['all', ...owners].map((o) => (
-          <button
-            key={o}
-            type="button"
-            aria-pressed={viewer === o}
-            onClick={() => setViewer(o)}
-            className={`rounded-full border px-2.5 py-1 text-[12px] transition-colors ${
-              viewer === o
-                ? 'border-[var(--ds-accent)] bg-[var(--ds-accent-weak)] font-medium text-[var(--ds-accent-hover)]'
-                : 'border-[var(--ds-border-strong)] bg-white text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
-            }`}
-          >
-            {o === 'all' ? 'Consultant — all owners' : `${personFor(OWNERS, o).name} · ${o}`}
-          </button>
-        ))}
-      </div>
-
-      <Panel title="Tasks" sub="One per system the register lists, grouped by what raised them. Open one to attest it." flush>
+    <>
+      <Panel flush>
+        <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search tasks…" />
         <WorkList>
-          {groups.map((g) => {
-            const src = g[0].source;
-            return (
-              <WorkGroup
-                key={src.ref}
-                title={<><span className="ds-id mr-1.5 text-[var(--ds-text-3)]">{src.ref}</span>{src.label}</>}
-                count={g.length}
-                right={
-                  <Link href={sourceHref(org, g[0])} className="text-[12px] text-[var(--ds-text-2)] hover:text-[var(--ds-accent-hover)]">
-                    {src.kind === 'Finding' ? 'Finding' : src.kind === 'Request' ? 'Request' : 'Consent ledger'} →
-                  </Link>
-                }
-              >
-                {g.map((t) => (
-                  <WorkRow
-                    key={t.id}
-                    id={t.id}
-                    status={<StatusIcon status={TASK_STATUS[t.status]} label={TASK_LABEL[t.status]} />}
-                    title={t.action}
-                    onOpen={() => setOpenId(t.id)}
-                    current={openId === t.id}
-                    meta={t.system}
-                    actions={live(t) && (
-                      <>
-                        <RemindButton person={nameOf(t)} what={`${t.id} — ${t.action}`} />
-                        <button
-                          type="button"
-                          onClick={() => setOpenId(t.id)}
-                          className="rounded-md border border-[var(--ds-border-strong)] bg-[var(--ds-panel)] px-2.5 py-1 text-[12px] font-medium transition-colors hover:bg-[var(--ds-subtle)]"
-                        >
-                          Attest
-                        </button>
-                      </>
-                    )}
-                    due={
-                      live(t) ? <When date={t.due} />
-                        : t.attestation ? <When date={t.attestation.at} kind="event" className="text-[var(--ds-text-3)]" />
-                          : <span className="text-[var(--ds-text-3)]">kept</span>
-                    }
-                    owner={personFor(OWNERS, t.owner)}
-                  />
-                ))}
-              </WorkGroup>
-            );
-          })}
+          {t.groups ? t.groups.map((g) => group(g.key, g.rows)) : t.shown.map(row)}
+          {t.shown.length === 0 && (
+            <li className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No tasks match this view.</li>
+          )}
         </WorkList>
       </Panel>
 
@@ -238,6 +259,6 @@ export default function TaskBoard({ org }: { org: string }) {
           </>
         )}
       </Sheet>
-    </div>
+    </>
   );
 }

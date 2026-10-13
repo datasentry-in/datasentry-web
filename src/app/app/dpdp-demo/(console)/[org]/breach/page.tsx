@@ -2,7 +2,7 @@ import { loadClient } from '@/modules/app/dpdp/routeData';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, NextStep, PageHeader, Panel, Tag,
+  Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 import PresenterOnly from '@/modules/app/ui/PresenterOnly';
 import MockButton from '@/modules/app/ui/MockButton';
@@ -31,14 +31,6 @@ export default async function Breach({ params }: { params: Promise<{ org: string
       </Facts>
 
       {open ? (<>
-      <NextStep
-        title={`Send the Board intimation for ${open.id}`}
-        action={<Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>}
-      >
-        The initial description is due without delay and full particulars within 72 hours of awareness. The draft is
-        prepared from the incident record; the CISO signs it off.
-      </NextStep>
-
       {/* The clock is the module. */}
       <div className="ds-bar ds-bar-danger flex flex-wrap items-center justify-between gap-5">
         <div>
@@ -51,6 +43,10 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           <p className="ds-figure mt-1.5 text-[12px] text-[var(--ds-text-2)]">
             Awareness {open.awareness} · deadline {open.deadline}
           </p>
+          {/* The clock's own action — the page's next step lives on the overview. */}
+          <div className="mt-3">
+            <Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>
+          </div>
         </div>
         <div className="sm:text-right">
           <p className="ds-meta text-[var(--ds-text-3)]">

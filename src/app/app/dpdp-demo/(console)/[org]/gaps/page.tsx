@@ -1,53 +1,30 @@
 import { loadClient } from '@/modules/app/dpdp/routeData';
-import { personFor } from '@/modules/app/dpdp/mock/clients';
-import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import FindingsList from '@/modules/app/dpdp/components/FindingsList';
-import RemindButton from '@/modules/app/dpdp/components/RemindButton';
-import {
-  DemoNote, Fact, Facts, NextStep, PageHeader, Panel,
-} from '@/modules/app/ui/ui';
+import ListHeader from '@/modules/app/ui/ListHeader';
+import { DemoNote, Panel } from '@/modules/app/ui/ui';
 import PresenterOnly from '@/modules/app/ui/PresenterOnly';
 
 
+/** A worklist page: a compact header, then the list — the next step lives on the overview. */
 export default async function Gaps({ params }: { params: Promise<{ org: string }> }) {
   const { org, d } = await loadClient(params);
   if (!d.registerBuilt) return <ModulePending org={org} title="Gap report" what="The gap report" />;
-  const GAPS = d.gaps;
-  // The next step is the most severe finding that falls due first.
-  const rank = { High: 0, Medium: 1, Low: 2 } as const;
-  const top = [...GAPS].sort((a, b) => rank[a.severity] - rank[b.severity] || (parseDisplayDate(a.due)?.getTime() ?? 0) - (parseDisplayDate(b.due)?.getTime() ?? 0))[0];
-  const topOwner = top ? personFor(d.owners, top.owner).name : '';
-  const counts = {
-    High: GAPS.filter((g) => g.severity === 'High').length,
-    Medium: GAPS.filter((g) => g.severity === 'Medium').length,
-    Low: GAPS.filter((g) => g.severity === 'Low').length,
-  };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
+    <div className="space-y-5">
+      <ListHeader
         title="Gap report"
-        sub={`Rule set v1.4 · ${org.activities} activities evaluated · generated ${org.lastReview}`}
+        meta={`Rule set v1.4 · ${org.activities} activities evaluated · generated ${org.lastReview}`}
+        about={
+          <>
+            Produced by the rule engine, not by the model: every finding is a register field plus a rule, and cites the
+            provision it rests on. Each has an owner and a date. Open one for its evidence, discussion and history.
+          </>
+        }
       />
 
-      <Facts>
-        <Fact label="Findings" value={GAPS.length} note="all with an owner and a date" />
-        <Fact label="High" value={counts.High} note="remediate before Dec 2026" tone="bad" />
-        <Fact label="Medium" value={counts.Medium} note="remediate by Jan 2027" tone="warn" />
-        <Fact label="Low" value={counts.Low} note="remediate by Mar 2027" />
-      </Facts>
-
-      {top && (
-        <NextStep
-          title={`Close ${top.id} — ${top.title.charAt(0).toLowerCase()}${top.title.slice(1)}`}
-          action={<RemindButton person={topOwner} what={`${top.id} — ${top.title}`} />}
-        >
-          {top.detail.split('. ')[0]}. {topOwner} ({top.owner}) owns it, due {top.due}.
-        </NextStep>
-      )}
-
-      <Panel title="Findings" sub="Produced by the rule engine, not by the model — each cites a provision. Open one for its evidence and history." flush>
+      <Panel flush>
         <FindingsList org={org.slug} />
       </Panel>
 

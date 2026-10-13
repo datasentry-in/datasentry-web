@@ -3,7 +3,7 @@
 import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { lateRequests } from '@/modules/app/dpdp/sla';
 import { useNow } from '@/modules/app/dpdp/useNow';
-import { Button, Fact, Facts, NextStep, Stat, Tag } from '@/modules/app/ui/ui';
+import { Fact, Facts, Stat, Tag } from '@/modules/app/ui/ui';
 
 /**
  * Everything that depends on whether a request is past its response window.
@@ -56,38 +56,20 @@ export function RequestsTag({ org }: { org: string }) {
   return <Tag tone={late.length ? 'alert' : 'dark'}>{open} open DSR{late.length ? ` · ${late.length} late` : ''}</Tag>;
 }
 
-/** The request desk's properties row and next step. */
+/** The request desk's properties row (the next step lives on the overview). */
 export function DsrHeader({ org }: { org: string }) {
   const { d, late } = useLate(org);
   const open = d.dsrs.filter((r) => r.status !== 'Closed');
   const closed = d.dsrs.filter((r) => r.status === 'Closed');
   const conflicts = d.dsrs.filter((r) => r.conflicts?.length).length;
   const grievance = d.privacyCentre?.grievanceOfficer ?? null;
-  const focus = d.dsrFocus ? d.dsrs.find((r) => r.id === d.dsrFocus) : undefined;
 
   return (
-    <>
-      <Facts>
-        <Fact label="Open requests" value={open.length} note={late.length ? `${late.length} past the response window` : 'none past the response window'} tone={late.length ? 'bad' : open.length ? 'warn' : 'plain'} />
-        <Fact label="Closed this quarter" value={closed.length} note="the log is the evidence" tone="good" />
-        <Fact label="Erasure conflicts" value={conflicts} note="statutory retention applies" tone="bad" />
-        <Fact label="Grievance contact" value={grievance ?? 'None'} note={grievance ? 'published on the privacy centre' : 'no one named to handle complaints (s.13)'} tone={grievance ? 'good' : 'bad'} />
-      </Facts>
-
-      {focus ? (
-        <NextStep
-          title={`Send ${focus.principal} a partial-erasure response`}
-          action={<Button as="link" href="#dsr-focus">Review the drafted response</Button>}
-        >
-          Four of her records are kept by law. The response has to name each one and the statute that keeps it — the
-          draft below already does.
-        </NextStep>
-      ) : late.length ? (
-        <NextStep title={`Respond to ${late[0].dsr.principal} — ${-late[0].daysLeft} days past the response window`}>
-          {late.map((w) => `${w.dsr.id} (${w.dsr.type.toLowerCase()}, received ${w.dsr.received} by ${w.dsr.channel?.toLowerCase() ?? 'email'})`).join(' · ')}.
-          Each arrived at the published email address and was forwarded into the desk; the window ran from the day it arrived.
-        </NextStep>
-      ) : null}
-    </>
+    <Facts>
+      <Fact label="Open requests" value={open.length} note={late.length ? `${late.length} past the response window` : 'none past the response window'} tone={late.length ? 'bad' : open.length ? 'warn' : 'plain'} />
+      <Fact label="Closed this quarter" value={closed.length} note="the log is the evidence" tone="good" />
+      <Fact label="Erasure conflicts" value={conflicts} note="statutory retention applies" tone="bad" />
+      <Fact label="Grievance contact" value={grievance ?? 'None'} note={grievance ? 'published on the privacy centre' : 'no one named to handle complaints (s.13)'} tone={grievance ? 'good' : 'bad'} />
+    </Facts>
   );
 }
