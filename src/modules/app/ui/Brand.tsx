@@ -50,7 +50,7 @@ export function ProductLockup({
   const lg = size === 'lg';
   const name = (
     <span
-      className={`${lg ? 'text-[18px]' : 'text-[14.5px]'} font-semibold leading-none tracking-[-0.025em] text-[var(--ds-text)]`}
+      className={`${lg ? 'text-[18px]' : 'text-[14.5px]'} whitespace-nowrap font-semibold leading-none tracking-[-0.025em] text-[var(--ds-text)]`}
     >
       DPDP Console
     </span>

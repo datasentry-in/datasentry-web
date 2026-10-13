@@ -32,7 +32,7 @@ src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, Icons.tsx, co
 src/modules/app/dpdp/    the DPDP product
   components/            shell, sign-in, data map, countdowns, discovery interview, command palette
   types.ts, statute.ts   domain types, statutory dates and the data principal's rights — real, reused by a live app
-  nav.ts                 modules and intake pages — the sidebar, breadcrumb and ⌘K palette all read it
+  nav.ts                 modules and intake pages — the sidebar, ⌘K palette and shortcuts all read it
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
@@ -59,7 +59,8 @@ src/modules/app/dpdp/    the DPDP product
 - **White canvas, hairlines, no shadows.** Grey is for hover, the active nav item, table heads
   and disabled inputs — never a surface. Stats sit in one strip (`gap-px` grid on a
   border-coloured background), not as separate cards. `PageHeader` is one title plus one line:
-  no eyebrow, no second greyed-out headline — the breadcrumb says where you are.
+  no eyebrow, no second greyed-out headline. There is no breadcrumb: the header's client switcher
+  and the highlighted sidebar item say where you are.
 - **Type scale**: 11 / 12 / 13 / 14px plus the display size. No half-pixel sizes.
 - **Nav icons** live in `Icons.tsx` (inline SVG, 16px, `currentColor`).
 - **Flag things with the accent bar, never a tinted box.** `Callout` (2px bar + title + action;
@@ -71,7 +72,7 @@ src/modules/app/dpdp/    the DPDP product
 - **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates
   and event times — exact date in the prerendered HTML, relative after mount, red when overdue,
   amber within a week.
-- **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, breadcrumb, bell, ⌘K
+- **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
 - **Overlays** use `Dialog` (`ui/Dialog.tsx`), which portals into `.demo-root` — the header's
   backdrop blur traps `position: fixed`. Confirmations use `useToast()` (`ui/Toast.tsx`).
@@ -79,6 +80,10 @@ src/modules/app/dpdp/    the DPDP product
   main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
+- **Shell layout**: header = "DPDP Console" + Prototype tag + `ClientSwitcher` (client name, phase,
+  details and the other clients) + search, alerts, account. Inside a client, `Sidebar` is the left
+  rail: collapsible to icons (`[`, state in localStorage via `sidebarState.ts`), "Powered by
+  DataSentry" at its foot. Pages without a sidebar carry "Powered by" in the footer.
 - **Colour carries meaning only**: red = overdue/unlawful, amber = needs attention,
   green = settled, blue = the one primary action. Everything else is grey.
 - **Radius**: the marketing `globals.css` forces `border-radius: 0 !important` on every

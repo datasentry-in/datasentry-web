@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 import { ALL_CLIENTS_KEY, NAV } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import Dialog from '@/modules/app/ui/Dialog';
+import { toggleSidebar } from './sidebarState';
 
 /**
- * Two-key navigation — "g" then a letter, as in Linear and GitHub — and "?"
- * for the list. Keys come from `nav.ts`. Ignored while typing in a field, and
+ * Two-key navigation — "g" then a letter, as in Linear and GitHub — "[" to
+ * collapse the sidebar, and "?" for the list. Keys come from `nav.ts`. Ignored while typing in a field, and
  * page shortcuts only work inside a client.
  */
 
@@ -39,7 +40,10 @@ export default function Shortcuts({ org }: { org: string | null }) {
         }
         return;
       }
-      if (k === 'g') pending.current = window.setTimeout(() => (pending.current = null), 1200);
+      if (e.key === '[' && org) {
+        e.preventDefault();
+        toggleSidebar();
+      } else if (k === 'g') pending.current = window.setTimeout(() => (pending.current = null), 1200);
       else if (e.key === '?') setHelp((h) => !h);
     };
     window.addEventListener('keydown', onKey);
@@ -48,6 +52,7 @@ export default function Shortcuts({ org }: { org: string | null }) {
 
   const rows: [string, string][] = [
     ['⌘ K', 'Search or jump to'],
+    ['[', 'Collapse or expand the sidebar'],
     [`G ${ALL_CLIENTS_KEY.toUpperCase()}`, 'All clients'],
     ...NAV.flatMap((g) => g.items.map((m) => [`G ${m.key.toUpperCase()}`, m.label] as [string, string])),
     ['?', 'This list'],

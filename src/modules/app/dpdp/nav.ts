@@ -2,7 +2,7 @@ import type { IconName } from '@/modules/app/ui/Icons';
 
 /**
  * The console's information architecture, in one place: the sidebar, the
- * breadcrumb, the command palette and the keyboard shortcuts all read it. `seg` is the path segment
+ * command palette and the keyboard shortcuts all read it. `seg` is the path segment
  * under /<org>; '' is the client overview.
  */
 /** `key` is the second key of the "g then <key>" shortcut. */
@@ -34,7 +34,6 @@ export const NAV: NavGroup[] = [
   { title: 'Intake', items: INTAKE },
 ];
 
-export const navLabel = (seg: string) => [...MODULES, ...INTAKE].find((m) => m.seg === seg)?.label ?? seg;
 
 /** "g then a" goes to the portfolio; every other g-shortcut is a page above. */
 export const ALL_CLIENTS_KEY = 'a';

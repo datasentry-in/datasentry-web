@@ -93,8 +93,9 @@ export function Box({ children, className = '' }: { children: ReactNode; classNa
 }
 
 /**
- * One title, one line of context. Where you are lives in the breadcrumb above
- * it, so there is no eyebrow and no second, greyed-out headline.
+ * One title, one line of context. Where you are lives in the header's client
+ * switcher and the sidebar, so there is no eyebrow and no second, greyed-out
+ * headline.
  */
 export function PageHeader({ title, sub, right }: { title: string; sub?: ReactNode; right?: ReactNode }) {
   return (

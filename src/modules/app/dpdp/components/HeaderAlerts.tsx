@@ -53,7 +53,7 @@ export default function HeaderAlerts() {
 
       <Link
         href={demoPath()}
-        className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-white px-2.5 py-1 text-[12px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] xl:inline-flex"
+        className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-white px-2.5 py-1 text-[12px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] 2xl:inline-flex"
         title="DPDP substantive obligations commence 13 May 2027"
       >
         <span className="ds-figure text-[var(--ds-text)]">{days ?? '—'}</span> days to 13 May 2027

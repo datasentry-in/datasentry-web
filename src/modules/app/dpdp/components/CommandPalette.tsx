@@ -113,13 +113,13 @@ export default function CommandPalette({ org }: { org: string | null }) {
         type="button"
         onClick={show}
         aria-label="Search and jump to — Command K"
-        className="hidden h-8 items-center gap-2 rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] text-[var(--ds-text-3)] transition-colors hover:border-[var(--ds-border-strong)] hover:text-[var(--ds-text-2)] sm:flex sm:w-56"
+        className="hidden h-8 items-center gap-2 rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] text-[var(--ds-text-3)] transition-colors hover:border-[var(--ds-border-strong)] hover:text-[var(--ds-text-2)] sm:flex sm:w-44 2xl:w-56"
       >
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
           <circle cx="7" cy="7" r="4.5" />
           <path d="m10.5 10.5 3 3" />
         </svg>
-        <span className="hidden flex-1 text-left sm:inline">Search or jump to…</span>
+        <span className="hidden flex-1 truncate whitespace-nowrap text-left sm:inline">Search or jump to…</span>
         <kbd className="ds-figure hidden rounded border border-[var(--ds-border)] px-1 text-[11px] leading-[16px] text-[var(--ds-text-3)] sm:inline">⌘K</kbd>
       </button>
 

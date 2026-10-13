@@ -113,6 +113,12 @@ export const ICONS = {
       <path d="M10 3.5 5.5 8l4.5 4.5" />
     </Svg>
   ),
+  sidebar: (
+    <Svg>
+      <rect x="2" y="2.5" width="12" height="11" rx="1.5" />
+      <path d="M6 2.5v11" />
+    </Svg>
+  ),
 } as const;
 
 export type IconName = keyof typeof ICONS;
