@@ -189,13 +189,27 @@ body:has(.demo-root) {
 }
 
 /* ---- Accent bar --------------------------------------------------------------
-   The one way the console marks something: a 2px bar on the left, no box, no
-   tint. `--bar` carries the meaning (red overdue, amber due, green settled,
+   The one way the console marks something: a plain hairline card (the same frame
+   as a plain `Card`) with a 2px bar inset on the left — no tint, no coloured
+   border. `--bar` carries the meaning (red overdue, amber due, green settled,
    blue the model or the primary path, yellow a design note). Plain CSS so the
-   padding outranks any utility passed alongside it. */
+   frame and padding outrank any utility passed alongside it. */
 .demo-root .ds-bar {
-  border-left: 2px solid var(--bar, var(--ds-border-strong));
-  padding: 2px 0 2px 12px;
+  position: relative;
+  border: 1px solid var(--ds-border);
+  border-radius: 6px !important;
+  background: var(--ds-panel);
+  padding: 12px 12px 12px 26px;
+}
+.demo-root .ds-bar::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 12px;
+  width: 2px;
+  border-radius: 1px !important;
+  background: var(--bar, var(--ds-border-strong));
 }
 .demo-root .ds-bar-danger { --bar: var(--ds-danger); }
 .demo-root .ds-bar-warn { --bar: var(--ds-warn-bar); }

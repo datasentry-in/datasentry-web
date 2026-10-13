@@ -76,17 +76,15 @@ export function Card({
 }
 
 /**
- * The console's one way of flagging something: a 2px accent bar, a title, a
- * line of detail and an optional action. No tint — the bar's colour is the
- * meaning. `boxed` (the default for page-level alerts) sets it in a plain
- * hairline card with the bar inset; unboxed, it sits inline (design notes,
- * callouts inside a panel).
+ * The console's one way of flagging something: a plain hairline card with a
+ * 2px accent bar inset (`.ds-bar`), a title, a line of detail and an optional
+ * action. No tint — the bar's colour is the meaning.
  */
 export function Callout({
-  tone = 'plain', title, children, action, boxed = false, className = '',
-}: { tone?: Tone; title?: ReactNode; children?: ReactNode; action?: ReactNode; boxed?: boolean; className?: string }) {
-  const bar = (
-    <div className={`ds-bar ds-bar-${tone} flex flex-wrap items-center gap-x-6 gap-y-2 ${boxed ? '' : className}`}>
+  tone = 'plain', title, children, action, className = '',
+}: { tone?: Tone; title?: ReactNode; children?: ReactNode; action?: ReactNode; className?: string }) {
+  return (
+    <div className={`ds-bar ds-bar-${tone} flex flex-wrap items-center gap-x-6 gap-y-2 ${className}`}>
       <div className="min-w-0 flex-1 basis-60">
         {title && <p className="text-[14px] font-semibold leading-snug tracking-[-0.01em] text-[var(--ds-text)]">{title}</p>}
         {children && (
@@ -96,10 +94,9 @@ export function Callout({
       {action}
     </div>
   );
-  return boxed ? <Box className={className}>{bar}</Box> : bar;
 }
 
-/** The plain hairline card a boxed callout sits in. */
+/** A plain hairline card — the frame `NextStep` and other unflagged blocks sit in. */
 export function Box({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 ${className}`}>{children}</div>;
 }
@@ -390,14 +387,17 @@ export function SortHead({
 }
 
 /** A search box for filtering a list in place. */
-export function FilterInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+export function FilterInput({
+  value, onChange, placeholder, className = 'w-full sm:w-56',
+}: { value: string; onChange: (v: string) => void; placeholder: string; className?: string }) {
   return (
     <input
+      type="search"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className="h-8 w-full rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] outline-none placeholder:text-[var(--ds-text-3)] focus:border-[var(--ds-accent)] sm:w-56"
+      className={`h-8 rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] outline-none placeholder:text-[var(--ds-text-3)] focus:border-[var(--ds-accent)] ${className}`}
     />
   );
 }

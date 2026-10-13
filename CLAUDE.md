@@ -84,10 +84,11 @@ src/modules/app/dpdp/    the DPDP product
 - **Type scale**: 11 / 12 / 13 / 14px for UI, 15px for document body, 17px section headings, 30px
   page titles. Prose paragraphs are 14px. No half-pixel sizes.
 - **Nav icons** live in `Icons.tsx` (inline SVG, 16px, `currentColor`).
-- **Flag things with the accent bar, never a tinted box.** `Callout` (2px bar + title + action;
-  `boxed` sets it in a plain hairline card for page-level alerts), `Card tone=…` and `DemoNote` all
-  use the `.ds-bar` / `.ds-bar-<tone>` classes in `console.css`. No pink/amber/blue panels, no
-  coloured borders on cards.
+- **Flag things with the accent bar, never a tinted box.** `.ds-bar` / `.ds-bar-<tone>` in
+  `console.css` is a plain hairline card (the same frame as a plain `Card`) with a 2px coloured bar
+  inset on the left. `Callout` (bar + title + action), `Card tone=…` and `DemoNote` all use it, so the
+  frame is never added by hand — don't wrap a `.ds-bar` in `Box` or another border. No pink/amber/blue
+  panels, no coloured borders on cards.
 - **Labels inside a page body** use `ds-meta` (sentence case). `ds-label` (mono uppercase) is for
   table column heads and the brand only.
 - **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates

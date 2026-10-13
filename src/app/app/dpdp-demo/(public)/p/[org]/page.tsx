@@ -28,7 +28,7 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
       </div>
 
       {!PRIVACY_CENTRE.live && (
-        <Callout boxed tone="warn" title="Preview — this page is not live">
+        <Callout tone="warn" title="Preview — this page is not live">
           {org.name} publishes an email address only: {PRIVACY_CENTRE.contactEmail}. Requests sent there are forwarded
           into the request desk and run on the same clock. This is what DataSentry would host once the notice is ready.
         </Callout>

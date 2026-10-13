@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { formatIst } from '@/modules/app/dpdp/time';
 import { BasisTag, ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  Box, Panel, Tag,
+  Panel, Tag,
 } from '@/modules/app/ui/ui';
 
 /**
@@ -174,7 +174,6 @@ export default function CheckInForm({ org }: { org: string }) {
       </Panel>
 
       {phase !== 'form' && (
-        <Box>
         <div ref={results} className="ds-bar ds-bar-accent scroll-mt-24">
           <p className="text-[12px] font-medium text-[var(--ds-accent-hover)]">
             {phase === 'checking' ? 'Comparing with the register…' : 'Compared with the register'}
@@ -188,7 +187,6 @@ export default function CheckInForm({ org }: { org: string }) {
             ))}
           </ul>
         </div>
-        </Box>
       )}
 
       {phase === 'done' && (

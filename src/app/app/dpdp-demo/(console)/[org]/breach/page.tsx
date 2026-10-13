@@ -40,7 +40,6 @@ export default async function Breach({ params }: { params: Promise<{ org: string
       </NextStep>
 
       {/* The clock is the module. */}
-      <div className="rounded-lg border border-[var(--ds-border)] p-4 sm:p-5">
       <div className="ds-bar ds-bar-danger flex flex-wrap items-center justify-between gap-5">
         <div>
           <p className="text-[12px] font-medium text-[var(--ds-danger)]">
@@ -60,7 +59,6 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           <p className="ds-figure mt-1 text-[26px] leading-none tracking-[-0.03em]">{open.affected}</p>
           <p className="mt-1 text-[12px] text-[var(--ds-text-2)]">to be intimated without delay</p>
         </div>
-      </div>
       </div>
 
       <Panel title={open.id} sub={open.title}>

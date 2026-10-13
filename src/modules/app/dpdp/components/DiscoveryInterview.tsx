@@ -9,7 +9,7 @@ import type { Answers, Question, Section } from '@/modules/app/dpdp/mock/intervi
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  Box, Button, Card, CiteLink, DemoNote, Panel, Tag,
+  Button, Card, CiteLink, DemoNote, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
 /* --------------------------------------------------------------- controls */
@@ -170,7 +170,6 @@ function Trace({ lines, done, onDone }: { lines: string[]; done: boolean; onDone
   const visible = done ? lines : lines.slice(0, shown);
 
   return (
-    <Box>
     <div className="ds-bar ds-bar-accent">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--ds-accent-hover)]">
@@ -199,7 +198,6 @@ function Trace({ lines, done, onDone }: { lines: string[]; done: boolean; onDone
         )}
       </ul>
     </div>
-    </Box>
   );
 }
 
