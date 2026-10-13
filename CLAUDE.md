@@ -79,6 +79,18 @@ src/modules/app/dpdp/    the DPDP product
 - **Row actions** (e.g. `RemindButton`) appear on hover: `ds-row` on the row, `ds-row-link` on its
   main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
+- **Records open beside their list** in a `Sheet` (`ui/Sheet.tsx`) — details, linked findings and the
+  `AuditTimeline` — so the list keeps its place. RoPA and the gap report do this today.
+- **Lists are worklists**: `useTableView` (`ui/useTableView.ts`) gives saved views with counts
+  (`ViewTabs`), a filter box (`FilterInput`) and sortable heads (`SortHead`).
+- **Edits happen in place** (RoPA lawful basis and retention): the row turns consultant-reviewed, an
+  audit entry records old → new (`Change`), and a toast says what the rule engine does with it.
+- **One `NextStep` per page at most**, in yellow, with a button named for the action ("Draft the
+  Board intimation", not "Open breach register").
+- **Show change, not just status**: `Sparkline` for the score trend, `SlaBar` for a request's
+  response window, the draining bar in `Countdown`. Values the browser fills in show a `Skeleton`
+  until mounted.
+- **The audit trail** (`AUDIT` in mock data) records field changes as old → new, never "record updated".
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
   sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,

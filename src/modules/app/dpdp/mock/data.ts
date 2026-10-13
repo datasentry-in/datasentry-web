@@ -629,3 +629,46 @@ export const CLIENT_THEME: Record<string, { accent: string; hover: string; weak:
   quadrant: { accent: '#5b3f8c', hover: '#47306f', weak: '#f1ecf8', border: '#d9cdec', initials: 'QA' },
   meridian: { accent: '#0f6b62', hover: '#0b544d', weak: '#e8f4f2', border: '#c3e1dc', initials: 'MS' },
 };
+
+/** Readiness score at each review, oldest first — for the trend line. */
+export const SCORE_HISTORY: Record<string, { on: string; score: number }[]> = {
+  northstar: [
+    { on: '12 Aug 2026', score: 31 }, { on: '29 Aug 2026', score: 34 }, { on: '12 Sep 2026', score: 36 },
+    { on: '26 Sep 2026', score: 39 }, { on: '08 Oct 2026', score: 42 },
+  ],
+  quadrant: [
+    { on: '18 Jul 2026', score: 43 }, { on: '08 Aug 2026', score: 51 }, { on: '29 Aug 2026', score: 58 },
+    { on: '19 Sep 2026', score: 63 }, { on: '06 Oct 2026', score: 67 },
+  ],
+  meridian: [{ on: '09 Oct 2026', score: 19 }],
+};
+
+/**
+ * The append-only audit trail, newest first. A field change records the old
+ * and the new value, so the history says exactly what changed, not
+ * "record updated". `ref` ties an entry to a record (an activity, finding,
+ * request or incident).
+ */
+export type AuditEntry = {
+  at: string;
+  who: string;
+  ref: string;
+  what: string;
+  change?: { field: string; from: string; to: string };
+};
+
+export const AUDIT: AuditEntry[] = [
+  { at: '10 Oct 2026, 16:05', who: 'Meera Joshi', ref: 'DSR-2026-0041', what: 'Erasure attested — Keka HR personnel file' },
+  { at: '10 Oct 2026, 14:22', who: 'CISO', ref: 'INC-2026-003', what: 'Incident opened — 72-hour clock started' },
+  { at: '10 Oct 2026, 11:42', who: 'Careers portal', ref: 'PA-01', what: 'Candidate consent recorded — notice v3, English' },
+  { at: '09 Oct 2026, 17:20', who: 'Dharita Gada', ref: 'G-01', what: 'Walkthrough observation attached', change: { field: 'Basis', from: 'Declared', to: 'Observed' } },
+  { at: '09 Oct 2026, 17:05', who: 'Dharita Gada', ref: 'PA-01', what: 'Retention checked on screen in Zoho Recruit', change: { field: 'Records past retention', from: 'Unknown', to: '4,812' } },
+  { at: '08 Oct 2026, 16:40', who: 'Meera Joshi', ref: 'RoPA', what: 'RoPA confirmed', change: { field: 'Version', from: 'v3', to: 'v4' } },
+  { at: '08 Oct 2026, 15:56', who: 'Rule engine v1.4', ref: 'G-06', what: 'Finding raised from PA-12', change: { field: 'Status', from: '—', to: 'Open' } },
+  { at: '08 Oct 2026, 15:55', who: 'Dharita Gada', ref: 'PA-12', what: 'Lawful basis reviewed', change: { field: 'Lawful basis', from: 'Consent', to: 'Not determined' } },
+  { at: '07 Oct 2026, 12:10', who: 'Dharita Gada', ref: 'PA-02', what: 'Processor DPA checked', change: { field: 'AuthBridge DPA', from: 'Assumed', to: 'Missing' } },
+  { at: '06 Oct 2026, 10:30', who: 'Kiran Rao', ref: 'G-02', what: 'Owner assigned', change: { field: 'Owner', from: 'Unassigned', to: 'Legal & Compliance' } },
+  { at: '03 Oct 2026, 18:02', who: 'Dharita Gada', ref: 'PA-06', what: 'Retention reviewed', change: { field: 'Retention', from: '7 years', to: 'Not stated' } },
+];
+
+export const auditFor = (ref: string) => AUDIT.filter((e) => e.ref === ref || e.what.includes(ref));

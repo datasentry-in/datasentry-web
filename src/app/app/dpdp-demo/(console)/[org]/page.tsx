@@ -1,12 +1,12 @@
 import {
-  ACTIVITIES, CONSENT_SUMMARY, EVIDENCE_PACK, GAPS, INCIDENTS, ORGS, OWNERS, QUESTIONNAIRE, getOrg,
+  ACTIVITIES, AUDIT, CONSENT_SUMMARY, EVIDENCE_PACK, GAPS, INCIDENTS, ORGS, OWNERS, QUESTIONNAIRE, SCORE_HISTORY, getOrg,
 } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import AttentionList from '@/modules/app/dpdp/components/AttentionList';
 import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import When from '@/modules/app/dpdp/components/When';
 import {
-  Button, Callout, CiteLink, DemoNote, Person, Meter, PageHeader, Panel, ScoreBlock, SeverityTag, Stat, Tag,
+  Button, Change, CiteLink, DemoNote, NextStep, Person, Meter, PageHeader, Panel, ScoreBlock, SeverityTag, Stat, Tag,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -27,21 +27,27 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         sub={`${org.engagement} · last reviewed ${org.lastReview}`}
       />
 
-      {openIncident && (
-        <Callout
-          boxed
-          tone="danger"
-          title={`${openIncident.id} — Board intimation not yet sent`}
-          action={<Button as="link" href={demoPath(org.slug, 'breach')}>Open breach register</Button>}
+      {/* One next step per client: the most urgent thing, named as an action. */}
+      {openIncident ? (
+        <NextStep
+          title={`Send the Board intimation for ${openIncident.id}`}
+          action={<Button as="link" variant="primary" href={`${demoPath(org.slug, 'breach')}#board-intimation`}>Draft the Board intimation</Button>}
         >
           {openIncident.affected} data principals affected · Rule 7 deadline{' '}
           <span className="font-medium text-[var(--ds-danger)]">{openIncident.deadline}</span>
-        </Callout>
-      )}
+        </NextStep>
+      ) : org.engagement.startsWith('Discovery') ? (
+        <NextStep
+          title="Run the discovery interview with the HR head"
+          action={<Button as="link" variant="primary" href={demoPath(org.slug, 'discovery')}>Start the interview</Button>}
+        >
+          Nothing is on the register yet. Six seed questions decide what the engine asks next — about 40 minutes.
+        </NextStep>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-5">
         <div className="col-span-2 grid lg:col-span-1">
-          <ScoreBlock score={org.score} trend={org.trend} />
+          <ScoreBlock score={org.score} trend={org.trend} history={(SCORE_HISTORY[org.slug] ?? []).map((h) => h.score)} />
         </div>
         <Stat label="Processing activities" value={org.activities} note={`${org.exemptActivities} exempt s.17(1)(d)`} />
         <Stat label="High gaps" value={org.openGaps.high} note={`${org.openGaps.medium} medium, ${org.openGaps.low} low`} tone="bad" />
@@ -102,7 +108,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
       <Panel
         title="High-severity findings"
         sub="Each finding cites a provision and carries an owner and a date"
-        right={<Button as="link" href={demoPath(org.slug, 'gaps')}>Full gap report</Button>}
+        right={<Button as="link" href={demoPath(org.slug, 'gaps')}>Work through all {GAPS.length} findings</Button>}
         flush
       >
         <ul>
@@ -131,23 +137,22 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         </ul>
       </Panel>
 
-      <Panel title="Recent activity" sub="Every entry is written to an append-only audit log" flush>
+      <Panel title="Recent activity" sub="From the append-only audit log — each change shows the old and the new value" flush>
         <ul>
-          {[
-            ['10 Oct 2026, 16:05', 'Erasure attested — Keka HR personnel file, DSR-2026-0041', 'Meera Joshi'],
-            ['10 Oct 2026, 14:22', 'Incident INC-2026-003 opened — 72-hour clock started', 'CISO'],
-            ['10 Oct 2026, 11:42', 'Candidate consent recorded — notice v3, English', 'Careers portal'],
-            ['09 Oct 2026, 17:20', 'Walkthrough recorded — 4,812 CVs past 180 days observed in Zoho Recruit', 'Dharita Gada'],
-            ['08 Oct 2026, 16:40', `RoPA v4 confirmed — ${ACTIVITIES.length} activities`, 'Meera Joshi'],
-            ['08 Oct 2026, 15:55', 'Basis for PA-12 Alumni communications set to Not determined', 'Dharita Gada'],
-          ].map(([ts, what, who]) => (
+          {AUDIT.slice(0, 7).map((e) => (
             <li
-              key={ts + what}
-              className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
+              key={e.at + e.what}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
             >
-              <span className="min-w-0 flex-1 text-[13px]">{what}</span>
-              <Person name={who} compact />
-              <When date={ts} kind="event" className="w-24 shrink-0 text-right text-[12px] text-[var(--ds-text-3)]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px]">
+                  <span className="ds-figure mr-1.5 text-[11px] text-[var(--ds-text-3)]">{e.ref}</span>
+                  {e.what}
+                </span>
+                {e.change && <Change {...e.change} />}
+              </span>
+              <Person name={e.who} compact />
+              <When date={e.at} kind="event" className="w-24 shrink-0 text-right text-[12px] text-[var(--ds-text-3)]" />
             </li>
           ))}
         </ul>

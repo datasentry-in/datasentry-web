@@ -1,13 +1,12 @@
 import { ACTIVITIES, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import RopaRegister from '@/modules/app/dpdp/components/RopaRegister';
 import {
-  Card, CiteLink, DemoNote, PageHeader, Panel, ProvenanceTag, Stat, Tag, TableWrap, Td, Th,
+  Card, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
 }
-
-const roleTone = (r: string) => (r === 'Exempt' ? 'ok' : r === 'Processor' ? 'info' : 'dark');
 
 export default async function Ropa({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
@@ -32,7 +31,7 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
 
       <Panel
         title="Register"
-        sub="Role and basis are rule-engine output; scroll sideways on a narrow screen"
+        sub="Click a lawful basis or retention to change it · open an activity for its findings and history"
         right={
           <div className="flex flex-wrap gap-1.5">
             <Tag tone="dark">Fiduciary 17</Tag>
@@ -41,83 +40,7 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
         }
         flush
       >
-        <TableWrap minWidth="64rem">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <Th className="w-16">ID</Th>
-                <Th>Activity &amp; purpose</Th>
-                <Th>Principals</Th>
-                <Th>Role</Th>
-                <Th>Lawful basis</Th>
-                <Th>Retention</Th>
-                <Th>Systems &amp; processors</Th>
-                <Th>Provenance</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {ACTIVITIES.map((a) => {
-                const flag = a.basis === 'Not determined' || a.retention === 'Not stated';
-                return (
-                  <tr key={a.id} className={flag ? 'bg-[var(--ds-danger-weak)]' : 'hover:bg-[var(--ds-subtle)]'}>
-                    <Td className="ds-figure whitespace-nowrap text-[12px] text-[var(--ds-text-2)]">{a.id}</Td>
-                    <Td>
-                      <span className="font-medium">{a.name}</span>
-                      <br />
-                      <span className="text-[var(--ds-text-2)]">{a.purpose}</span>
-                      <br />
-                      <span className="text-[11px] text-[var(--ds-text-3)]">
-                        {a.department} · {a.items} data items
-                      </span>
-                    </Td>
-                    <Td className="text-[var(--ds-text-2)]">{a.principals}</Td>
-                    <Td>
-                      <Tag tone={roleTone(a.role)}>{a.role}</Tag>
-                    </Td>
-                    <Td>
-                      {a.basis === 'Not determined' ? (
-                        <span className="font-medium text-[var(--ds-danger)]">Not determined</span>
-                      ) : a.basis === 's.17(1)(d) exempt' ? (
-                        <CiteLink provision="s.17(1)(d)" />
-                      ) : a.basis.startsWith('s.7(i)') ? (
-                        <>
-                          <CiteLink provision="s.7(i)" />
-                          <br />
-                          <span className="text-[11px] text-[var(--ds-text-3)]">
-                            {a.basis.includes('safeguard') ? 'safeguarding' : 'employment'}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-[var(--ds-text-2)]">{a.basis}</span>
-                      )}
-                    </Td>
-                    <Td className={a.retention === 'Not stated' ? 'font-medium text-[var(--ds-danger)]' : 'text-[var(--ds-text-2)]'}>
-                      {a.retention}
-                    </Td>
-                    <Td className="text-[var(--ds-text-2)]">
-                      {a.systems.join(', ')}
-                      {a.processors.length > 0 && (
-                        <>
-                          <br />
-                          <span className="text-[11px] text-[var(--ds-text-3)]">P: {a.processors.join(', ')}</span>
-                        </>
-                      )}
-                      {a.crossBorder && (
-                        <>
-                          <br />
-                          <span className="text-[11px] font-medium text-[var(--ds-warn)]">{a.crossBorder}</span>
-                        </>
-                      )}
-                    </Td>
-                    <Td>
-                      <ProvenanceTag p={a.provenance} />
-                    </Td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </TableWrap>
+        <RopaRegister />
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-2">

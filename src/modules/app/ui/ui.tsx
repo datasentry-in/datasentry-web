@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { EvidenceBasis, Provenance, Severity } from '@/modules/app/dpdp/types';
+import Sparkline from './Sparkline';
 
 /**
  * Console design system — quiet product UI, not the brutalist marketing site.
@@ -141,16 +142,19 @@ export function Stat({
 }
 
 /** The readiness score as the first cell of a stat strip. */
-export function ScoreBlock({ score, trend }: { score: number; trend: string }) {
+export function ScoreBlock({ score, trend, history = [] }: { score: number; trend: string; history?: number[] }) {
   const fg = score < 40 ? 'var(--ds-danger)' : score < 70 ? 'var(--ds-warn)' : 'var(--ds-ok)';
   const verdict = score < 40 ? 'Not ready' : score < 70 ? 'Partially ready' : 'Substantially ready';
   return (
     <div className="min-w-0 bg-[var(--ds-panel)] px-4 py-3.5">
       <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
-      <p className="mt-1.5 flex items-baseline gap-1 leading-none">
-        <span className="ds-figure text-[24px] tracking-[-0.03em] sm:text-[26px]" style={{ color: fg }}>{score}</span>
-        <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
-      </p>
+      <div className="mt-1.5 flex items-end justify-between gap-2">
+        <p className="flex items-baseline gap-1 leading-none">
+          <span className="ds-figure text-[24px] tracking-[-0.03em] sm:text-[26px]" style={{ color: fg }}>{score}</span>
+          <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
+        </p>
+        <Sparkline values={history} width={72} height={22} color={fg} label={`Readiness at each review: ${history.join(', ')}`} />
+      </div>
       <div className="mt-2 h-1 w-full max-w-36 overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
         <div className="h-full rounded-full" style={{ width: `${score}%`, background: fg }} />
       </div>
@@ -375,6 +379,103 @@ export function EmptyState({ title, children, action }: { title: string; childre
       {children && <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-[var(--ds-text-3)]">{children}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
+  );
+}
+
+/** A grey placeholder while a value the browser fills in (a clock, a count) loads. */
+export function Skeleton({ className = 'h-4 w-16' }: { className?: string }) {
+  return <span aria-hidden className={`ds-skeleton inline-block rounded ${className}`} />;
+}
+
+/**
+ * The one thing to do next on a page, marked in DataSentry yellow. Use once
+ * per page at most — it only means something if it is the only one.
+ */
+export function NextStep({ title, children, action }: { title: ReactNode; children?: ReactNode; action?: ReactNode }) {
+  return (
+    <Box>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="min-w-0 flex-1 basis-60">
+          <p className="mb-1.5">
+            <span className="rounded-sm bg-[var(--ds-brand-yellow)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--ds-brand-ink)]">Next step</span>
+          </p>
+          <p className="text-[14px] font-semibold leading-snug tracking-[-0.01em]">{title}</p>
+          {children && <div className="mt-0.5 text-[13px] leading-relaxed text-[var(--ds-text-2)]">{children}</div>}
+        </div>
+        {action}
+      </div>
+    </Box>
+  );
+}
+
+/** A field change as an audit trail records it: old value struck, new value after. */
+export function Change({ field, from, to }: { field: string; from: string; to: string }) {
+  return (
+    <span className="inline-flex flex-wrap items-baseline gap-x-1.5 text-[12px]">
+      <span className="text-[var(--ds-text-3)]">{field}</span>
+      <span className="text-[var(--ds-text-3)] line-through decoration-[var(--ds-text-3)]">{from}</span>
+      <span aria-hidden className="text-[var(--ds-text-3)]">→</span>
+      <span className="font-medium text-[var(--ds-text)]">{to}</span>
+    </span>
+  );
+}
+
+/** Tabs for saved views over a list, each with its count. */
+export function ViewTabs({
+  views, active, counts, onChange,
+}: { views: { id: string; label: string }[]; active: string; counts: Record<string, number>; onChange: (id: string) => void }) {
+  return (
+    <div role="tablist" className="flex flex-wrap gap-1">
+      {views.map((v) => (
+        <button
+          key={v.id}
+          type="button"
+          role="tab"
+          aria-selected={active === v.id}
+          onClick={() => onChange(v.id)}
+          className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
+            active === v.id ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
+          }`}
+        >
+          {v.label}
+          <span className="ds-figure text-[11px] text-[var(--ds-text-3)]">{counts[v.id] ?? 0}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A column head that sorts its list; shows the direction when active. */
+export function SortHead({
+  id, label, active, dir, onSort, className = '',
+}: { id: string; label: string; active: boolean; dir: 1 | -1; onSort: (id: string) => void; className?: string }) {
+  return (
+    <th
+      aria-sort={active ? (dir === 1 ? 'ascending' : 'descending') : 'none'}
+      className={`border-b border-[var(--ds-border)] bg-[var(--ds-subtle)] px-3 py-2 text-left ${className}`}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(id)}
+        className={`ds-label inline-flex items-center gap-1 ${active ? 'text-[var(--ds-text)]' : 'text-[var(--ds-text-3)] hover:text-[var(--ds-text-2)]'}`}
+      >
+        {label}
+        <span aria-hidden className="text-[10px]">{active ? (dir === 1 ? '↑' : '↓') : '↕'}</span>
+      </button>
+    </th>
+  );
+}
+
+/** A search box for filtering a list in place. */
+export function FilterInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      className="h-8 w-full rounded-md border border-[var(--ds-border)] px-2.5 text-[13px] outline-none placeholder:text-[var(--ds-text-3)] focus:border-[var(--ds-accent)] sm:w-56"
+    />
   );
 }
 

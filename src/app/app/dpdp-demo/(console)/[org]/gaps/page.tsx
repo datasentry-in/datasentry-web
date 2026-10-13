@@ -1,6 +1,7 @@
-import { GAPS, ORGS, OWNERS, getOrg } from '@/modules/app/dpdp/mock/data';
-import When from '@/modules/app/dpdp/components/When';
-import { BasisTag, CiteLink, DemoNote, PageHeader, Panel, Person, SeverityTag, Stat, Tag } from '@/modules/app/ui/ui';
+import { GAPS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import FindingsList from '@/modules/app/dpdp/components/FindingsList';
+import RemindButton from '@/modules/app/dpdp/components/RemindButton';
+import { DemoNote, NextStep, PageHeader, Panel, Stat } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -29,51 +30,16 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
         <Stat label="Low" value={counts.Low} note="remediate by Mar 2027" />
       </div>
 
-      <Panel title="Findings" sub="Produced by the rule engine, not by the model — each cites a provision" flush>
-        <ul>
-          {GAPS.map((g) => (
-            <li key={g.id} className="border-b border-[var(--ds-border)] p-4 last:border-b-0 sm:p-5">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <h3 className="min-w-0 text-[14px] font-semibold tracking-[-0.01em]">{g.title}</h3>
-                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                  <CiteLink provision={g.provision} />
-                  <Tag>{g.id}</Tag>
-                  <SeverityTag s={g.severity} />
-                </div>
-              </div>
-              <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">{g.detail}</p>
+      <NextStep
+        title="Get the 180-day purge switched on in Zoho Recruit"
+        action={<RemindButton person="Ritu Sharma" what="G-01 — candidate records past 180 days" />}
+      >
+        G-01 is the largest exposure: 4,812 candidate records past their purpose, observed on 09 Oct. Ritu Sharma owns it;
+        the purge task is already overdue.
+      </NextStep>
 
-              <dl className="mt-3 grid gap-3 border-t border-[var(--ds-border)] pt-3 sm:grid-cols-3">
-                <div>
-                  <dt className="ds-meta text-[var(--ds-text-3)]">Activity</dt>
-                  <dd className="mt-1 text-[13px]">{g.activity}</dd>
-                </div>
-                <div>
-                  <dt className="ds-meta text-[var(--ds-text-3)]">Owner</dt>
-                  <dd className="mt-1">
-                    <Person name={OWNERS[g.owner] ?? g.owner} role={OWNERS[g.owner] ? g.owner : undefined} />
-                  </dd>
-                </div>
-                <div>
-                  <dt className="ds-meta text-[var(--ds-text-3)]">Target date</dt>
-                  <dd className="mt-1 text-[13px] font-medium">
-                    {g.due} <When date={g.due} className="ml-1 text-[12px] font-normal" tone={false} />
-                  </dd>
-                </div>
-              </dl>
-
-              {g.evidence && (
-                <div className="ds-bar ds-bar-plain mt-3 flex flex-wrap items-start gap-x-2.5 gap-y-1.5">
-                  {g.basis && <BasisTag b={g.basis} />}
-                  <p className="min-w-0 flex-1 text-[12px] leading-relaxed text-[var(--ds-text-2)]">
-                    <span className="font-medium text-[var(--ds-text)]">Evidence — </span>
-                    {g.evidence}
-                  </p>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+      <Panel title="Findings" sub="Produced by the rule engine, not by the model — each cites a provision. Open one for its evidence and history." flush>
+        <FindingsList />
       </Panel>
 
       <Panel title="What this report is not">

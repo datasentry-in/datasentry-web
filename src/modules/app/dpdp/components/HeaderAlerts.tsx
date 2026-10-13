@@ -7,6 +7,7 @@ import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { DEADLINE } from '@/modules/app/dpdp/statute';
 import { useNow } from '@/modules/app/dpdp/useNow';
+import { Skeleton } from '@/modules/app/ui/ui';
 import When from './When';
 
 /**
@@ -47,7 +48,7 @@ export default function HeaderAlerts() {
         >
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-hidden />
           {breach.id}
-          <span className="ds-figure">{breachMs === null ? '—' : clockLeft(breachMs)}</span>
+          {breachMs === null ? <Skeleton className="h-3 w-20" /> : <span className="ds-figure">{clockLeft(breachMs)}</span>}
         </Link>
       )}
 
@@ -56,7 +57,7 @@ export default function HeaderAlerts() {
         className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-white px-2.5 py-1 text-[12px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] 2xl:inline-flex"
         title="DPDP substantive obligations commence 13 May 2027"
       >
-        <span className="ds-figure text-[var(--ds-text)]">{days ?? '—'}</span> days to 13 May 2027
+        {days === null ? <Skeleton className="h-3 w-7" /> : <span className="ds-figure text-[var(--ds-text)]">{days}</span>} days to 13 May 2027
       </Link>
 
       <div className="relative">

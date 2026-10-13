@@ -1,7 +1,9 @@
 import { INCIDENTS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { Button, Card, CiteLink, DemoNote, PageHeader, Panel, Stat, Tag } from '@/modules/app/ui/ui';
+import {
+  Button, Card, CiteLink, DemoNote, NextStep, PageHeader, Panel, Stat, Tag,
+} from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -27,6 +29,14 @@ export default async function Breach({ params }: { params: Promise<{ org: string
         <Stat label="Principals affected" value={open.affected} note="this incident" tone="bad" />
         <Stat label="Response SOP" value="Unsigned" note="finding G-04" tone="bad" />
       </div>
+
+      <NextStep
+        title={`Send the Board intimation for ${open.id}`}
+        action={<Button as="link" href="#board-intimation">Review the drafted intimation</Button>}
+      >
+        The initial description is due without delay and full particulars within 72 hours of awareness. The draft is
+        prepared from the incident record; the CISO signs it off.
+      </NextStep>
 
       {/* The clock is the module. */}
       <div className="rounded-lg border border-[var(--ds-border)] p-4 sm:p-5">
@@ -98,6 +108,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
             </Card>
           </div>
 
+          <div id="board-intimation" className="scroll-mt-20" />
           <Card>
             <p className="ds-meta text-[var(--ds-text-3)]">
               Generated intimation to the Board — draft

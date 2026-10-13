@@ -222,3 +222,25 @@ body:has(.demo-root) {
   color: var(--ds-text-2);
   background: var(--ds-panel);
 }
+
+/* ---- Focus -------------------------------------------------------------------
+   A ring for keyboard users only; a mouse click leaves no outline behind. */
+.demo-root :focus:not(:focus-visible) { outline: none; }
+.demo-root :focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Loading and panels --------------------------------------------------- */
+@keyframes ds-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.demo-root .ds-skeleton {
+  background: linear-gradient(90deg, var(--ds-subtle-2) 25%, var(--ds-subtle) 50%, var(--ds-subtle-2) 75%);
+  background-size: 200% 100%;
+  animation: ds-shimmer 1.4s linear infinite;
+  vertical-align: middle;
+}
+@keyframes ds-slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.demo-root .ds-sheet { animation: ds-slide 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-root .ds-skeleton, .demo-root .ds-sheet { animation: none !important; }
+}

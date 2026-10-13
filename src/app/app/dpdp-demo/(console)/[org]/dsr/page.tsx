@@ -1,7 +1,8 @@
-import { DSRS, ORGS, TASKS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { DSRS, ORGS, PRIVACY_CENTRE, TASKS, getOrg } from '@/modules/app/dpdp/mock/data';
+import SlaBar from '@/modules/app/dpdp/components/SlaBar';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
+  Button, Card, CiteLink, DemoNote, NextStep, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -32,7 +33,15 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
         <Stat label="Grievance contact" value="None" note="finding G-09 — s.13 breach" tone="bad" />
       </div>
 
-      <Panel title="Open requests" sub="SLA clock runs from receipt; escalation fires at 7 days remaining" flush>
+      <NextStep
+        title={`Send ${focus.principal} a partial-erasure response`}
+        action={<Button as="link" href="#dsr-focus">Review the drafted response</Button>}
+      >
+        Four of her records are kept by law. The response has to name each one and the statute that keeps it — the
+        draft below already does.
+      </NextStep>
+
+      <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining" flush>
         <TableWrap>
           <table className="w-full border-collapse">
             <thead>
@@ -43,7 +52,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                 <Th>Relationship</Th>
                 <Th>Received</Th>
                 <Th>Channel</Th>
-                <Th>SLA</Th>
+                <Th>Response window</Th>
                 <Th>Status</Th>
               </tr>
             </thead>
@@ -61,8 +70,8 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                   <Td className="text-[var(--ds-text-2)]">{d.relationship}</Td>
                   <Td className="tnum text-[var(--ds-text-2)]">{d.received}</Td>
                   <Td className="text-[var(--ds-text-2)]">{d.channel ?? '—'}</Td>
-                  <Td className={`tnum font-medium ${d.daysLeft !== null && d.daysLeft <= 7 ? 'text-[var(--ds-warn)]' : ''}`}>
-                    {d.daysLeft} days left
+                  <Td>
+                    <SlaBar received={d.received} days={PRIVACY_CENTRE.responseDays} />
                   </Td>
                   <Td>
                     <Tag tone={statusTone(d.status)}>{d.status}</Tag>
@@ -75,6 +84,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
       </Panel>
 
       {/* The hard case — this is the screen that sells the product to a consultant. */}
+      <div id="dsr-focus" className="scroll-mt-20" />
       <Panel
         title={`${focus.id} — erasure request from an ex-employee`}
         sub={`${focus.principal} · ${focus.relationship} · received ${focus.received} · ${focus.daysLeft} days left`}
