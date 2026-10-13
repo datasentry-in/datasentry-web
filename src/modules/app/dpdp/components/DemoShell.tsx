@@ -11,6 +11,7 @@ import ClientSwitcher from './ClientSwitcher';
 import CommandPalette from './CommandPalette';
 import Shortcuts from './Shortcuts';
 import Sidebar from './Sidebar';
+import { readCollapsed, serverCollapsed, subscribeSidebar } from './sidebarState';
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 
@@ -59,6 +60,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   // `null` on the server and during hydration; a boolean once the session is
   // readable in the browser.
   const signedIn = useSyncExternalStore(subscribe, readSession, serverSnapshot);
+  const collapsed = useSyncExternalStore(subscribeSidebar, readCollapsed, serverCollapsed);
 
   const signIn = () => {
     writeSession(true);
@@ -83,20 +85,18 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
       <Shortcuts org={org?.slug ?? null} />
       {/* Top bar: product, the client you are in, then quick access and alerts. */}
       <header className="sticky top-0 z-40 h-14 border-b border-[var(--ds-border)] bg-[rgba(255,255,255,0.86)] backdrop-blur-md">
-        <div className="flex h-full items-center gap-2 px-4 lg:px-5">
-          <span className="shrink-0">
-            <ProductLockup href={demoPath()} byline={false} />
-          </span>
-          {/* Nobody should mistake this for a running product. */}
-          <span
-            title="Not a working product — all data is illustrative"
-            className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[var(--ds-border)] px-2 py-0.5 text-[11px] font-medium text-[var(--ds-text-2)] sm:inline-flex"
+        <div className="flex h-full items-center gap-2 pr-4 lg:pr-5">
+          {/* The product cell lines up with the sidebar: same width, and its
+              right border continues the sidebar's. Collapsed, it keeps its
+              natural width — "DPDP Console" does not fit the icon rail. */}
+          <div
+            className={`flex h-full shrink-0 items-center border-r border-[var(--ds-border)] px-4 lg:px-5 ${
+              org && !collapsed ? 'lg:w-60' : ''
+            }`}
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-brand-yellow)] ring-1 ring-[#e5d400]" aria-hidden />
-            Prototype
-          </span>
-          <span className="mx-1 h-5 w-px shrink-0 bg-[var(--ds-border)] sm:mx-2" aria-hidden />
-          <div className="min-w-0 flex-1">
+            <ProductLockup href={demoPath()} byline={false} />
+          </div>
+          <div className="min-w-0 flex-1 pl-1 sm:pl-2">
             <ClientSwitcher org={org} />
           </div>
 
