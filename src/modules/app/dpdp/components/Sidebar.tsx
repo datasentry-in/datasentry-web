@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ORGS } from '@/modules/app/dpdp/mock/clients';
 import { NAV, WORK, type NavItem } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
@@ -8,30 +9,37 @@ import { ICONS } from '@/modules/app/ui/Icons';
 import { SIDEBAR_COLLAPSED, togglePref, usePref } from '@/modules/app/ui/prefs';
 
 /**
- * The left rail, on every console page: "Your work" (Inbox, My work — across
- * clients) at the top, then, inside a client, its modules and intake pages
- * exactly as the statute names them. Collapses to an icon rail (`[` or the
+ * The left rail, on every console page and always the same shape: "Your work"
+ * (Inbox, My work — across clients) at the top, then a client's modules and
+ * intake pages exactly as the statute names them — the client in view, or,
+ * outside one, the last client opened, named in the heading. Collapses to an icon rail (`[` or the
  * button at the top); labels then show as tooltips and counts shrink to a dot.
  * "Powered by DataSentry" sits at the foot when expanded. On phones it is a
  * drawer opened from the header, always expanded.
  */
 
 type Props = {
-  /** The client in view; outside a client only "Your work" shows. */
+  /** The client in view, or null outside one (portfolio, Inbox, My work). */
   org: string | null;
-  /** The client page in view ('' is its overview), or the work page ('inbox', 'my-work') outside a client. */
-  activeSeg: string;
+  /** Whose modules to list: the client in view, else the last one opened. */
+  modulesOrg: string;
+  /** The module page in view ('' is the overview), when inside a client. */
+  activeSeg: string | null;
+  /** The work page in view ('inbox', 'my-work'), when outside a client. */
+  activeWork: string | null;
   counts: Record<string, string>;
   /** Phone drawer state, owned by the shell's menu button. */
   open: boolean;
   onNavigate: () => void;
 };
 
-export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Props) {
+export default function Sidebar({ org, modulesOrg, activeSeg, activeWork, counts, open, onNavigate }: Props) {
   // Collapsing is a desktop affordance; the phone drawer always shows labels.
   const collapsed = usePref(SIDEBAR_COLLAPSED, false);
   const rail = collapsed ? 'lg:w-14 lg:px-2' : 'lg:w-60 lg:px-3';
   const hideOnRail = collapsed ? 'lg:hidden' : '';
+  // Outside a client, say whose modules these are.
+  const whose = org ? null : ORGS.find((o) => o.slug === modulesOrg)?.name ?? null;
 
   return (
     <nav
@@ -39,11 +47,14 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
       className={`${open ? 'flex' : 'hidden'} shrink-0 flex-col border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:border-b-0 lg:border-r lg:transition-[width] lg:duration-200 lg:ease-out motion-reduce:transition-none ${rail}`}
     >
       <div className="flex-1 overflow-y-auto py-4 lg:pt-3">
-        {[{ title: 'Your work', items: WORK, root: true }, ...(org ? NAV.map((g) => ({ ...g, root: false })) : [])].map((group, gi) => (
+        {[{ title: 'Your work', items: WORK, root: true }, ...NAV.map((g) => ({ ...g, root: false }))].map((group, gi) => (
           <div key={group.title} className={gi > 0 ? 'mt-5' : ''}>
             {/* The first heading carries the collapse control (desktop only). */}
             <div className={`flex items-center pb-1.5 ${collapsed ? 'lg:justify-center' : 'justify-between'}`}>
-              <p className={`px-2 text-[12px] font-medium text-[var(--ds-text-3)] ${hideOnRail}`}>{group.title}</p>
+              <p className={`min-w-0 truncate px-2 text-[12px] font-medium text-[var(--ds-text-3)] ${hideOnRail}`} title={gi === 1 && whose ? `${group.title} — ${whose}` : undefined}>
+                {group.title}
+                {gi === 1 && whose && <span className="font-normal"> · {whose}</span>}
+              </p>
               {gi === 0 && (
                 <button
                   type="button"
@@ -60,12 +71,12 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
             <ul className="space-y-px">
               {group.items.map((m: NavItem) => {
                 // Work pages sit at the console root; module pages under the client.
-                const active = group.root ? !org && activeSeg === m.seg : activeSeg === m.seg;
+                const active = group.root ? activeWork === m.seg : activeSeg === m.seg;
                 const count = counts[m.seg];
                 return (
                   <li key={m.label}>
                     <Link
-                      href={group.root || !org ? demoPath(m.seg) : demoPath(org, m.seg)}
+                      href={group.root ? demoPath(m.seg) : demoPath(modulesOrg, m.seg)}
                       onClick={onNavigate}
                       aria-current={active ? 'page' : undefined}
                       aria-label={collapsed ? m.label : undefined}

@@ -2,7 +2,7 @@
 
 import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { ProductLockup } from '@/modules/app/ui/Brand';
 import { ToastProvider } from '@/modules/app/ui/Toast';
@@ -14,7 +14,7 @@ import ClientSwitcher from './ClientSwitcher';
 import CommandPalette from './CommandPalette';
 import Shortcuts from './Shortcuts';
 import Sidebar from './Sidebar';
-import { SIDEBAR_COLLAPSED, usePref } from '@/modules/app/ui/prefs';
+import { LAST_CLIENT, SIDEBAR_COLLAPSED, setPrefValue, usePref, usePrefValue } from '@/modules/app/ui/prefs';
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 import { useUnreadInbox } from '@/modules/app/dpdp/inbox';
@@ -95,15 +95,22 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
 
   const signOut = () => writeSession(false);
 
-  if (signedIn === null) return <div className="demo-root min-h-screen" />;
-  if (!signedIn) return <SignIn onSignedIn={signIn} />;
-
   // Read the client and module from the part of the path after the base, so
   // the console works wherever DEMO_BASE puts it: [org?, seg?].
   const parts = (pathname.startsWith(DEMO_BASE) ? pathname.slice(DEMO_BASE.length) : '').split('/').filter(Boolean);
-  const orgSlug = parts[0] ?? null;
-  const org = ORGS.find((o) => o.slug === orgSlug) ?? null;
+  const org = ORGS.find((o) => o.slug === parts[0]) ?? null;
   const activeSeg = parts[1] ?? '';
+  // Outside a client (portfolio, Inbox, My work) the sidebar keeps the modules
+  // of the last client opened, so the rail never changes shape.
+  const remembered = usePrefValue(LAST_CLIENT, ORGS[0].slug);
+  const modulesOrg = org?.slug ?? (ORGS.some((o) => o.slug === remembered) ? remembered : ORGS[0].slug);
+  const inClient = org?.slug ?? null;
+  useEffect(() => {
+    if (inClient) setPrefValue(LAST_CLIENT, inClient);
+  }, [inClient]);
+
+  if (signedIn === null) return <div className="demo-root min-h-screen" />;
+  if (!signedIn) return <SignIn onSignedIn={signIn} />;
 
   return (
     // The provider sits inside .demo-root so its toast stack gets the console's tokens and type.
@@ -150,9 +157,11 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
         {/* On every page: "Your work" across clients, then the client's modules when inside one. */}
         <Sidebar
           org={org?.slug ?? null}
-          activeSeg={org ? activeSeg : parts[0] ?? ''}
+          modulesOrg={modulesOrg}
+          activeSeg={org ? activeSeg : null}
+          activeWork={org ? null : parts[0] ?? null}
           counts={{
-            ...(org ? countsFor(org.slug, now) : {}),
+            ...countsFor(modulesOrg, now),
             ...(unread ? { inbox: String(unread) } : {}),
             // My work is a list, not a backlog to count: only what is late is called out.
             ...(late ? { 'my-work': `${late} late` } : {}),
