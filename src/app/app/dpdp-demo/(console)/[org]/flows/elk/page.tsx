@@ -2,12 +2,13 @@ import { loadClient } from '@/modules/app/dpdp/routeData';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import DataFlowElk from '@/modules/app/dpdp/components/DataFlowElk';
+import { FlowFacts, FlowFindings } from '@/modules/app/dpdp/components/FlowSections';
 import { Button, DemoNote, PageHeader, Panel } from '@/modules/app/ui/ui';
 
 /**
- * Experiment: the data flow map with no hand-placed coordinates — the same
- * register-derived graph, laid out by ELK and drawn with React Flow — to judge
- * whether auto layout is good enough for clients with many more systems.
+ * The data flow map with no hand-placed coordinates — the same register-derived
+ * graph, laid out by ELK and drawn with React Flow (the standard; see CLAUDE.md).
+ * It is to replace the hand-placed map at `flows`.
  */
 export default async function FlowsElk({ params }: { params: Promise<{ org: string }> }) {
   const { org, d } = await loadClient(params);
@@ -17,24 +18,27 @@ export default async function FlowsElk({ params }: { params: Promise<{ org: stri
     <div className="space-y-8">
       <PageHeader
         title="Data flow map — auto layout"
-        sub="Experiment: the same register, laid out by ELK and drawn with React Flow. Nothing is placed by hand."
+        sub={`Laid out from the register by ELK and drawn with React Flow — nothing is placed by hand. ${org.name}.`}
         right={<Button as="link" href={demoPath(org.slug, 'flows')}>Hand-placed map</Button>}
       />
 
+      <FlowFacts d={d} />
+
       <Panel
         title="Where personal data moves"
-        sub="Hover a system to trace its flows; click a system or a flow for the record behind it. Drag to pan, scroll to zoom, drag a system to move it."
+        sub="Hover a system to trace its flows; click a system or a flow for the record behind it. Zoom with + and −; drag the map to pan."
         flush
       >
         <DataFlowElk org={org.slug} />
       </Panel>
 
+      <FlowFindings d={d} />
+
       <DemoNote>
-        This page is an experiment. The hand-placed map needs coordinates for every system, which does not scale past
-        a dozen or so; here ELK (layered algorithm, trust zones as groups pinned left to right, orthogonal routing,
-        labels sized so they stay clear of boxes) places everything from the register alone, so a client with forty
-        systems lays out the same way. React Flow adds pan, zoom, a minimap and dragging. Compare the two before
-        choosing one for the live app.
+        Nothing on this map is positioned by hand: ELK lays out whatever the register holds, so a client with forty
+        systems comes out the same way as one with twelve. The zones are columns ordered own systems → India →
+        outside India, flows are routed so their labels stay clear of the boxes, and a filter re-runs the layout for
+        just the flows in view.
       </DemoNote>
     </div>
   );

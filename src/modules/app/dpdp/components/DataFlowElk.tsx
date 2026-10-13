@@ -6,7 +6,7 @@ import {
   type Edge, type EdgeProps, type Node, type NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import ELK, { type ElkExtendedEdge, type ElkNode } from 'elkjs/lib/elk.bundled.js';
+import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { FlowEdge, FlowNode } from '@/modules/app/dpdp/types';
 import { ViewTabs } from '@/modules/app/ui/ui';
@@ -16,13 +16,14 @@ import {
 } from './DataFlowMap';
 
 /**
- * EXPERIMENT — the data flow map laid out automatically: the same graph the
- * register produces (graphFor), positioned by ELK's layered algorithm and drawn
- * with React Flow. Nothing is hand-placed: the trust zones are nested groups
- * pinned left to right (own systems → India → outside India), flows are routed
- * orthogonally around the boxes, and every flow label is a sized object ELK
- * keeps clear of them. Change the filter and the layout is recomputed for the
- * flows in view. Systems can be dragged; their flows then reroute simply.
+ * The data flow map laid out automatically — the standard (see CLAUDE.md): the
+ * same graph the register produces (graphFor). ELK places the systems — one
+ * column per trust zone (own systems → India → outside India), each column
+ * ordered to cross as few flows as possible and lined up with what it connects
+ * to — and React Flow draws them. The flows are drawn here, as on the
+ * hand-placed map: S-curves between columns with the label on the curve,
+ * straight through a column a flow skips. Change the filter and the layout is
+ * recomputed. Zoom is on the + / − buttons only; systems can be dragged.
  */
 
 const NODE_W = 216;
@@ -43,7 +44,9 @@ type SystemData = { node: FlowNode; flag: string | null };
 type ZoneData = { zone: FlowNode['zone']; title: string; sub: string };
 type FlowData = {
   edge: FlowEdge;
+  /** ELK's route (for "moved since layout" checks) and the path actually drawn. */
   points: Point[];
+  path: string;
   label: Point & { w: number };
   color: string;
   crossing: Point | null;
@@ -67,108 +70,154 @@ async function layout(org: string, filter: Filter) {
   const visible = nodes.filter((n) => filter === 'all' || touched.has(n.id) || (filter === 'finding' && n.finding));
   const zones = ZONE_ORDER.filter((z) => visible.some((n) => n.zone === z));
 
-  // Trust zones are nested groups, pinned left to right by partition. Two
-  // passes: the first finds the order within each zone that crosses fewest
-  // flows; the second stacks each zone from the top in that order and keeps it
-  // (interactive placement), so the columns line up while ELK still routes the
-  // flows and places their labels clear of the boxes.
-  const GAP = 24;
-  const build = (stack?: Map<string, number>): ElkNode => ({
+  // ELK places the systems; we draw the flows. Each trust zone must be one
+  // column, but nothing in the flows says so (no flow runs India → abroad), so:
+  // own systems are pinned to the first column, outside-India to the last, and
+  // a chain of invisible anchors — one per gap, with hidden links to every
+  // system of the next zone — forces each zone into its own column. ELK then
+  // orders each column to cross as few flows as possible and lines systems up
+  // with what they connect to, so most flows run straight; a flow that skips
+  // the India column gets a reserved slot between its systems. Labels are not
+  // given to ELK (it would route every flow through a slot of its own); they
+  // sit on the flow in the gap between columns, nudged apart if they meet.
+  const widest = Math.max(160, ...shown.map(labelW));
+  const anchors = zones.slice(1).map((z, i) => ({ id: `_anchor${i}`, next: z }));
+  const graph: ElkNode = {
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'RIGHT',
-      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-      'elk.partitioning.activate': 'true',
-      'elk.edgeRouting': 'ORTHOGONAL',
-      'elk.edgeLabels.placement': 'CENTER',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '56',
-      'elk.layered.spacing.edgeNodeBetweenLayers': '20',
-      'elk.layered.spacing.edgeEdgeBetweenLayers': '12',
-      'elk.spacing.nodeNode': String(GAP),
-      'elk.spacing.edgeNode': '18',
-      'elk.spacing.edgeEdge': '10',
-      'elk.spacing.edgeLabel': '4',
-      'elk.padding': '[top=24,left=24,bottom=24,right=24]',
       'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-      // Pass two keeps pass one's order (children are given in it) and the stacked positions.
-      ...(stack
-        ? {
-          'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-          'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
-          'elk.layered.nodePlacement.strategy': 'INTERACTIVE',
-        }
-        : { 'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX' }),
+      'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+      'elk.edgeRouting': 'POLYLINE',
+      // Each gap holds an anchor column, so half the room per spacing: the gap
+      // fits the widest label and its curves.
+      'elk.layered.spacing.nodeNodeBetweenLayers': String(Math.round((widest + 96) / 2)),
+      'elk.spacing.nodeNode': '36',
+      'elk.layered.spacing.edgeNodeBetweenLayers': '28',
+      'elk.spacing.edgeNode': '28',
+      'elk.padding': '[top=88,left=44,bottom=44,right=44]',
     },
-    children: zones.map((z, i) => ({
-      id: `zone-${z}`,
-      ...(stack ? { x: i * 400, y: 0 } : {}),
-      layoutOptions: {
-        'elk.partitioning.partition': String(i),
-        'elk.padding': '[top=64,left=20,bottom=20,right=20]',
-      },
-      children: visible.filter((n) => n.zone === z)
-        .sort((a, b) => (stack ? (stack.get(a.id) ?? 0) - (stack.get(b.id) ?? 0) : 0))
-        .map((n) => ({
+    children: [
+      ...visible.map((n) => ({
         id: n.id,
         width: NODE_W,
         height: NODE_H,
-        ...(stack ? { x: 20, y: stack.get(n.id) ?? 0 } : {}),
-        layoutOptions: { 'elk.portConstraints': 'FIXED_POS' },
+        layoutOptions: {
+          'elk.portConstraints': 'FIXED_POS',
+          ...(n.zone === 'internal' ? { 'elk.layered.layering.layerConstraint': 'FIRST' } : {}),
+          ...(n.zone === 'abroad' && zones.length > 1 ? { 'elk.layered.layering.layerConstraint': 'LAST' } : {}),
+        },
         // One port in, one out, at the middle of each side — where React Flow's handles sit.
         ports: [
           { id: `${n.id}:in`, x: 0, y: NODE_H / 2, width: 1, height: 1, layoutOptions: { 'elk.port.side': 'WEST' } },
           { id: `${n.id}:out`, x: NODE_W - 1, y: NODE_H / 2, width: 1, height: 1, layoutOptions: { 'elk.port.side': 'EAST' } },
         ],
       })),
-    })),
-    edges: shown.map((e) => ({
-      id: e.id,
-      sources: [`${e.from}:out`],
-      targets: [`${e.to}:in`],
-      labels: [{ id: `${e.id}:label`, text: e.label, width: labelW(e), height: LABEL_H }],
-    })),
+      ...anchors.map((a) => ({ id: a.id, width: 1, height: 1 })),
+    ],
+    edges: [
+      ...shown.map((e) => ({ id: e.id, sources: [`${e.from}:out`], targets: [`${e.to}:in`] })),
+      ...anchors.slice(1).map((a, i) => ({ id: `_chain${i}`, sources: [anchors[i].id], targets: [a.id] })),
+      ...anchors.flatMap((a) => visible.filter((n) => n.zone === a.next).map((n) => ({ id: `_pin-${n.id}`, sources: [a.id], targets: [`${n.id}:in`] }))),
+    ],
+  };
+
+  const out = await elk.layout(graph);
+  const placed = new Map((out.children ?? []).filter((c) => !c.id.startsWith('_')).map((c) => [c.id, { x: c.x ?? 0, y: c.y ?? 0 }]));
+  const zoneOf = new Map(visible.map((n) => [n.id, n.zone]));
+  const colOf = (id: string) => zones.indexOf(zoneOf.get(id)!);
+
+  // ELK decides the order and height of every system; the column spacing is
+  // ours, so every gap fits the widest label with room for its curves.
+  const PAD = 44;
+  const GAP = widest + 88;
+  const colX = (k: number) => PAD + k * (NODE_W + GAP);
+  const gapMid = (k: number) => colX(k) + NODE_W + GAP / 2;
+  const pos = new Map([...placed].map(([id, p]) => [id, { x: colX(colOf(id)), y: p.y }]));
+  const col = new Map(zones.map((z, k) => [z, { left: colX(k), right: colX(k) + NODE_W }]));
+  // Where ELK put each column, to read its routes at that column.
+  const elkColMid = zones.map((z) => {
+    const n = visible.find((v) => v.zone === z)!;
+    return placed.get(n.id)!.x + NODE_W / 2;
   });
 
-  const first = await elk.layout(build());
-  const stack = new Map<string, number>();
-  for (const z of first.children ?? []) {
-    [...(z.children ?? [])].sort((a, b) => (a.y ?? 0) - (b.y ?? 0)).forEach((c, i) => stack.set(c.id, 64 + i * (NODE_H + GAP)));
-  }
-  const out = await elk.layout(build(stack));
+  // Each flow's waypoints: out of the source; for every column it skips, a
+  // straight run through the slot ELK reserved there; into the target. Its
+  // label sits on the flow in the gap after the source, halfway in height
+  // between the flow's two ends there.
+  type Geo = { e: FlowEdge; way: Point[]; skips: { left: Point; right: Point }[]; label: Point & { w: number } };
+  const routeY = (raw: Point[], x: number) => {
+    for (let i = 1; i < raw.length; i++) {
+      const [a, b] = [raw[i - 1], raw[i]];
+      if ((a.x - x) * (b.x - x) <= 0 && a.x !== b.x) return a.y + ((x - a.x) / (b.x - a.x)) * (b.y - a.y);
+    }
+    return raw[raw.length - 1]?.y ?? 0;
+  };
+  const geos: Geo[] = (out.edges ?? []).filter((ee) => !ee.id.startsWith('_')).map((ee) => {
+    const e = shown.find((x) => x.id === ee.id)!;
+    const sc = ee.sections?.[0];
+    const raw = sc ? [sc.startPoint, ...(sc.bendPoints ?? []), sc.endPoint].map((p) => ({ x: p.x, y: p.y })) : [];
+    const [cs, ct] = [colOf(e.from), colOf(e.to)];
+    const start = { x: colX(cs) + NODE_W, y: pos.get(e.from)!.y + NODE_H / 2 };
+    const end = { x: colX(ct), y: pos.get(e.to)!.y + NODE_H / 2 };
+    const skips = [];
+    for (let k = cs + 1; k < ct; k++) {
+      const y = routeY(raw, elkColMid[k]);
+      skips.push({ left: { x: colX(k), y }, right: { x: colX(k) + NODE_W, y } });
+    }
+    const next = skips[0]?.left ?? end;
+    return { e, way: [start, end], skips, label: { x: gapMid(cs), y: (start.y + next.y) / 2, w: labelW(e) } };
+  });
 
-  // Absolute positions: zones sit in the root, systems in their zone. Panels share one top and height.
-  const abs = new Map<string, Point>();
-  const top = Math.min(...(out.children ?? []).map((z) => z.y ?? 0));
-  const bottom = Math.max(...(out.children ?? []).map((z) => (z.y ?? 0) + (z.height ?? 0)));
-  const rfNodes: Node[] = [];
-  for (const z of out.children ?? []) {
-    abs.set(z.id, { x: z.x ?? 0, y: z.y ?? 0 });
-    const zone = z.id.replace('zone-', '') as FlowNode['zone'];
-    rfNodes.push({
-      id: z.id, type: 'zone', position: { x: z.x ?? 0, y: top }, zIndex: -1,
-      data: { zone, title: zone === 'internal' ? `${clientShort.toUpperCase()} — ${ZONE_TEXT[zone].title}` : ZONE_TEXT[zone].title, sub: ZONE_TEXT[zone].sub },
-      style: { width: z.width, height: bottom - top }, selectable: false, draggable: false, focusable: false,
-    } satisfies ZoneNodeT);
+  // Where a system sends or receives several flows, spread them along its edge
+  // (10px apart, in the order of where they go or come from) so their lines
+  // and arrowheads do not pile up on one point.
+  const spread = (ends: { g: Geo; key: number }[], which: 0 | 1) => {
+    ends.sort((a, b) => a.key - b.key).forEach(({ g }, i) => {
+      g.way[which] = { ...g.way[which], y: g.way[which].y + (i - (ends.length - 1) / 2) * 10 };
+    });
+  };
+  for (const n of visible) {
+    spread(geos.filter((g) => g.e.from === n.id).map((g) => ({ g, key: g.way[1].y })), 0);
+    spread(geos.filter((g) => g.e.to === n.id).map((g) => ({ g, key: g.way[0].y })), 1);
   }
-  for (const z of out.children ?? []) {
-    for (const c of z.children ?? []) {
-      const n = visible.find((v) => v.id === c.id)!;
-      const p = { x: (z.x ?? 0) + (c.x ?? 0), y: (z.y ?? 0) + (c.y ?? 0) };
-      abs.set(c.id, p);
-      rfNodes.push({
-        id: c.id, type: 'system', position: p,
-        data: { node: n, flag: n.finding ? sevColor(n.finding) : null },
-      } satisfies SystemNodeT);
+  for (const g of geos) g.label.y = (g.way[0].y + (g.skips[0]?.left ?? g.way[1]).y) / 2;
+
+  // Labels in the same gap must not touch: sort by height, push apart.
+  for (let k = 0; k < zones.length; k++) {
+    const inGap = geos.filter((g) => colOf(g.e.from) === k).sort((a, b) => a.label.y - b.label.y);
+    for (let i = 1; i < inGap.length; i++) {
+      const min = inGap[i - 1].label.y + LABEL_H + 14;
+      if (inGap[i].label.y < min) inGap[i].label.y = min;
     }
   }
 
-  // The India border runs down the middle of the gap before the outside-India panel.
-  const abroad = out.children?.find((z) => z.id === 'zone-abroad');
-  const beforeAbroad = (out.children ?? []).filter((z) => z.id !== 'zone-abroad').map((z) => (z.x ?? 0) + (z.width ?? 0));
-  const borderX = abroad
-    ? (beforeAbroad.length ? Math.round((Math.max(...beforeAbroad) + (abroad.x ?? 0)) / 2) : (abroad.x ?? 0) - 28)
-    : null;
+  // Panels: one per column, sharing a top and bottom that clear every box and label.
+  const ys = [
+    ...[...pos.values()].flatMap((p) => [p.y, p.y + NODE_H]),
+    ...geos.flatMap((g) => [g.label.y - LABEL_H / 2, g.label.y + LABEL_H / 2]),
+  ];
+  const top = Math.min(...ys) - 64;
+  const bottom = Math.max(...ys) + 24;
+  const rfNodes: Node[] = zones.map((zone) => {
+    const c = col.get(zone)!;
+    return {
+      id: `zone-${zone}`, type: 'zone', position: { x: c.left - 20, y: top }, zIndex: -1,
+      data: { zone, title: zone === 'internal' ? `${clientShort.toUpperCase()} — ${ZONE_TEXT[zone].title}` : ZONE_TEXT[zone].title, sub: ZONE_TEXT[zone].sub },
+      style: { width: c.right - c.left + 40, height: bottom - top }, selectable: false, draggable: false, focusable: false,
+    } satisfies ZoneNodeT;
+  });
+  for (const n of visible) {
+    rfNodes.push({
+      id: n.id, type: 'system', position: pos.get(n.id)!,
+      data: { node: n, flag: n.finding ? sevColor(n.finding) : null },
+    } satisfies SystemNodeT);
+  }
+
+  // The India border runs down the middle of the gap before the outside-India column.
+  const ai = zones.indexOf('abroad');
+  const borderX = ai > 0 ? gapMid(ai - 1) : ai === 0 ? col.get('abroad')!.left - 40 : null;
   if (borderX !== null) {
     rfNodes.push({
       id: 'india-border', type: 'border', position: { x: borderX, y: top - 8 }, zIndex: -1,
@@ -176,48 +225,67 @@ async function layout(org: string, filter: Filter) {
     } satisfies BorderNodeT);
   }
 
-  const rfEdges: Edge[] = (out.edges ?? []).map((ee: ElkExtendedEdge) => {
-    const e = shown.find((x) => x.id === ee.id)!;
-    // Edge coordinates are relative to the edge's container (the root here, but be safe).
-    const container = (ee as ElkExtendedEdge & { container?: string }).container;
-    const off = container && container !== 'root' ? abs.get(container) ?? { x: 0, y: 0 } : { x: 0, y: 0 };
-    const s = ee.sections?.[0];
-    const points = s ? [s.startPoint, ...(s.bendPoints ?? []), s.endPoint].map((p) => ({ x: p.x + off.x, y: p.y + off.y })) : [];
-    const l = ee.labels?.[0];
-    const label = { x: (l?.x ?? 0) + off.x + labelW(e) / 2, y: (l?.y ?? 0) + off.y + LABEL_H / 2, w: labelW(e) };
+  // Draw: S-curve into the label, straight through it; for each skipped column
+  // an S-curve into its slot and straight through; an S-curve into the target.
+  const rfEdges: Edge[] = geos.map(({ e, way, skips, label }) => {
     const color = e.finding ? sevColor(e.finding) : C.flow;
+    const [start, end] = way;
+    const L = { x: label.x - label.w / 2, y: label.y };
+    const R = { x: label.x + label.w / 2, y: label.y };
+    const stops = [start, L, R, ...skips.flatMap((sk) => [sk.left, sk.right]), end];
+    let d = `M ${start.x} ${start.y}`;
+    const drawn: Point[] = [start];
+    for (let i = 1; i < stops.length; i++) {
+      const [a, b] = [stops[i - 1], stops[i]];
+      if (Math.abs(a.y - b.y) < 1) {
+        d += ` L ${b.x} ${b.y}`;
+        drawn.push(b);
+      } else {
+        const c = sCurve(a, b);
+        d += ` C ${c[1].x} ${c[1].y} ${c[2].x} ${c[2].y} ${b.x} ${b.y}`;
+        drawn.push(...bezierPoints(c).slice(1));
+      }
+    }
     let crossing: Point | null = null;
     if (borderX !== null) {
-      for (let i = 1; i < points.length; i++) {
-        const [a, b] = [points[i - 1], points[i]];
-        if ((a.x - borderX) * (b.x - borderX) < 0 && Math.abs(a.y - b.y) < 0.5) crossing = { x: borderX + 1, y: a.y };
+      for (let i = 1; i < drawn.length; i++) {
+        const [a, b] = [drawn[i - 1], drawn[i]];
+        if ((a.x - borderX) * (b.x - borderX) <= 0 && a.x !== b.x) {
+          crossing = { x: borderX, y: a.y + ((borderX - a.x) / (b.x - a.x)) * (b.y - a.y) };
+          break;
+        }
       }
     }
     return {
       id: e.id, source: e.from, target: e.to, type: 'flow',
       markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
-      data: { edge: e, points, label, color, crossing },
+      data: { edge: e, points: [start, end], path: d, label, color, crossing },
     } satisfies FlowEdgeT;
   });
 
-  return { nodes: rfNodes, edges: rfEdges };
+  return { nodes: rfNodes, edges: rfEdges, size: { w: colX(zones.length - 1) + NODE_W + PAD, h: bottom - top + 48 } };
 }
 
 /* ------------------------------------------------------------- the drawing */
 
-function rounded(points: Point[], r = 8) {
-  if (points.length < 2) return '';
-  let d = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 1; i < points.length - 1; i++) {
-    const [p, c, n] = [points[i - 1], points[i], points[i + 1]];
-    const d1 = Math.min(r, Math.hypot(c.x - p.x, c.y - p.y) / 2);
-    const d2 = Math.min(r, Math.hypot(n.x - c.x, n.y - c.y) / 2);
-    const a = { x: c.x - Math.sign(c.x - p.x) * d1, y: c.y - Math.sign(c.y - p.y) * d1 };
-    const b = { x: c.x + Math.sign(n.x - c.x) * d2, y: c.y + Math.sign(n.y - c.y) * d2 };
-    d += ` L ${a.x} ${a.y} Q ${c.x} ${c.y} ${b.x} ${b.y}`;
+/** A horizontal S-curve from a to b: leaves and arrives level, like the hand-placed map's flows. */
+function sCurve(a: Point, b: Point): [Point, Point, Point, Point] {
+  const dx = Math.max(16, (b.x - a.x) / 2);
+  return [a, { x: a.x + dx, y: a.y }, { x: b.x - dx, y: b.y }, b];
+}
+
+/** Points along one cubic Bézier. */
+function bezierPoints([p0, p1, p2, p3]: [Point, Point, Point, Point], n = 24): Point[] {
+  const out: Point[] = [];
+  for (let k = 0; k <= n; k++) {
+    const t = k / n;
+    const u = 1 - t;
+    out.push({
+      x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+      y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+    });
   }
-  const last = points[points.length - 1];
-  return `${d} L ${last.x} ${last.y}`;
+  return out;
 }
 
 function FlowEdgeView({ id, data, sourceX, sourceY, targetX, targetY, markerEnd }: EdgeProps<FlowEdgeT>) {
@@ -225,11 +293,12 @@ function FlowEdgeView({ id, data, sourceX, sourceY, targetX, targetY, markerEnd 
   if (!data) return null;
   const { edge, points, color, crossing } = data;
   // Dragged since the layout? Then ELK's route no longer fits; fall back to a simple step.
+  // (Spread ports sit up to ~20px from the handle centre, so allow for that.)
   const moved = !points.length
-    || Math.hypot(points[0].x - sourceX, points[0].y - sourceY) > 4
-    || Math.hypot(points[points.length - 1].x - targetX, points[points.length - 1].y - targetY) > 4;
+    || Math.hypot(points[0].x - sourceX, points[0].y - sourceY) > 24
+    || Math.hypot(points[points.length - 1].x - targetX, points[points.length - 1].y - targetY) > 24;
   const [stepPath, lx, ly] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition: Position.Right, targetPosition: Position.Left, borderRadius: 8 });
-  const path = moved ? stepPath : rounded(points);
+  const path = moved ? stepPath : data.path;
   const label = moved ? { x: lx, y: ly } : data.label;
   const dim = trace.hover !== null && !trace.edges.has(id);
   const lit = trace.hover !== null && !dim;
@@ -348,6 +417,7 @@ export default function DataFlowElk({ org }: { org: string }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [ready, setReady] = useState<string | null>(null);
+  const [size, setSize] = useState({ w: 1000, h: 600 });
   const [ms, setMs] = useState<number | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
@@ -364,6 +434,7 @@ export default function DataFlowElk({ org }: { org: string }) {
         setNodes(r.nodes);
         setEdges(r.edges);
         setMs(Math.round(performance.now() - t0));
+        setSize(r.size);
         setFailed(null);
         setReady(filter);
       })
@@ -397,11 +468,12 @@ export default function DataFlowElk({ org }: { org: string }) {
         <span className="text-[12px] text-[var(--ds-text-3)]">
           {failed ? <span className="text-[var(--ds-danger)]">Layout failed — {failed.slice(0, 120)}</span>
             : ms === null ? 'Laying out…'
-              : `Laid out by ELK in ${ms} ms (two passes) · ${nodes.filter((n) => n.type === 'system').length} systems, ${edges.length} flows`}
+              : `Laid out by ELK in ${ms} ms · ${nodes.filter((n) => n.type === 'system').length} systems, ${edges.length} flows`}
         </span>
       </div>
 
-      <div className="h-[44rem] bg-[var(--ds-panel)]">
+      {/* The canvas takes the diagram's own proportions, so there is no empty band around it. */}
+      <div className="max-h-[56rem] min-h-[22rem] w-full bg-[var(--ds-panel)]" style={{ aspectRatio: `${size.w} / ${size.h}` }}>
         <Trace.Provider value={trace}>
           {ready === filter && (
             <ReactFlow
@@ -419,13 +491,22 @@ export default function DataFlowElk({ org }: { org: string }) {
               nodesConnectable={false}
               elementsSelectable={false}
               fitView
-              fitViewOptions={{ padding: 0.06 }}
+              fitViewOptions={{ padding: 0.02 }}
               minZoom={0.3}
               maxZoom={1.75}
+              // Zoom only with the + / − buttons: the wheel, a trackpad pinch and a
+              // double-click are left to the page, so scrolling never zooms the map.
+              zoomOnScroll={false}
+              zoomOnPinch={false}
+              zoomOnDoubleClick={false}
+              panOnScroll={false}
+              preventScrolling={false}
               proOptions={{ hideAttribution: false }}
             >
               <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="#e3e4e8" />
               <Controls showInteractive={false} position="bottom-left" />
+              {/* A minimap only earns its space on a map too big to read at once. */}
+              {nodes.filter((n) => n.type === 'system').length > 16 && (
               <MiniMap
                 position="bottom-right"
                 pannable
@@ -434,6 +515,7 @@ export default function DataFlowElk({ org }: { org: string }) {
                 nodeStrokeWidth={0}
                 maskColor="rgba(246,247,249,0.7)"
               />
+              )}
             </ReactFlow>
           )}
         </Trace.Provider>
