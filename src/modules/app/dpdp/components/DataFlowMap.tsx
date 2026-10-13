@@ -2,7 +2,9 @@
 
 import { useState, type ReactNode } from 'react';
 import { clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
-import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
+import { CONTRACTS, NO_EDITS, REGIONS, REGION_NAME, flowGraph, type RegisterEdits } from '@/modules/app/dpdp/flowGraph';
+import { editParty } from '@/modules/app/dpdp/registerEdits';
+import type { FlowEdge, FlowNode, Gap, Region } from '@/modules/app/dpdp/types';
 import Sheet, {
   SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab,
 } from '@/modules/app/ui/Sheet';
@@ -102,12 +104,12 @@ export const FILTERS: { id: Filter; label: string }[] = [
  * One client's graph and the helpers that draw it. Built per client, so the
  * map shows that client's systems, flows and findings — never another's.
  */
-export function graphFor(org: string) {
+export function graphFor(org: string, edits: RegisterEdits = NO_EDITS) {
   const d = clientData(org);
-  const nodes = d.flowNodes;
-  const edges = d.flowEdges;
+  // Generated from the register (with this session's edits), never authored.
+  const { nodes, edges, gaps } = flowGraph(d, edits);
   const byId = new Map(nodes.map((n) => [n.id, n]));
-  const gap = (id?: string): Gap | undefined => (id ? d.gaps.find((g) => g.id === id) : undefined);
+  const gap = (id?: string): Gap | undefined => (id ? gaps.find((g) => g.id === id) : undefined);
   const sevColor = (id?: string) => (gap(id)?.severity === 'High' ? C.danger : gap(id) ? C.warn : C.line);
   const crossBorder = (e: FlowEdge) => byId.get(e.to)?.zone === 'abroad';
   const matches = (e: FlowEdge, f: Filter) =>
@@ -367,8 +369,8 @@ export function Legend() {
 
 /* ---------------------------------------------------------------- the sheet */
 
-function FindingBlock({ org, id }: { org: string; id: string }) {
-  const { gap, owners: OWNERS } = graphFor(org);
+function FindingBlock({ org, id, edits }: { org: string; id: string; edits: RegisterEdits }) {
+  const { gap, owners: OWNERS } = graphFor(org, edits);
   const g = gap(id);
   if (!g) return null;
   const person = personFor(OWNERS, g.owner).name;
@@ -396,10 +398,18 @@ function Rows({ rows }: { rows: [string, ReactNode][] }) {
 }
 
 const safeguardText = (s: FlowNode['safeguard']) => <span className="font-medium" style={{ color: SAFEGUARD_TONE[s] }}>{s}</span>;
-const where = (n: FlowNode) => ({ IN: 'India', US: 'United States', UK: 'United Kingdom' })[n.region];
+const where = (n: FlowNode) => REGION_NAME[n.region];
+const SELECT = 'h-7 rounded-md border border-[var(--ds-border)] bg-[var(--ds-panel)] px-2 text-[13px] outline-none focus:border-[var(--ds-accent)]';
 
-export function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selected; onSelect: (s: Selected) => void }) {
-  const { edges: FLOW_EDGES, clientShort, byId, crossBorder } = graphFor(org);
+/**
+ * The record behind a flow or a system. With `editable`, a recipient's hosting
+ * country and contract can be changed here — a register edit (registerEdits),
+ * so the map re-lays itself out and its rules re-run.
+ */
+export function FlowSheet({
+  org, selected, onSelect, edits = NO_EDITS, editable = false,
+}: { org: string; selected: Selected; onSelect: (s: Selected) => void; edits?: RegisterEdits; editable?: boolean }) {
+  const { edges: FLOW_EDGES, clientShort, byId, crossBorder } = graphFor(org, edits);
   const edge = selected?.type === 'edge' ? FLOW_EDGES.find((e) => e.id === selected.id) : undefined;
   const node = selected?.type === 'node' ? byId.get(selected.id) : undefined;
   const close = () => onSelect(null);
@@ -435,7 +445,7 @@ export function FlowSheet({ org, selected, onSelect }: { org: string; selected: 
             ]}
           />
         </SheetDetails>
-        {edge.finding && <FindingBlock org={org} id={edge.finding} />}
+        {edge.finding && <FindingBlock org={org} id={edge.finding} edits={edits} />}
         <SheetActivity>
           <SheetTab label="Comments"><Discussion org={org} refId={edge.finding ?? edge.activity.split(' ')[0]} /></SheetTab>
         </SheetActivity>
@@ -469,7 +479,28 @@ export function FlowSheet({ org, selected, onSelect }: { org: string; selected: 
           <Rows
             rows={[
               ['Trust boundary', { internal: `${clientShort} — own systems`, india: 'Third party — India', abroad: 'Outside India' }[node.zone]],
-              ['Safeguard', safeguardText(node.safeguard)],
+              ['Hosted in', editable ? (
+                <select
+                  key="h"
+                  aria-label={`Where ${node.label} holds the data`}
+                  value={node.region}
+                  onChange={(e) => editParty(org, node.id, { region: e.target.value as Region })}
+                  className={SELECT}
+                >
+                  {REGIONS.map((r) => <option key={r} value={r}>{REGION_NAME[r]}</option>)}
+                </select>
+              ) : where(node)],
+              ['Safeguard', editable && node.kind === 'processor' ? (
+                <select
+                  key="c"
+                  aria-label={`${node.label}'s contract`}
+                  value={node.safeguard}
+                  onChange={(e) => editParty(org, node.id, { safeguard: e.target.value as FlowNode['safeguard'] })}
+                  className={SELECT}
+                >
+                  {CONTRACTS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              ) : safeguardText(node.safeguard)],
               ['Whose data', node.principals],
               ...(node.note ? [['Note', node.note] as [string, ReactNode]] : []),
             ]}
@@ -478,7 +509,7 @@ export function FlowSheet({ org, selected, onSelect }: { org: string; selected: 
         <SheetSection title="Flows" count={out.length + inn.length}>
           <SheetList empty="No flows out — the data stays in this system.">{list(inn, 'from')}{list(out, 'to')}</SheetList>
         </SheetSection>
-        {node.finding && <FindingBlock org={org} id={node.finding} />}
+        {node.finding && <FindingBlock org={org} id={node.finding} edits={edits} />}
       </Sheet>
     );
   }

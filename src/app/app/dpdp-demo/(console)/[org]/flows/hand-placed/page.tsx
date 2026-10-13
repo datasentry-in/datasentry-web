@@ -23,7 +23,7 @@ export default async function FlowsHandPlaced({ params }: { params: Promise<{ or
         right={<Button as="link" href={demoPath(org.slug, 'flows')}>Current map</Button>}
       />
 
-      <FlowFacts d={d} />
+      <FlowFacts org={org.slug} />
 
       <Panel
         title="Where personal data moves"
@@ -33,7 +33,7 @@ export default async function FlowsHandPlaced({ params }: { params: Promise<{ or
         <DataFlowMap org={org.slug} />
       </Panel>
 
-      <FlowFindings d={d} />
+      <FlowFindings org={org.slug} />
     </div>
   );
 }

@@ -1,4 +1,8 @@
-import type { ClientData } from '@/modules/app/dpdp/types';
+'use client';
+
+import { flowGraph } from '@/modules/app/dpdp/flowGraph';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { useRegisterEdits } from '@/modules/app/dpdp/registerEdits';
 import {
   Card, CiteLink, DemoNote, Fact, Facts, Panel, Tag,
 } from '@/modules/app/ui/ui';
@@ -6,27 +10,34 @@ import {
 /**
  * What sits around a data flow map, whichever way it is drawn: the properties
  * row under the title, and the flagged flows and cross-border position under
- * the map. Both map pages render these, so they never drift apart.
+ * the map. Both map pages render these, so they never drift apart. Read from
+ * the same register-derived graph as the map, with this session's edits — a
+ * register change moves these counts too.
  */
 
-const derive = (d: ClientData) => {
-  const node = (id: string) => d.flowNodes.find((n) => n.id === id)!;
-  const thirdParties = d.flowNodes.filter((n) => n.zone !== 'internal');
+function useFlows(org: string) {
+  const d = clientData(org);
+  const { nodes, edges, gaps } = flowGraph(d, useRegisterEdits(org));
+  const node = (id: string) => nodes.find((n) => n.id === id)!;
+  const thirdParties = nodes.filter((n) => n.zone !== 'internal');
   return {
+    d,
+    nodes,
+    gaps,
     node,
     thirdParties,
     noContract: thirdParties.filter((n) => n.safeguard === 'No DPA' || n.safeguard === 'Terms only'),
-    abroad: d.flowEdges.filter((e) => node(e.to).zone === 'abroad'),
-    flagged: d.flowEdges.filter((e) => e.finding),
+    abroad: edges.filter((e) => node(e.to).zone === 'abroad'),
+    flagged: edges.filter((e) => e.finding),
   };
-};
+}
 
 /** The map's headline properties: systems, third parties, cross-border flows, flows with a finding. */
-export function FlowFacts({ d }: { d: ClientData }) {
-  const { node, thirdParties, noContract, abroad, flagged } = derive(d);
+export function FlowFacts({ org }: { org: string }) {
+  const { nodes, node, thirdParties, noContract, abroad, flagged } = useFlows(org);
   return (
     <Facts>
-      <Fact label="Own systems" value={d.flowNodes.filter((n) => n.zone === 'internal').length} note="holding personal data" />
+      <Fact label="Own systems" value={nodes.filter((n) => n.zone === 'internal').length} note="holding personal data" />
       <Fact label="Third parties" value={thirdParties.length} note={`${noContract.length} without a DPA`} tone={noContract.length ? 'bad' : 'plain'} />
       <Fact label="Cross-border flows" value={abroad.length} note={[...new Set(abroad.map((e) => node(e.to).region))].join(', ')} tone={abroad.length ? 'warn' : 'plain'} />
       <Fact label="Flows with a finding" value={flagged.length} note={flagged.map((e) => e.finding).join(', ')} tone={flagged.length ? 'bad' : 'plain'} />
@@ -35,15 +46,15 @@ export function FlowFacts({ d }: { d: ClientData }) {
 }
 
 /** Under the map: the flows a finding was raised against, and where data leaves India. */
-export function FlowFindings({ d }: { d: ClientData }) {
-  const { node, flagged } = derive(d);
+export function FlowFindings({ org }: { org: string }) {
+  const { d, gaps, node, flagged } = useFlows(org);
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <Panel title="Flagged flows" sub="Each links back to a gap finding">
         {flagged.length === 0 && <p className="text-[14px] text-[var(--ds-text-3)]">No flow has a finding against it.</p>}
         <ul className="space-y-4">
           {flagged.map((e) => {
-            const g = d.gaps.find((x) => x.id === e.finding)!;
+            const g = gaps.find((x) => x.id === e.finding)!;
             return (
               <li key={e.id}>
                 <Card tone={g.severity === 'High' ? 'danger' : 'warn'}>

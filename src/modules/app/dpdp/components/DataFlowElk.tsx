@@ -8,6 +8,8 @@ import {
 import '@xyflow/react/dist/style.css';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { editCount, type RegisterEdits } from '@/modules/app/dpdp/flowGraph';
+import { resetEdits, useRegisterEdits } from '@/modules/app/dpdp/registerEdits';
 import type { FlowEdge, FlowNode } from '@/modules/app/dpdp/types';
 import { ViewTabs } from '@/modules/app/ui/ui';
 import {
@@ -64,8 +66,8 @@ const Trace = createContext<{ hover: string | null; nodes: Set<string>; edges: S
 
 /* ------------------------------------------------------------------ layout */
 
-async function layout(org: string, filter: Filter) {
-  const { nodes, edges, matches, sevColor, clientShort } = graphFor(org);
+async function layout(org: string, filter: Filter, edits: RegisterEdits) {
+  const { nodes, edges, matches, sevColor, clientShort } = graphFor(org, edits);
   const shown = edges.filter((e) => matches(e, filter));
   const touched = new Set(shown.flatMap((e) => [e.from, e.to]));
   const visible = nodes.filter((n) => filter === 'all' || touched.has(n.id) || (filter === 'finding' && n.finding));
@@ -413,7 +415,9 @@ const edgeTypes = { flow: FlowEdgeView };
 /* ------------------------------------------------------------------ the page */
 
 export default function DataFlowElk({ org }: { org: string }) {
-  const { edges: FLOW_EDGES, matches } = graphFor(org);
+  // The register's edits this session: a change in the RoPA re-lays the map.
+  const edits = useRegisterEdits(org);
+  const { edges: FLOW_EDGES, matches } = graphFor(org, edits);
   const [filter, setFilter] = useState<Filter>('all');
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -429,7 +433,7 @@ export default function DataFlowElk({ org }: { org: string }) {
   useEffect(() => {
     let live = true;
     const t0 = performance.now();
-    layout(org, filter)
+    layout(org, filter, edits)
       .then((r) => {
         if (!live) return;
         setNodes(r.nodes);
@@ -445,7 +449,7 @@ export default function DataFlowElk({ org }: { org: string }) {
     return () => {
       live = false;
     };
-  }, [org, filter, setNodes, setEdges]);
+  }, [org, filter, edits, setNodes, setEdges]);
 
   const related = hover ? FLOW_EDGES.filter((e) => matches(e, filter) && (e.from === hover || e.to === hover)) : [];
   const trace = {
@@ -466,7 +470,20 @@ export default function DataFlowElk({ org }: { org: string }) {
           counts={Object.fromEntries(FILTERS.map((f) => [f.id, count(f.id)]))}
           onChange={(id) => setFilter(id as Filter)}
         />
-        <span className="text-[12px] text-[var(--ds-text-3)]">
+        <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[var(--ds-text-3)]">
+          {editCount(edits) > 0 && (
+            <span className="flex items-center gap-1.5 text-[var(--ds-text-2)]">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--ds-accent)]" />
+              {editCount(edits)} register edit{editCount(edits) === 1 ? '' : 's'} this session
+              <button
+                type="button"
+                onClick={() => resetEdits(org)}
+                className="rounded px-1 font-medium text-[var(--ds-accent-hover)] hover:underline"
+              >
+                Reset
+              </button>
+            </span>
+          )}
           {failed ? <span className="text-[var(--ds-danger)]">Layout failed — {failed.slice(0, 120)}</span>
             : ms === null ? 'Laying out…'
               : `Laid out by ELK in ${ms} ms · ${nodes.filter((n) => n.type === 'system').length} systems, ${edges.length} flows`}
@@ -523,7 +540,7 @@ export default function DataFlowElk({ org }: { org: string }) {
       </div>
 
       <Legend />
-      <FlowSheet org={org} selected={selected} onSelect={setSelected} />
+      <FlowSheet org={org} selected={selected} onSelect={setSelected} edits={edits} editable />
     </>
   );
 }

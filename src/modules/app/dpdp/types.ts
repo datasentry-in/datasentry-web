@@ -152,13 +152,15 @@ export type Org = OrgProfile & {
  * that holds personal data; `zone` is the trust boundary it sits in.
  */
 export type FlowZone = 'internal' | 'india' | 'abroad';
+/** Where data is held: ISO country code. */
+export type Region = 'IN' | 'US' | 'UK' | 'SG' | 'IE' | 'DE';
 export type FlowNode = {
   id: string;
   label: string;
   kind: 'system' | 'processor' | 'statutory' | 'client';
   zone: FlowZone;
   /** Where the data is held: ISO country code. */
-  region: 'IN' | 'US' | 'UK';
+  region: Region;
   /** The contract that governs the party's handling of the data. */
   safeguard: 'Internal' | 'DPA in place' | 'No DPA' | 'Terms only' | 'Statutory' | 'Exempt';
   principals: string;
@@ -176,6 +178,32 @@ export type FlowEdge = {
   categories: string[];
   principals: 'Candidates' | 'Employees' | 'Ex-employees' | 'Client end-users';
   basis: Basis;
+  finding?: string;
+};
+
+/**
+ * The register's systems and recipients — every place personal data sits or is
+ * sent. Its trust zone is not stored: it follows from where it is hosted and
+ * what it is (flowGraph.zoneFor). `finding` is one recorded against the party
+ * itself (e.g. retention not stated); findings the map's rules raise are live.
+ */
+export type Party = Omit<FlowNode, 'zone'>;
+
+/**
+ * One movement of personal data, recorded against a RoPA activity — the
+ * register's recipients and transfers. Its lawful basis is the activity's, read
+ * live; `finding` is one recorded against it beyond what the rules raise live.
+ */
+export type Transfer = {
+  id: string;
+  /** The RoPA activity it belongs to, e.g. 'PA-12'. */
+  activity: string;
+  from: string;
+  to: string;
+  /** Short label drawn on the flow. */
+  label: string;
+  categories: string[];
+  principals: FlowEdge['principals'];
   finding?: string;
 };
 
@@ -315,8 +343,9 @@ export type ClientData = {
   tasks: FulfilmentTask[];
   evidence: EvidenceItem[];
   questionnaire: Questionnaire | null;
-  flowNodes: FlowNode[];
-  flowEdges: FlowEdge[];
+  /** Systems and recipients, and the transfers between them — the map is derived from these (flowGraph). */
+  parties: Party[];
+  transfers: Transfer[];
   privacyCentre: PrivacyCentre | null;
   walkthrough: Walkthrough | null;
   walkthroughAgenda: AgendaItem[];

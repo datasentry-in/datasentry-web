@@ -3,8 +3,8 @@
 // The live app replaces this module with a real data layer; the types live in ../types.ts.
 
 import type {
-  Activity, AgendaItem, AuditEntry, CheckIn, ComplianceDoc, ConsentRow, ConsentSummary, Dsr, EvidenceItem, FlowEdge,
-  FlowNode, FulfilmentTask, Gap, Incident, OrgProfile, PrivacyCentre, Questionnaire, RecordComment, Walkthrough,
+  Activity, AgendaItem, AuditEntry, CheckIn, ComplianceDoc, ConsentRow, ConsentSummary, Dsr, EvidenceItem,
+  FulfilmentTask, Gap, Incident, OrgProfile, Party, PrivacyCentre, Questionnaire, RecordComment, Transfer, Walkthrough,
 } from '../types';
 
 export const CONSULTANT = {
@@ -463,34 +463,36 @@ export const QUESTIONNAIRE: Questionnaire = {
 };
 
 /**
- * Northstar's data-flow map, drawn from RoPA v4. Three trust boundaries:
- * Northstar's own systems, third parties in India, and parties outside India.
+ * Northstar's systems and recipients, and the transfers its RoPA (v4) records
+ * between them — the data flow map is generated from these (flowGraph). Zones
+ * follow from hosting; each transfer's basis is its activity's; the AuthBridge
+ * (no DPA) and alumni (no basis) findings are raised by the map's rules, live.
  * Categories are named as they are; the DPDP Act has no "sensitive personal
  * data" class, so nothing is labelled sensitive.
  */
-export const FLOW_NODES: FlowNode[] = [
-  { id: 'ats', label: 'Zoho Recruit', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
-  { id: 'hrms', label: 'Keka HR', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
-  { id: 'payroll', label: 'Zoho Payroll', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
-  { id: 'biometric', label: 'Matrix COSEC', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees', finding: 'G-10', note: 'On-premises · data stays in Northstar · retention not stated' },
-  { id: 'endpoints', label: 'Laptops & email', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
-  { id: 'vdi', label: 'Client VDI desks', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Client end-users' },
-  { id: 'authbridge', label: 'AuthBridge', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'No DPA', principals: 'Candidates', finding: 'G-02' },
-  { id: 'insurer', label: 'Niva Bupa', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
-  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', zone: 'india', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
-  { id: 'mailchimp', label: 'Mailchimp', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'Terms only', principals: 'Ex-employees', finding: 'G-06' },
-  { id: 'forcepoint', label: 'Forcepoint DLP', kind: 'processor', zone: 'abroad', region: 'US', safeguard: 'DPA in place', principals: 'Employees' },
-  { id: 'ukclient', label: 'UK retail client', kind: 'client', zone: 'abroad', region: 'UK', safeguard: 'Exempt', principals: 'Client end-users' },
+export const PARTIES: Party[] = [
+  { id: 'ats', label: 'Zoho Recruit', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
+  { id: 'hrms', label: 'Keka HR', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
+  { id: 'payroll', label: 'Zoho Payroll', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'biometric', label: 'Matrix COSEC', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees', finding: 'G-10', note: 'On-premises · data stays in Northstar · retention not stated' },
+  { id: 'endpoints', label: 'Laptops & email', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'vdi', label: 'Client VDI desks', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Client end-users' },
+  { id: 'authbridge', label: 'AuthBridge', kind: 'processor', region: 'IN', safeguard: 'No DPA', principals: 'Candidates' },
+  { id: 'insurer', label: 'Niva Bupa', kind: 'processor', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
+  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
+  { id: 'mailchimp', label: 'Mailchimp', kind: 'processor', region: 'US', safeguard: 'Terms only', principals: 'Ex-employees' },
+  { id: 'forcepoint', label: 'Forcepoint DLP', kind: 'processor', region: 'US', safeguard: 'DPA in place', principals: 'Employees' },
+  { id: 'ukclient', label: 'UK retail client', kind: 'client', region: 'UK', safeguard: 'Exempt', principals: 'Client end-users' },
 ];
 
-export const FLOW_EDGES: FlowEdge[] = [
-  { id: 'f1', from: 'ats', to: 'authbridge', activity: 'PA-02 Pre-employment background verification', label: 'ID, criminal record', categories: ['Identity documents', 'Education records', 'Employment history', 'Criminal record'], principals: 'Candidates', basis: 'Consent', finding: 'G-02' },
-  { id: 'f2', from: 'hrms', to: 'insurer', activity: 'PA-09 Group mediclaim & dependant enrolment', label: 'Health, dependants', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees', basis: 'Consent' },
-  { id: 'f3', from: 'hrms', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'UAN, wages', categories: ['UAN', 'Aadhaar-linked KYC', 'Wages'], principals: 'Employees', basis: 'Legal obligation' },
-  { id: 'f4', from: 'payroll', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'PAN, PF number', categories: ['PAN', 'PF number', 'Contribution amounts'], principals: 'Employees', basis: 'Legal obligation' },
-  { id: 'f5', from: 'hrms', to: 'mailchimp', activity: 'PA-12 Alumni communications', label: '1,340 alumni contacts', categories: ['Name', 'Personal email', 'Last role'], principals: 'Ex-employees', basis: 'Not determined', finding: 'G-06' },
-  { id: 'f6', from: 'endpoints', to: 'forcepoint', activity: 'PA-15 IT monitoring & DLP', label: 'DLP and activity logs', categories: ['Device and user IDs', 'File and email activity'], principals: 'Employees', basis: 's.7(i) safeguarding' },
-  { id: 'f7', from: 'vdi', to: 'ukclient', activity: 'PA-17 Client delivery — UK retailer', label: 'Client end-user records', categories: ['Customer account data handled on the client’s systems'], principals: 'Client end-users', basis: 's.17(1)(d) exempt' },
+export const TRANSFERS: Transfer[] = [
+  { id: 'f1', activity: 'PA-02', from: 'ats', to: 'authbridge', label: 'ID, criminal record', categories: ['Identity documents', 'Education records', 'Employment history', 'Criminal record'], principals: 'Candidates' },
+  { id: 'f2', activity: 'PA-09', from: 'hrms', to: 'insurer', label: 'Health, dependants', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees' },
+  { id: 'f3', activity: 'PA-05', from: 'hrms', to: 'epfo', label: 'UAN, wages', categories: ['UAN', 'Aadhaar-linked KYC', 'Wages'], principals: 'Employees' },
+  { id: 'f4', activity: 'PA-05', from: 'payroll', to: 'epfo', label: 'PAN, PF number', categories: ['PAN', 'PF number', 'Contribution amounts'], principals: 'Employees' },
+  { id: 'f5', activity: 'PA-12', from: 'hrms', to: 'mailchimp', label: '1,340 alumni contacts', categories: ['Name', 'Personal email', 'Last role'], principals: 'Ex-employees' },
+  { id: 'f6', activity: 'PA-15', from: 'endpoints', to: 'forcepoint', label: 'DLP and activity logs', categories: ['Device and user IDs', 'File and email activity'], principals: 'Employees' },
+  { id: 'f7', activity: 'PA-17', from: 'vdi', to: 'ukclient', label: 'Client end-user records', categories: ['Customer account data handled on the client’s systems'], principals: 'Client end-users' },
 ];
 
 

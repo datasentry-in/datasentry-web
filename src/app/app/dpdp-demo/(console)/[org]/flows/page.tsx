@@ -20,7 +20,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
         sub={`Derived from the register and laid out automatically — no separate authoring step. ${org.name}.`}
       />
 
-      <FlowFacts d={d} />
+      <FlowFacts org={org.slug} />
 
       <Panel
         title="Where personal data moves"
@@ -30,7 +30,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
         <DataFlowElk org={org.slug} />
       </Panel>
 
-      <FlowFindings d={d} />
+      <FlowFindings org={org.slug} />
 
       <DemoNote>
         Nothing on this map is positioned by hand: it is laid out from whatever the register holds, so a client with
