@@ -3,10 +3,10 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Entrance motion — the page easing in, headline figures popping, live values
- * fading — plays on the first page of a visit only. Once it has run, moving
- * between pages is instant: motion answers an action (a menu, a sheet, a toast),
- * never a page change. Per page load, so a reload plays the entrance again.
+ * The headline figures popping in and live values fading in play on the first
+ * page of a visit only; after that they arrive settled (the short page
+ * entrance itself plays on every navigation). Per page load, so a reload plays
+ * them again.
  */
 const SETTLE_MS = 800;
 let settled = false;

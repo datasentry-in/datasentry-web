@@ -347,16 +347,15 @@ body:has(.demo-root) {
   --ds-dur-quick: 120ms;
   --ds-dur-base: 180ms;
   --ds-dur-slow: 260ms;
+  --ds-dur-page: 200ms;
 }
 
-/* Page: a route eases in — title first, then the rest (texts reveal). */
-@keyframes ds-page-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.demo-root .ds-page-in > * > * { animation: ds-page-in var(--ds-dur-slow) var(--ds-ease-out) both; }
-.demo-root .ds-page-in > * > *:nth-child(1) { animation-delay: 0ms; }
-.demo-root .ds-page-in > * > *:nth-child(2) { animation-delay: 30ms; }
-.demo-root .ds-page-in > * > *:nth-child(3) { animation-delay: 60ms; }
-.demo-root .ds-page-in > * > *:nth-child(4) { animation-delay: 90ms; }
-.demo-root .ds-page-in > * > *:nth-child(n + 5) { animation-delay: 120ms; }
+/* Page: every route eases in — the title, then the body 40ms behind it, a 4px
+   rise over 200ms. Short enough to finish before the eye settles, so it reads
+   as craft on the fiftieth page as on the first. */
+@keyframes ds-page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.demo-root .ds-page-in > * > * { animation: ds-page-in var(--ds-dur-page) var(--ds-ease-out) both; }
+.demo-root .ds-page-in > * > *:nth-child(n + 2) { animation-delay: 40ms; }
 
 /* Numbers: headline figures pop in from a soft blur, staggered across a strip. */
 @keyframes ds-num-in { from { opacity: 0; transform: translateY(4px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
@@ -370,9 +369,11 @@ body:has(.demo-root) {
 @keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
 .demo-root .ds-fade-in { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
 
-/* Entrances play on the first page of a visit only. After that the shell marks
-   the page `ds-settled` (useSettled) and navigation is instant — figures and
-   live values arrive settled. Motion that answers an action is unaffected. */
+/* The page entrance plays on every navigation; the figure pop-in and the
+   live-value fades on the first page of a visit only. After that the shell
+   marks the page `ds-settled` (useSettled) and figures and values arrive
+   settled — numbers are what you came to read. Motion that answers an action
+   is unaffected. */
 .demo-root .ds-settled .ds-num-in, .demo-root .ds-settled .ds-fade-in { animation: none; }
 
 /* Overlays leave faster than they arrive. `data-state="closing"` is set for the

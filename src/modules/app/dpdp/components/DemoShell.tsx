@@ -67,13 +67,14 @@ const countsFor = (slug: string, now: number | null): Record<string, string> => 
 };
 
 /**
- * Keyed by path, so each page mounts fresh. The first page of a visit eases in;
- * after that, navigation is instant (`useSettled`). Mounted only once signed
- * in, so the entrance plays on arriving in the console, not behind the sign-in.
+ * Keyed by path, so each page mounts fresh and eases in (`ds-page-in`). Figures
+ * and live values animate on the first page only (`useSettled`). Mounted only
+ * once signed in, so the first entrance plays on arriving in the console, not
+ * behind the sign-in.
  */
 function Page({ path, children }: { path: string; children: React.ReactNode }) {
   const settled = useSettled();
-  return <div key={path} className={settled ? 'ds-settled' : 'ds-page-in'}>{children}</div>;
+  return <div key={path} className={`ds-page-in ${settled ? 'ds-settled' : ''}`}>{children}</div>;
 }
 
 export default function DemoShell({ children }: { children: React.ReactNode }) {

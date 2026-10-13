@@ -172,10 +172,10 @@ src/modules/app/dpdp/    the DPDP product
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
   personal data" class, so never label anything sensitive.
 - **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
-  ease-out in and faster out, all off under reduced motion. Entrances play on the first page of a visit
-  only — after that the page is `ds-settled` (`ui/useSettled.ts`) and navigation is instant; motion
-  answers actions, not page changes. The first page eases in (`ds-page-in`), headline
-  numbers pop in (`ds-num-in`), live values fade in over their skeleton (`ds-fade-in`); overlays and menus
+  ease-out in and faster out, all off under reduced motion. Every page eases in (`ds-page-in`: title,
+  then body 40ms behind, a 4px rise over `--ds-dur-page` 200ms — keep it that short). Headline numbers
+  pop in (`ds-num-in`) and live values fade in over their skeleton (`ds-fade-in`) on the first page of
+  a visit only; after that the page is `ds-settled` (`ui/useSettled.ts`). Overlays and menus
   exit before unmounting (`data-state="closing"`; `useClosable` for menus, Dialog/Sheet handle their own),
   menus grow from their corner (`ds-origin-tr/tl`), `ViewTabs` slides one pill, accordions use
   `ds-collapse`. Never `transition: all`.
