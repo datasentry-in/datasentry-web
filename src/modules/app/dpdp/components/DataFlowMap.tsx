@@ -22,7 +22,33 @@ import RemindButton from './RemindButton';
 const C = {
   ink: '#0e0f11', text2: '#4b4f57', text3: '#757983', line: '#d7d8dc', border: '#ebebed', zone: '#fbfbfc',
   panel: '#ffffff', danger: '#b42318', warn: '#b54708', ok: '#067647', brand: '#009FE3', accent: '#0077b0',
+  /** An ordinary flow: DataSentry blue, softened so findings still stand out. */
+  flow: '#7cc6ec',
 };
+
+/**
+ * Colour by meaning. Zones: Northstar's own estate in brand blue, Indian third
+ * parties in violet, outside India in amber (a transfer to watch). Kinds get a
+ * tinted icon badge; lawful bases get a colour each, red when not determined.
+ */
+const ZONE_TONE: Record<FlowNode['zone'], { fill: string; stroke: string; title: string }> = {
+  internal: { fill: '#f3faff', stroke: '#bfe3f6', title: '#0077b0' },
+  india: { fill: '#f6f5fd', stroke: '#d9d5f3', title: '#5b4bc4' },
+  abroad: { fill: '#fffaf1', stroke: '#f3d9a6', title: '#b54708' },
+};
+const KIND_TONE: Record<FlowNode['kind'], { bg: string; fg: string }> = {
+  system: { bg: '#e3f3fc', fg: '#0077b0' },
+  processor: { bg: '#eeebfb', fg: '#5b4bc4' },
+  statutory: { bg: '#eceff3', fg: '#475467' },
+  client: { bg: '#e2f4f1', fg: '#0f766e' },
+};
+const basisTone = (b: string) =>
+  b === 'Not determined' ? C.danger
+    : b === 'Consent' ? '#5b4bc4'
+      : b === 'Legal obligation' ? '#475467'
+        : b.startsWith('s.7(i)') ? '#0f766e'
+          : b.includes('exempt') ? C.ok
+            : C.text3;
 
 const W = 1000;
 const H = 600;
@@ -48,7 +74,7 @@ const sevColor = (id?: string) => (gap(id)?.severity === 'High' ? C.danger : gap
 const crossBorder = (e: FlowEdge) => byId.get(e.to)?.zone === 'abroad';
 
 const SAFEGUARD_TONE: Record<FlowNode['safeguard'], string> = {
-  Internal: C.text3, 'DPA in place': C.ok, 'No DPA': C.danger, 'Terms only': C.warn, Statutory: C.text3, Exempt: C.text3,
+  Internal: C.accent, 'DPA in place': C.ok, 'No DPA': C.danger, 'Terms only': C.warn, Statutory: '#475467', Exempt: '#0f766e',
 };
 
 type Filter = 'all' | 'finding' | 'border' | FlowEdge['principals'];
@@ -163,7 +189,7 @@ export default function DataFlowMap() {
         <div className="min-w-[60rem] px-4 py-4 sm:px-5">
           <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" fontFamily="Inter, sans-serif" aria-label="Data flow map across three trust boundaries">
             <defs>
-              {[['arrow', C.line], ['arrowHigh', C.danger], ['arrowMed', C.warn], ['arrowOn', C.text2]].map(([id, fill]) => (
+              {[['arrow', C.flow], ['arrowHigh', C.danger], ['arrowMed', C.warn], ['arrowOn', C.accent]].map(([id, fill]) => (
                 <marker key={id} id={id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M0 0 L10 5 L0 10z" fill={fill} />
                 </marker>
@@ -173,8 +199,9 @@ export default function DataFlowMap() {
             {/* Trust boundaries */}
             {ZONES.map((z) => (
               <g key={z.zone}>
-                <rect x={z.x} y={8} width={z.w} height={H - 16} rx={10} fill={C.zone} stroke={C.line} strokeDasharray={z.dashed ? '4 4' : undefined} />
-                <text x={z.x + 20} y={30} fontSize="10.5" fontWeight="600" letterSpacing="0.06em" fill={C.text2}>{z.title}</text>
+                <rect x={z.x} y={8} width={z.w} height={H - 16} rx={10} fill={ZONE_TONE[z.zone].fill} stroke={ZONE_TONE[z.zone].stroke} strokeDasharray={z.dashed ? '4 4' : undefined} />
+                <rect x={z.x + 20} y={21} width={3} height={11} rx={1.5} fill={ZONE_TONE[z.zone].title} />
+                <text x={z.x + 28} y={30} fontSize="10.5" fontWeight="700" letterSpacing="0.06em" fill={ZONE_TONE[z.zone].title}>{z.title}</text>
                 <text x={z.x + 20} y={45} fontSize="10.5" fill={C.text3}>{z.sub}</text>
               </g>
             ))}
@@ -190,7 +217,7 @@ export default function DataFlowMap() {
             {FLOW_EDGES.map((e) => {
               const { d } = curve(e);
               const on = edgeOn(e);
-              const color = e.finding ? sevColor(e.finding) : on && hover ? C.text2 : C.line;
+              const color = e.finding ? sevColor(e.finding) : on && hover ? C.accent : C.flow;
               const marker = e.finding ? (gap(e.finding)?.severity === 'High' ? 'arrowHigh' : 'arrowMed') : on && hover ? 'arrowOn' : 'arrow';
               return (
                 <path
@@ -229,13 +256,15 @@ export default function DataFlowMap() {
                 >
                   <rect x={x} y={y} width={NODE_W} height={NODE_H} rx={8} fill={C.panel} stroke={hover === n.id ? C.text3 : C.line} />
                   {flag && <rect x={x + 6} y={y + 10} width={2.5} height={NODE_H - 20} rx={1.25} fill={flag} />}
-                  <KindIcon kind={n.kind} x={x + 14} y={y + 12} color={C.text3} />
-                  <text x={x + 38} y={y + 24} fontSize="12.5" fontWeight="600" fill={C.ink}>{n.label}</text>
-                  <rect x={x + NODE_W - 34} y={y + 11} width={24} height={16} rx={4} fill={n.region === 'IN' ? '#f1f1f3' : '#e8f4fb'} />
-                  <text x={x + NODE_W - 22} y={y + 22.5} textAnchor="middle" fontSize="9.5" fontWeight="600" fill={n.region === 'IN' ? C.text2 : C.accent}>{n.region}</text>
-                  <text x={x + 38} y={y + 43} fontSize="11">
-                    <tspan fill={SAFEGUARD_TONE[n.safeguard]} fontWeight={n.safeguard === 'No DPA' || n.safeguard === 'Terms only' ? 600 : 400}>{n.safeguard}</tspan>
-                    <tspan fill={C.text3}> · {n.principals.length > 18 ? `${n.principals.slice(0, 17)}…` : n.principals}</tspan>
+                  <rect x={x + 14} y={y + 16} width={28} height={28} rx={7} fill={KIND_TONE[n.kind].bg} />
+                  <KindIcon kind={n.kind} x={x + 20} y={y + 22} color={KIND_TONE[n.kind].fg} />
+                  <text x={x + 52} y={y + 26} fontSize="12.5" fontWeight="600" fill={C.ink}>{n.label}</text>
+                  <rect x={x + NODE_W - 34} y={y + 11} width={24} height={16} rx={4} fill={n.region === 'IN' ? '#e7f6ee' : '#fff1dc'} />
+                  <text x={x + NODE_W - 22} y={y + 22.5} textAnchor="middle" fontSize="9.5" fontWeight="700" fill={n.region === 'IN' ? C.ok : C.warn}>{n.region}</text>
+                  <circle cx={x + 55} cy={y + 41} r={3} fill={SAFEGUARD_TONE[n.safeguard]} />
+                  <text x={x + 62} y={y + 44.5} fontSize="11">
+                    <tspan fill={SAFEGUARD_TONE[n.safeguard]} fontWeight={n.safeguard === 'Internal' || n.safeguard === 'Statutory' || n.safeguard === 'Exempt' ? 400 : 600}>{n.safeguard}</tspan>
+                    <tspan fill={C.text3}> · {n.principals.length > 15 ? `${n.principals.slice(0, 14)}…` : n.principals}</tspan>
                   </text>
                 </g>
               );
@@ -246,9 +275,8 @@ export default function DataFlowMap() {
               const { mid, crossing } = curve(e);
               const on = edgeOn(e);
               const label = e.label;
-              const basisBad = e.basis === 'Not determined';
               const w = Math.max(label.length * 5.6, e.basis.length * 5.2) + 18;
-              const tone = e.finding ? sevColor(e.finding) : C.line;
+              const tone = e.finding ? sevColor(e.finding) : '#bfe3f6';
               return (
                 <g
                   key={e.id}
@@ -268,7 +296,7 @@ export default function DataFlowMap() {
                   )}
                   <rect x={mid.x - w / 2} y={mid.y - 15} width={w} height={30} rx={6} fill={C.panel} stroke={tone} />
                   <text x={mid.x} y={mid.y - 2} textAnchor="middle" fontSize="10.5" fontWeight="500" fill={C.ink}>{label}</text>
-                  <text x={mid.x} y={mid.y + 10} textAnchor="middle" fontSize="9.5" fontWeight={basisBad ? 600 : 400} fill={basisBad ? C.danger : C.text3}>
+                  <text x={mid.x} y={mid.y + 10} textAnchor="middle" fontSize="9.5" fontWeight={600} fill={basisTone(e.basis)}>
                     {e.basis}
                   </text>
                 </g>
@@ -297,12 +325,20 @@ function Legend() {
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[var(--ds-border)] px-4 py-3 text-[12px] text-[var(--ds-text-2)] sm:px-5">
       {(['system', 'processor', 'statutory', 'client'] as const).map((k) =>
-        item(<KindIcon kind={k} x={3} y={0} color={C.text3} />, { system: 'Own system', processor: 'Processor', statutory: 'Statutory recipient', client: 'Client (exempt delivery)' }[k]),
+        item(<KindIcon kind={k} x={3} y={0} color={KIND_TONE[k].fg} />, { system: 'Own system', processor: 'Processor', statutory: 'Statutory recipient', client: 'Client (exempt delivery)' }[k]),
       )}
-      {item(<path d="M1 8h20" stroke={C.line} strokeWidth="1.5" />, 'Flow')}
+      {item(<path d="M1 8h20" stroke={C.flow} strokeWidth="1.75" />, 'Flow')}
       {item(<path d="M1 8h20" stroke={C.danger} strokeWidth="1.75" strokeDasharray="5 3" />, 'Finding — high')}
       {item(<path d="M1 8h20" stroke={C.warn} strokeWidth="1.75" strokeDasharray="5 3" />, 'Finding — medium')}
       {item(<g transform="translate(11 8)"><circle r="6" fill="#fff" stroke={C.brand} /><path d="M-3.5 0h7" stroke={C.accent} strokeWidth="0.9" /></g>, 'Crosses the India border')}
+      <span className="flex flex-wrap items-center gap-1.5">
+        Basis:
+        {['Consent', 'Legal obligation', 's.7(i) legitimate use', 'Exempt', 'Not determined'].map((b, i) => (
+          <span key={b} className="font-medium" style={{ color: basisTone(b === 'Exempt' ? 'exempt' : b) }}>
+            {b}{i < 4 ? <span className="font-normal text-[var(--ds-text-3)]"> ·</span> : null}
+          </span>
+        ))}
+      </span>
       <span className="flex items-center gap-1.5">
         Safeguard:
         <span className="font-medium text-[var(--ds-ok)]">DPA in place</span> ·
