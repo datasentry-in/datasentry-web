@@ -87,7 +87,7 @@ src/modules/app/dpdp/    the DPDP product
   audit entry records old → new (`Change`), and a toast says what the rule engine does with it.
 - **One `NextStep` per page at most**, in yellow, with a button named for the action ("Draft the
   Board intimation", not "Open breach register").
-- **Show change, not just status**: `Sparkline` for the score trend, `SlaBar` for a request's
+- **Show change, not just status**: `TrendChart` for the score at each review (time-scaled, month labels, values on hover), `SlaBar` for a request's
   response window, the draining bar in `Countdown`. Values the browser fills in show a `Skeleton`
   until mounted.
 - **The audit trail** (`AUDIT` in mock data) records field changes as old → new, never "record updated".

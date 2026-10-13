@@ -2,6 +2,7 @@ import {
   ACTIVITIES, AUDIT, CONSENT_SUMMARY, EVIDENCE_PACK, GAPS, INCIDENTS, ORGS, OWNERS, QUESTIONNAIRE, SCORE_HISTORY, getOrg,
 } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import AttentionList from '@/modules/app/dpdp/components/AttentionList';
 import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import When from '@/modules/app/dpdp/components/When';
@@ -45,9 +46,9 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         </NextStep>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-5">
-        <div className="col-span-2 grid lg:col-span-1">
-          <ScoreBlock score={org.score} trend={org.trend} history={(SCORE_HISTORY[org.slug] ?? []).map((h) => h.score)} />
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-7">
+        <div className="col-span-2 grid lg:col-span-3">
+          <ScoreBlock score={org.score} trend={org.trend} history={(SCORE_HISTORY[org.slug] ?? []).map((h) => ({ at: parseDisplayDate(h.on)!.getTime(), value: h.score, label: h.on }))} />
         </div>
         <Stat label="Processing activities" value={org.activities} note={`${org.exemptActivities} exempt s.17(1)(d)`} />
         <Stat label="High gaps" value={org.openGaps.high} note={`${org.openGaps.medium} medium, ${org.openGaps.low} low`} tone="bad" />

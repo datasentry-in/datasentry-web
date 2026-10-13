@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { EvidenceBasis, Provenance, Severity } from '@/modules/app/dpdp/types';
-import Sparkline from './Sparkline';
+import TrendChart from './TrendChart';
 
 /**
  * Console design system — quiet product UI, not the brutalist marketing site.
@@ -141,24 +141,42 @@ export function Stat({
   );
 }
 
-/** The readiness score as the first cell of a stat strip. */
-export function ScoreBlock({ score, trend, history = [] }: { score: number; trend: string; history?: number[] }) {
+/**
+ * The readiness score as the first, double-width cell of a stat strip: the
+ * number and verdict, and beside it the score at every review so far. A
+ * single review shows as a baseline instead of a chart.
+ */
+export function ScoreBlock({
+  score, trend, history = [],
+}: { score: number; trend: string; history?: { at: number; value: number; label: string }[] }) {
   const fg = score < 40 ? 'var(--ds-danger)' : score < 70 ? 'var(--ds-warn)' : 'var(--ds-ok)';
   const verdict = score < 40 ? 'Not ready' : score < 70 ? 'Partially ready' : 'Substantially ready';
   return (
-    <div className="min-w-0 bg-[var(--ds-panel)] px-4 py-3.5">
-      <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
-      <div className="mt-1.5 flex items-end justify-between gap-2">
-        <p className="flex items-baseline gap-1 leading-none">
+    <div className="flex min-w-0 flex-col gap-3 bg-[var(--ds-panel)] px-4 py-3.5 sm:flex-row sm:items-stretch sm:gap-5">
+      <div className="shrink-0 sm:w-36">
+        <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
+        <p className="mt-1.5 flex items-baseline gap-1 leading-none">
           <span className="ds-figure text-[24px] tracking-[-0.03em] sm:text-[26px]" style={{ color: fg }}>{score}</span>
           <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
         </p>
-        <Sparkline values={history} width={72} height={22} color={fg} label={`Readiness at each review: ${history.join(', ')}`} />
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
+          <div className="h-full rounded-full" style={{ width: `${score}%`, background: fg }} />
+        </div>
+        <p className="mt-1.5 text-[12px] font-medium" style={{ color: fg }}>{verdict}</p>
+        <p className="text-[12px] leading-snug text-[var(--ds-text-3)]">{trend}</p>
       </div>
-      <div className="mt-2 h-1 w-full max-w-36 overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
-        <div className="h-full rounded-full" style={{ width: `${score}%`, background: fg }} />
+      <div className="min-w-0 flex-1 sm:border-l sm:border-[var(--ds-border)] sm:pl-4">
+        {history.length > 1 ? (
+          <>
+            <p className="mb-1 text-[12px] text-[var(--ds-text-3)]">At each review</p>
+            <TrendChart points={history} color={fg} label={`Readiness score at each review: ${history.map((h) => `${h.label} ${h.value}`).join(', ')}`} />
+          </>
+        ) : (
+          <p className="flex h-full items-center text-[12px] leading-relaxed text-[var(--ds-text-3)]">
+            Baseline — the trend starts at the next review.
+          </p>
+        )}
       </div>
-      <p className="mt-1.5 text-[12px] leading-snug text-[var(--ds-text-3)]">{verdict} · {trend}</p>
     </div>
   );
 }
