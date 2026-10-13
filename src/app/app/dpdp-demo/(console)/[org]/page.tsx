@@ -25,7 +25,6 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
   const org = getOrg(slug);
   const d = clientData(slug);
   const openIncident = d.incidents.find((i) => i.status === 'Open' && i.deadlineIso);
-  const generated = d.evidence.filter((e) => e.status === 'Generated').length;
   const left = d.evidence.filter((e) => e.status !== 'Generated' && e.status !== 'Not started');
 
   return (
@@ -57,7 +56,16 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         </NextStep>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-7">
+      <AttentionList org={org.slug} exclude={openIncident ? [openIncident.id] : []} />
+
+      {/* Status, in one place: the score and its trend, the headline figures,
+          then each module's progress — a card per module, each a way in. */}
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-[17px] font-semibold tracking-[-0.015em]">Where things stand</h2>
+          <p className="mt-0.5 text-[13px] text-[var(--ds-text-3)]">The readiness score at each review, the headline figures, and each module&rsquo;s progress</p>
+        </div>
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-6">
         <div className="col-span-2 grid lg:col-span-3">
           <ScoreBlock
             score={org.score}
@@ -68,14 +76,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
         <Stat label="Processing activities" value={d.registerBuilt ? org.activities : '—'} note={d.registerBuilt ? `${org.exemptActivities} exempt s.17(1)(d)` : 'after discovery'} />
         <Stat label="High gaps" value={d.registerBuilt ? org.openGaps.high : '—'} note={d.registerBuilt ? `${org.openGaps.medium} medium, ${org.openGaps.low} low` : 'after discovery'} tone={org.openGaps.high ? 'bad' : 'plain'} />
         <Stat label="Open requests" value={org.dsrOpen} note={org.dsrBreaching ? `${org.dsrBreaching} past the response window` : 'none past the window'} tone={org.dsrBreaching ? 'bad' : 'plain'} />
-        <Stat label="Evidence artefacts" value={`${generated}/${d.evidence.length}`} note="generated" />
       </div>
-
-      <AttentionList org={org.slug} exclude={openIncident ? [openIncident.id] : []} />
-
-      {/* Where each module stands — a card per module, each a way in. */}
-      <section>
-        <h2 className="mb-3 text-[17px] font-semibold tracking-[-0.015em]">Where each module stands</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {d.progress.map((p) => {
             const nav = MODULES.find((m) => m.seg === p.seg);

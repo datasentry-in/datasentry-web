@@ -123,6 +123,8 @@ src/modules/app/dpdp/    the DPDP product
   details and the other clients) + search, alerts, account. Inside a client, `Sidebar` is the left
   rail: collapsible to icons (`[`, state in localStorage via `sidebarState.ts`), "Powered by
   DataSentry" at its foot. Pages without a sidebar carry "Powered by" in the footer.
+- **Overview order**: next step → "What needs doing" (one worklist) → "Where things stand" (score,
+  headline figures, module cards) → context (role determination, recent activity). Action before status.
 - **Colour carries meaning only, and stays calm**: red = overdue/unlawful, amber = needs attention,
   green = settled, blue = the one primary action. A stat or property that is bad gets a *dot*, not
   red text; aim for one red thing per page. The header carries no alert chip — the bell holds it.
@@ -130,12 +132,11 @@ src/modules/app/dpdp/    the DPDP product
   element. `console.css` restores the Tailwind `rounded-*` scale inside `.demo-root`; add
   any new radius class there or it renders square.
 - **Brand colours** are blue `#009FE3` and yellow `#FFED00`. Yellow is never text (it vanishes on
-  white): it is a highlight — the marker under "Console", the design-note bar.
-- **Brand**: `Wordmark` (the DATA|SENTRY logo) and `ProductLockup` ("DPDP Console", "Powered by
-  [wordmark]") in `Brand.tsx`. There is no square "DS" mark — it was removed on purpose.
-
-## Rules that are easy to break
-
+  white): it is a highlight — the rule under "Console" and "Sentry", the design-note bar.
+- **Brand**: one two-colour type lockup (`TwoTone` in `Brand.tsx`) for both names — first word in
+  brand blue, second in ink with the yellow rule beneath. `ProductLockup` sets "DPDP Console"; `Wordmark`
+  / `BrandLink` set "Data Sentry" (title case, two words) and link to datasentry.in. There is no square
+  "DS" mark and no image logo inside the console.
 - **No frozen dates.** Pages are prerendered, so anything time-dependent (countdowns,
   "last sign-in") renders client-side after mount — `setTimeout`/`setInterval` or
   `useSyncExternalStore` — to avoid hydration mismatches. Read the real clock.
