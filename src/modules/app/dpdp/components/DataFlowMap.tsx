@@ -3,7 +3,9 @@
 import { useState, type ReactNode } from 'react';
 import { clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab,
+} from '@/modules/app/ui/Sheet';
 import { SeverityTag } from '@/modules/app/dpdp/components/Tags';
 import {
   CiteLink, Person, Tag, ViewTabs,
@@ -383,17 +385,9 @@ function FindingBlock({ org, id }: { org: string; id: string }) {
   );
 }
 
+/** Label/value fields for a `SheetDetails` box. */
 function Rows({ rows }: { rows: [string, ReactNode][] }) {
-  return (
-    <dl className="grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2.5 text-[13px]">
-      {rows.map(([k, v]) => (
-        <div key={k} className="contents">
-          <dt className="ds-meta pt-px text-[var(--ds-text-3)]">{k}</dt>
-          <dd>{v}</dd>
-        </div>
-      ))}
-    </dl>
-  );
+  return <>{rows.map(([k, v]) => <SheetField key={k} label={k}>{v}</SheetField>)}</>;
 }
 
 const safeguardText = (s: FlowNode['safeguard']) => <span className="font-medium" style={{ color: SAFEGUARD_TONE[s] }}>{s}</span>;
@@ -412,10 +406,11 @@ function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selecte
       <Sheet
         open
         onClose={close}
+        meta={<><span className="ds-id">{edge.activity.split(' ')[0]}</span><span aria-hidden>·</span><span>{clientShort}</span><span aria-hidden>·</span><span>Data flow</span></>}
         title={`${a.label} → ${b.label}`}
-        meta={<><Tag>{edge.activity.split(' ')[0]}</Tag>{crossBorder(edge) && <Tag tone="info">Cross-border · {where(b)}</Tag>}</>}
+        actions={<>{crossBorder(edge) ? <Tag tone="info">Cross-border · {where(b)}</Tag> : <Tag>Stays in India</Tag>}<Tag>{b.safeguard}</Tag></>}
       >
-        <SheetSection title="What moves">
+        <SheetDetails title="What moves">
           <Rows
             rows={[
               ['Activity', edge.activity],
@@ -424,8 +419,8 @@ function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selecte
               ['Lawful basis', <span key="b" className={edge.basis === 'Not determined' ? 'font-medium text-[var(--ds-danger)]' : ''}>{edge.basis}</span>],
             ]}
           />
-        </SheetSection>
-        <SheetSection title="Where it goes">
+        </SheetDetails>
+        <SheetDetails title="Where it goes">
           <Rows
             rows={[
               ['Recipient', `${b.label} — ${b.kind === 'statutory' ? 'statutory recipient' : b.kind}`],
@@ -434,11 +429,11 @@ function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selecte
               ['Transfer', crossBorder(edge) ? (b.safeguard === 'Exempt' ? 'Outside India — exempt under s.17(1)(d)' : 'Outside India — recorded; s.16 list not yet notified') : 'Stays in India'],
             ]}
           />
-        </SheetSection>
+        </SheetDetails>
         {edge.finding && <FindingBlock org={org} id={edge.finding} />}
-        <SheetSection title="Discussion">
-          <Discussion org={org} refId={edge.finding ?? edge.activity.split(' ')[0]} />
-        </SheetSection>
+        <SheetActivity>
+          <SheetTab label="Comments"><Discussion org={org} refId={edge.finding ?? edge.activity.split(' ')[0]} /></SheetTab>
+        </SheetActivity>
       </Sheet>
     );
   }
@@ -450,16 +445,22 @@ function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selecte
       es.map((e) => {
         const other = byId.get(dir === 'to' ? e.to : e.from)!;
         return (
-          <li key={e.id}>
-            <button type="button" onClick={() => onSelect({ type: 'edge', id: e.id })} className="text-left text-[13px] hover:text-[var(--ds-accent-hover)] hover:underline">
-              {dir === 'to' ? '→' : '←'} {other.label} <span className="text-[var(--ds-text-3)]">· {e.label}</span>
+          <SheetListItem key={e.id} icon={<span aria-hidden className="w-3.5 text-center text-[var(--ds-text-3)]">{dir === 'to' ? '→' : '←'}</span>}>
+            <button type="button" onClick={() => onSelect({ type: 'edge', id: e.id })} className="text-left hover:text-[var(--ds-accent-hover)] hover:underline">
+              {other.label} <span className="text-[var(--ds-text-3)]">· {e.label}</span>
             </button>
-          </li>
+          </SheetListItem>
         );
       });
     return (
-      <Sheet open onClose={close} title={node.label} meta={<><Tag>{node.kind === 'statutory' ? 'Statutory recipient' : node.kind === 'system' ? 'Own system' : node.kind === 'client' ? 'Client' : 'Processor'}</Tag><Tag tone={node.region === 'IN' ? 'plain' : 'info'}>{where(node)}</Tag></>}>
-        <SheetSection title="Details">
+      <Sheet
+        open
+        onClose={close}
+        meta={<><span>{clientShort}</span><span aria-hidden>·</span><span>Data flow map</span></>}
+        title={node.label}
+        actions={<><Tag>{node.kind === 'statutory' ? 'Statutory recipient' : node.kind === 'system' ? 'Own system' : node.kind === 'client' ? 'Client' : 'Processor'}</Tag><Tag tone={node.region === 'IN' ? 'plain' : 'info'}>{where(node)}</Tag></>}
+      >
+        <SheetDetails>
           <Rows
             rows={[
               ['Trust boundary', { internal: `${clientShort} — own systems`, india: 'Third party — India', abroad: 'Outside India' }[node.zone]],
@@ -468,13 +469,9 @@ function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selecte
               ...(node.note ? [['Note', node.note] as [string, ReactNode]] : []),
             ]}
           />
-        </SheetSection>
-        <SheetSection title={`Flows (${out.length + inn.length})`}>
-          {out.length + inn.length === 0 ? (
-            <p className="text-[13px] text-[var(--ds-text-3)]">No flows out — the data stays in this system.</p>
-          ) : (
-            <ul className="space-y-1.5">{list(inn, 'from')}{list(out, 'to')}</ul>
-          )}
+        </SheetDetails>
+        <SheetSection title="Flows" count={out.length + inn.length}>
+          <SheetList empty="No flows out — the data stays in this system.">{list(inn, 'from')}{list(out, 'to')}</SheetList>
         </SheetSection>
         {node.finding && <FindingBlock org={org} id={node.finding} />}
       </Sheet>

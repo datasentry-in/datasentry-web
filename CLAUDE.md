@@ -127,9 +127,12 @@ src/modules/app/dpdp/    the DPDP product
   main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch. In a
   `WorkRow` they float in over the end of the labels, so they take no width until shown.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
-- **Records open beside their list** in a `Sheet` (`ui/Sheet.tsx`) — details, linked findings and the
-  `AuditTimeline` — so the list keeps its place. RoPA, the gap report, tasks (with the attest form) and
-  requests do this.
+- **Records open beside their list** in a `Sheet` (`ui/Sheet.tsx`), laid out as an issue view (after
+  Jira): `meta` is the key line (ID · client · module), then the title, then `actions` — a `StatusButton`
+  first (with a menu where the status can change here), then the record's actions. The body is a
+  `SheetDetails` box of `SheetField` label/value rows, `SheetSection`s (Description, Evidence…; linked
+  records in a `SheetList`), and `SheetActivity` last with `SheetTab`s (Comments, History). RoPA, the gap
+  report, tasks (with the attest form), requests and the data flow map all use it.
 - **Two page types (70/30).** *Worklists* (gap report, tasks, DSR desk, RoPA) are Linear-style: a
   compact `ListHeader` (title, what the list is behind an info button, one line of context), then the
   list — no paragraph of explanation, no `NextStep`, no properties row that repeats the view counts.

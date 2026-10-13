@@ -2,19 +2,25 @@
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { auditFor, clientData } from '@/modules/app/dpdp/mock/clients';
+import { auditFor, clientData, currentUser, getOrg } from '@/modules/app/dpdp/mock/clients';
+import { formatDate } from '@/modules/app/dpdp/time';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { responseWindow } from '@/modules/app/dpdp/sla';
 import type { Dsr } from '@/modules/app/dpdp/types';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { REQUEST_STATUS, TASK_LABEL, TASK_STATUS } from '@/modules/app/dpdp/workStatus';
 import { useMenu, type MenuItem } from '@/modules/app/ui/Menu';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import MockButton from '@/modules/app/ui/MockButton';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab, StatusButton,
+} from '@/modules/app/ui/Sheet';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useListKeys } from '@/modules/app/ui/useListKeys';
 import { StatusIcon, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
-import { Skeleton } from '@/modules/app/ui/ui';
+import { Person, Skeleton } from '@/modules/app/ui/ui';
 import AuditTimeline from './AuditTimeline';
+import Discussion from './Discussion';
+import When from './When';
 import SlaBar from './SlaBar';
 
 /**
@@ -93,51 +99,74 @@ export default function RequestList({ org }: { org: string }) {
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
-        title={open && `${open.type} request from ${open.principal}`}
         meta={open && (
           <>
-            <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]">{status(open)}{open.status}</span>
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+          </>
+        )}
+        title={open && `${open.type} request from ${open.principal}`}
+        actions={open && (
+          <>
+            <StatusButton
+              icon={status(open)}
+              label={open.status}
+              onClick={(e) => menu.openBelow(e.currentTarget, statusItems(open), `Status of ${open.id}`)}
+            />
+            <MockButton what="Draft the response" className="h-8 py-0">Draft response</MockButton>
           </>
         )}
       >
         {open && (
           <>
-            <SheetSection title="Data principal">
-              <p className="text-[14px]">{open.principal}</p>
-              <p className="text-[13px] text-[var(--ds-text-2)]">{open.relationship}</p>
-            </SheetSection>
-            <SheetSection title="Response window">
-              <p className="mb-2 text-[13px] text-[var(--ds-text-2)]">
-                Received {open.received} by {(open.channel ?? 'email').toLowerCase()} · {days} days to respond
-              </p>
-              <SlaBar received={open.received} days={days} />
-            </SheetSection>
-            <SheetSection title="Fulfilment">
-              {(() => {
-                const tasks = d.tasks.filter((t) => t.source.ref === open.id);
-                if (!tasks.length) {
-                  return <p className="text-[13px] text-[var(--ds-text-3)]">No tasks yet — they are raised per system once the request is verified.</p>;
-                }
-                return (
-                  <ul className="space-y-1.5">
+            <SheetDetails>
+              <SheetField label="Data principal">
+                {open.principal}
+                <span className="block text-[12px] text-[var(--ds-text-2)]">{open.relationship}</span>
+              </SheetField>
+              <SheetField label="Request type">{open.type}</SheetField>
+              <SheetField label="Channel">{open.channel ?? 'Email'}</SheetField>
+              <SheetField label="Received">{open.received}</SheetField>
+              <SheetField label="Due">{formatDate(new Date(responseWindow(open.received, days, 0).end))}</SheetField>
+              <SheetField label="Response window"><SlaBar received={open.received} days={days} /></SheetField>
+              <SheetField label="Assignee"><Person name={currentUser.name} compact /></SheetField>
+            </SheetDetails>
+
+            {(() => {
+              const tasks = d.tasks.filter((t) => t.source.ref === open.id);
+              return (
+                <SheetSection
+                  title="Fulfilment"
+                  count={tasks.length}
+                  right={
+                    <Link href={demoPath(org, 'tasks')} className="text-[12px] text-[var(--ds-text-2)] hover:text-[var(--ds-accent-hover)]">
+                      Tasks &amp; attestations →
+                    </Link>
+                  }
+                >
+                  <SheetList empty="No tasks yet — one is raised per system the register lists once the request is verified.">
                     {tasks.map((t) => (
-                      <li key={t.id} className="flex items-center gap-2.5 text-[13px]">
-                        <StatusIcon status={TASK_STATUS[t.status]} label={TASK_LABEL[t.status]} />
-                        <span className="ds-id w-12 shrink-0 text-[12px] text-[var(--ds-text-3)]">{t.id}</span>
-                        <span className="min-w-0 truncate">{t.system} — {t.action}</span>
-                      </li>
+                      <SheetListItem
+                        key={t.id}
+                        icon={<StatusIcon status={TASK_STATUS[t.status]} label={TASK_LABEL[t.status]} />}
+                        id={t.id}
+                        right={t.status === 'Open' || t.status === 'Overdue' ? <When date={t.due} /> : t.status === 'Retained' ? 'kept' : 'attested'}
+                      >
+                        {t.action} <span className="text-[var(--ds-text-3)]">· {t.system}</span>
+                      </SheetListItem>
                     ))}
-                  </ul>
-                );
-              })()}
-              <Link href={demoPath(org, 'tasks')} className="mt-2 inline-block text-[13px] font-medium text-[var(--ds-accent-hover)] hover:underline">
-                Tasks &amp; attestations →
-              </Link>
-            </SheetSection>
-            <SheetSection title="History">
-              <AuditTimeline entries={auditFor(d, open.id)} empty={`Logged ${open.received}. No changes since.`} />
-            </SheetSection>
+                  </SheetList>
+                </SheetSection>
+              );
+            })()}
+
+            <SheetActivity>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+              <SheetTab label="History">
+                <AuditTimeline entries={auditFor(d, open.id)} empty={`Logged ${open.received}. No changes since.`} />
+              </SheetTab>
+            </SheetActivity>
           </>
         )}
       </Sheet>

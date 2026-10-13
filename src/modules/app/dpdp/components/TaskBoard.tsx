@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
+import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst, parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
 import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import { TASK_LABEL, TASK_STATUS } from '@/modules/app/dpdp/workStatus';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetSection, SheetTab, StatusButton,
+} from '@/modules/app/ui/Sheet';
 import { useToast } from '@/modules/app/ui/Toast';
 import { StatusIcon, WorkGroup, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
 import BulkBar, { BulkAction } from '@/modules/app/ui/BulkBar';
@@ -17,6 +19,8 @@ import { useMenu } from '@/modules/app/ui/Menu';
 import { useListKeys } from '@/modules/app/ui/useListKeys';
 import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
 import { Panel, Person } from '@/modules/app/ui/ui';
+import AuditTimeline from './AuditTimeline';
+import Discussion from './Discussion';
 import RemindButton from './RemindButton';
 import When from './When';
 
@@ -250,49 +254,52 @@ export default function TaskBoard({ org }: { org: string }) {
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
-        title={open?.action}
         meta={open && (
           <>
-            <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]">
-              <StatusIcon status={TASK_STATUS[open.status]} label={TASK_LABEL[open.status]} />{SHORT[open.status]}
-            </span>
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+            <span aria-hidden>·</span>
+            <span>Tasks &amp; attestations</span>
           </>
         )}
-        footer={open && live(open) && <RemindButton person={nameOf(open)} what={`${open.id} — ${open.action}`} />}
+        title={open?.action}
+        actions={open && (
+          <>
+            {/* A task's status changes one way only — its owner attests it — so the button shows it, not a menu. */}
+            <StatusButton icon={<StatusIcon status={TASK_STATUS[open.status]} label={TASK_LABEL[open.status]} />} label={SHORT[open.status]} />
+            {live(open) && <RemindButton size="md" person={nameOf(open)} what={`${open.id} — ${open.action}`} />}
+          </>
+        )}
       >
         {open && (
           <>
-            <SheetSection title="Where">
-              <p className="text-[14px]">{open.system}</p>
-            </SheetSection>
-            <SheetSection title="Ownership">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <Person {...personFor(OWNERS, open.owner)} />
-                <p className="text-right text-[13px]">
-                  <span className="block font-medium">{open.due}</span>
-                  {live(open) && <When date={open.due} className="text-[12px]" />}
-                </p>
-              </div>
-            </SheetSection>
-            <SheetSection title="Raised by">
-              <p className="text-[13px]">
-                <span className="text-[var(--ds-text-2)]">{open.source.kind} · </span>
-                <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.source.ref}</span> {open.source.label}
-              </p>
-              <Link href={sourceHref(org, open)} className="mt-1 inline-block text-[13px] font-medium text-[var(--ds-accent-hover)] hover:underline">
-                Open the {open.source.kind === 'Finding' ? 'finding' : open.source.kind === 'Request' ? 'request' : 'consent ledger'} →
-              </Link>
-            </SheetSection>
+            <SheetDetails>
+              <SheetField label="System">{open.system}</SheetField>
+              <SheetField label="Owner"><Person {...personFor(OWNERS, open.owner)} compact /></SheetField>
+              <SheetField label="Due">
+                {open.due} {live(open) && <When date={open.due} className="ml-1 text-[12px] text-[var(--ds-text-2)]" />}
+              </SheetField>
+              <SheetField label="Raised by">
+                <Link href={sourceHref(org, open)} className="hover:text-[var(--ds-accent-hover)] hover:underline">
+                  <span className="ds-id mr-1.5 text-[12px] text-[var(--ds-text-3)]">{open.source.ref}</span>{open.source.label}
+                </Link>
+                <span className="block text-[12px] text-[var(--ds-text-2)]">{open.source.kind}</span>
+              </SheetField>
+              <SheetField label="Basis">
+                {open.attestation ? <BasisTag b="attested" /> : <span className="text-[var(--ds-text-3)]">{open.status === 'Retained' ? 'Kept on a statutory ground' : 'Not attested yet'}</span>}
+              </SheetField>
+            </SheetDetails>
+
             {open.retainedFor && (
               <SheetSection title="Lawful ground to keep">
                 <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.retainedFor}</p>
               </SheetSection>
             )}
+
             {open.attestation ? (
               <SheetSection title="Attestation">
                 <div className="ds-bar ds-bar-ok space-y-1.5">
-                  <BasisTag b="attested" />
                   <p className="text-[14px] leading-relaxed">{open.attestation.note}</p>
                   <p className="text-[12px] text-[var(--ds-text-2)]">
                     {open.attestation.by} · {open.attestation.at} · {open.attestation.proof ? <span className="ds-figure">{open.attestation.proof}</span> : 'no screenshot'} · not machine-verified
@@ -304,6 +311,13 @@ export default function TaskBoard({ org }: { org: string }) {
                 <AttestForm key={open.id} task={open} owners={OWNERS} onAttest={(n, p) => attest(open.id, n, p)} />
               </SheetSection>
             )}
+
+            <SheetActivity>
+              <SheetTab label="History">
+                <AuditTimeline entries={auditFor(d, open.id)} empty={open.attestation ? `Attested ${open.attestation.at}.` : `Raised from ${open.source.ref}. No changes since.`} />
+              </SheetTab>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+            </SheetActivity>
           </>
         )}
       </Sheet>

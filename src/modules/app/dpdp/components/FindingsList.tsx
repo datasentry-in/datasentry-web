@@ -4,7 +4,9 @@ import { useRef, useState, type ReactNode } from 'react';
 import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
 import { formatIst, parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { Gap, GapStatus, Severity } from '@/modules/app/dpdp/types';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetSection, SheetTab, StatusButton,
+} from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
 import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
@@ -183,52 +185,66 @@ export default function FindingsList({ org }: { org: string }) {
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
-        title={open?.title}
         meta={open && (
           <>
-            <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]"><PriorityIcon level={SEVERITY_PRIORITY[open.severity]} />{open.severity}</span>
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]"><StatusIcon status={FINDING_STATUS[statusOf(open)]} label={statusOf(open)} />{statusOf(open)}</span>
-            <CiteLink provision={open.provision} />
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+            <span aria-hidden>·</span>
+            <span>Gap report</span>
           </>
         )}
-        footer={open && <RemindButton person={ownerName(open.owner)} what={`${open.id} — ${open.title}`} />}
+        title={open?.title}
+        actions={open && (
+          <>
+            <StatusButton
+              icon={<StatusIcon status={FINDING_STATUS[statusOf(open)]} label={statusOf(open)} />}
+              label={statusOf(open)}
+              onClick={(e) => menu.openBelow(e.currentTarget, statusItems([open.id]), `Status of ${open.id}`)}
+            />
+            <RemindButton size="md" person={ownerName(open.owner)} what={`${open.id} — ${open.title}`} />
+          </>
+        )}
       >
         {open && (
           <>
-            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
-            <SheetSection title="Ownership">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <Person {...personFor(OWNERS, open.owner)} />
-                <p className="text-right text-[13px]">
-                  <span className="block font-medium">{open.due}</span>
-                  <When date={open.due} className="text-[12px]" />
-                </p>
-              </div>
+            <SheetDetails>
+              <SheetField label="Severity">
+                <span className="inline-flex items-center gap-2"><PriorityIcon level={SEVERITY_PRIORITY[open.severity]} />{open.severity}</span>
+              </SheetField>
+              <SheetField label="Owner"><Person {...personFor(OWNERS, open.owner)} compact /></SheetField>
+              <SheetField label="Due">
+                {open.due} <When date={open.due} className="ml-1 text-[12px] text-[var(--ds-text-2)]" />
+              </SheetField>
+              <SheetField label="Provision"><CiteLink provision={open.provision} /></SheetField>
+              <SheetField label="Activity">{open.activity}</SheetField>
+              <SheetField label="Evidence">{open.basis ? <BasisTag b={open.basis} /> : <span className="text-[var(--ds-text-3)]">None yet</span>}</SheetField>
+              <SheetField label="Raised by">Rule set v1.4 · {getOrg(org).lastReview}</SheetField>
+            </SheetDetails>
+
+            <SheetSection title="Description">
+              <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
             </SheetSection>
-            <SheetSection title="Activity">
-              <p className="text-[13px]">{open.activity}</p>
-            </SheetSection>
+
             {open.evidence && (
               <SheetSection title="Evidence">
-                <div className="ds-bar ds-bar-plain">
-                  {open.basis && <BasisTag b={open.basis} />}
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
-                </div>
+                <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
               </SheetSection>
             )}
+
             <SheetSection title="Why this is a finding">
               <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 Raised by rule set v1.4 from a register field, citing {open.provision}. The model does not draw this
                 conclusion; it can be traced line by line to the register and the rule.
               </p>
             </SheetSection>
-            <SheetSection title="Discussion">
-              <Discussion org={org} refId={open.id} />
-            </SheetSection>
-            <SheetSection title="History">
-              <AuditTimeline entries={auditFor(d, open.id)} empty={`Raised ${getOrg(org).lastReview} by rule engine v1.4. No changes since.`} />
-            </SheetSection>
+
+            <SheetActivity>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+              <SheetTab label="History">
+                <AuditTimeline entries={auditFor(d, open.id)} empty={`Raised ${getOrg(org).lastReview} by rule engine v1.4. No changes since.`} />
+              </SheetTab>
+            </SheetActivity>
           </>
         )}
       </Sheet>

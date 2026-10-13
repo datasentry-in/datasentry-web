@@ -1,18 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { auditFor, clientData, currentUser, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
+import { auditFor, clientData, currentUser, getOrg } from '@/modules/app/dpdp/mock/clients';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { Activity, AuditEntry, Basis, Role } from '@/modules/app/dpdp/types';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab,
+} from '@/modules/app/ui/Sheet';
+import { PriorityIcon } from '@/modules/app/ui/WorkRow';
+import { SEVERITY_PRIORITY } from '@/modules/app/dpdp/workStatus';
 import AuditTimeline from './AuditTimeline';
 import When from './When';
 import Discussion from './Discussion';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
-import { ProvenanceTag, SeverityTag } from '@/modules/app/dpdp/components/Tags';
+import { ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  CiteLink, FilterInput, Person, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
+  CiteLink, FilterInput, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
 } from '@/modules/app/ui/ui';
 
 /**
@@ -77,7 +81,6 @@ const editable =
 export default function RopaRegister({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
-  const OWNERS = d.owners;
   const toast = useToast();
   const [rows, setRows] = useState<Activity[]>(d.activities);
   const [edits, setEdits] = useState<AuditEntry[]>([]);
@@ -218,68 +221,64 @@ export default function RopaRegister({ org }: { org: string }) {
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
+        meta={open && (
+          <>
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+            <span aria-hidden>·</span>
+            <span>Record of processing activities</span>
+          </>
+        )}
         title={open?.name}
-        meta={
-          open && (
-            <>
-              <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
-              <Tag tone={roleTone(open.role)}>{open.role}</Tag>
-              <ProvenanceTag p={open.provenance} />
-            </>
-          )
-        }
+        actions={open && (
+          <>
+            <Tag tone={roleTone(open.role)}>{open.role}</Tag>
+            <ProvenanceTag p={open.provenance} />
+          </>
+        )}
       >
         {open && (
           <>
-            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
-            <SheetSection title="Details">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
-                {[
-                  ['Department', open.department],
-                  ['Data principals', open.principals],
-                  ['Data items', String(open.items)],
-                  ['Retention', open.retention],
-                  ['Systems', open.systems.join(', ')],
-                  ['Processors', open.processors.join(', ') || 'None'],
-                  ['Cross-border', open.crossBorder ?? 'None'],
-                ].map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="ds-meta text-[var(--ds-text-3)]">{k}</dt>
-                    <dd className={`mt-0.5 ${v === 'Not stated' ? 'font-medium text-[var(--ds-danger)]' : ''}`}>{v}</dd>
-                  </div>
+            <SheetDetails>
+              <SheetField label="Department">{open.department}</SheetField>
+              <SheetField label="Data principals">{open.principals}</SheetField>
+              <SheetField label="Data items">{open.items}</SheetField>
+              <SheetField label="Lawful basis"><BasisValue basis={open.basis} /></SheetField>
+              <SheetField label="Retention">
+                <span className={open.retention === 'Not stated' ? 'font-medium text-[var(--ds-danger)]' : ''}>{open.retention}</span>
+              </SheetField>
+              <SheetField label="Systems">{open.systems.join(', ')}</SheetField>
+              <SheetField label="Processors">{open.processors.join(', ') || 'None'}</SheetField>
+              <SheetField label="Cross-border">{open.crossBorder ?? 'None'}</SheetField>
+            </SheetDetails>
+
+            <SheetSection title="Purpose">
+              <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
+            </SheetSection>
+
+            <SheetSection title="Findings on this activity" count={findings.length}>
+              <SheetList empty="None — the rule engine raised nothing here.">
+                {findings.map((g) => (
+                  <SheetListItem
+                    key={g.id}
+                    icon={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
+                    id={g.id}
+                    right={<When date={g.due} />}
+                  >
+                    {g.title}
+                  </SheetListItem>
                 ))}
-                <div>
-                  <dt className="ds-meta text-[var(--ds-text-3)]">Lawful basis</dt>
-                  <dd className="mt-0.5"><BasisValue basis={open.basis} /></dd>
-                </div>
-              </dl>
+              </SheetList>
             </SheetSection>
 
-            <SheetSection title={`Findings on this activity (${findings.length})`}>
-              {findings.length === 0 ? (
-                <p className="text-[13px] text-[var(--ds-text-3)]">None — the rule engine raised nothing here.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {findings.map((g) => (
-                    <li key={g.id} className="ds-bar ds-bar-plain">
-                      <p className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium">
-                        {g.title} <SeverityTag s={g.severity} />
-                      </p>
-                      <p className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ds-text-3)]">
-                        <Person name={personFor(OWNERS, g.owner).name} compact /> <When date={g.due} />
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </SheetSection>
-
-                    <SheetSection title="Discussion">
-              <Discussion org={org} refId={open.id} />
-            </SheetSection>
-            <SheetSection title="History">
-              <AuditTimeline entries={history} empty={`No changes since the register was confirmed on ${getOrg(org).lastReview}.`} />
-            </SheetSection>   </>
+            <SheetActivity>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+              <SheetTab label="History">
+                <AuditTimeline entries={history} empty={`No changes since the register was confirmed on ${getOrg(org).lastReview}.`} />
+              </SheetTab>
+            </SheetActivity>
+          </>
         )}
       </Sheet>
     </>
