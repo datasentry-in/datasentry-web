@@ -155,6 +155,12 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Closed requests" sub="The log is the evidence of a working mechanism" flush>
+          {closed.length === 0 && (
+            <p className="px-4 py-8 text-center text-[13px] leading-relaxed text-[var(--ds-text-3)] sm:px-5">
+              None closed yet. Each request answered here lands in this log with its outcome — the evidence that the
+              desk works.
+            </p>
+          )}
           <ul>
             {closed.map((d) => (
               <li key={d.id} className="border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5">
