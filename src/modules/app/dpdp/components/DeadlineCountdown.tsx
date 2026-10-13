@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { DEADLINE } from '../statute';
+import { useNow } from '../useNow';
 
 /**
  * The clock every engagement is working against: the DPDP Rules' substantive
@@ -50,21 +50,6 @@ function Colon({ size }: { size: Size }) {
       :
     </span>
   );
-}
-
-/** The real clock, ticking once a second; null until mounted. */
-function useNow() {
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    const tick = () => setNow(Date.now());
-    const first = setTimeout(tick, 0);
-    const every = setInterval(tick, 1000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(every);
-    };
-  }, []);
-  return now;
 }
 
 /** Days : hours : minutes : seconds to commencement, or "In force" after it. */
@@ -119,7 +104,7 @@ export default function DeadlineCountdown() {
   const cmDays = now === null ? null : Math.ceil((CONSENT_MANAGER - now) / DAY);
 
   return (
-    <div className="grid gap-5 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 shadow-[var(--ds-shadow)] sm:p-5 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8">
+    <div className="grid gap-5 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8">
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <p className="text-[12.5px] font-medium text-[var(--ds-text)]">
@@ -150,7 +135,7 @@ export default function DeadlineCountdown() {
         </div>
       </div>
 
-      <div className="self-start rounded-md border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-3.5 py-3">
+      <div className="self-start rounded-md border border-[var(--ds-border)] px-3.5 py-3">
         <p className="ds-label text-[var(--ds-text-3)]">Next dated milestone</p>
         <p className="mt-1.5 text-[12.5px] font-medium text-[var(--ds-text)]">Rule 4 — Consent Manager framework</p>
         <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">13 Nov 2026</p>

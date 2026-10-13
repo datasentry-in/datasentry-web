@@ -3,9 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
-import { CONSULTANT, ORGS, lastSignIn } from '@/modules/app/dpdp/mock/data';
+import { CONSULTANT, ORGS, TASKS, lastSignIn } from '@/modules/app/dpdp/mock/data';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { ProductLockup } from '@/modules/app/ui/Brand';
+import { ICONS } from '@/modules/app/ui/Icons';
+import { NAV, navLabel } from '@/modules/app/dpdp/nav';
+import CommandPalette from './CommandPalette';
+import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 
 /**
@@ -42,17 +46,9 @@ const writeSession = (on: boolean) => {
 /** The prerendered HTML cannot know the session, so it renders neither screen. */
 const serverSnapshot = () => null;
 
-const MODULES = [
-  { seg: '', label: 'Overview', code: 'M0' },
-  { seg: 'discovery', label: 'Discovery', code: 'M1' },
-  { seg: 'ropa', label: 'RoPA register', code: 'M1' },
-  { seg: 'flows', label: 'Data flows', code: 'M1' },
-  { seg: 'gaps', label: 'Gap report', code: 'M1' },
-  { seg: 'consent', label: 'Notice & consent', code: 'M2' },
-  { seg: 'dsr', label: 'DSR desk', code: 'M3' },
-  { seg: 'breach', label: 'Breach register', code: 'M4' },
-  { seg: 'evidence', label: 'Evidence pack', code: 'M5' },
-];
+/** Badges beside a nav item: what needs attention there. */
+const openTasks = TASKS.filter((t) => t.status === 'Open' || t.status === 'Overdue').length;
+const COUNTS: Record<string, string> = { tasks: String(openTasks), 'check-in': 'Due' };
 
 export default function DemoShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? DEMO_BASE;
@@ -86,14 +82,14 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="demo-root flex min-h-screen flex-col">
       {/* Mock banner — nobody should mistake this for a running product. */}
-      <div className="border-b border-[var(--ds-border)] bg-[var(--ds-subtle)]">
-        <div className="mx-auto flex max-w-[96rem] flex-wrap items-center justify-between gap-2 px-4 py-1.5 lg:px-6">
+      <div className="border-b border-[var(--ds-border)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1.5 lg:px-5">
           <p className="ds-label text-[var(--ds-warn)]">
             Prototype · not a working product · all data illustrative
           </p>
           <Link
             href="/"
-            className="text-[11.5px] font-medium text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]"
+            className="text-[12px] font-medium text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]"
           >
             Back to datasentry.in →
           </Link>
@@ -102,28 +98,33 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
 
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-[var(--ds-border)] bg-[rgba(255,255,255,0.86)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-[96rem] items-center gap-3 px-4 py-2.5 lg:px-6">
-          <Link href={demoPath()} className="flex shrink-0 items-center gap-2">
+        <div className="flex items-center gap-3 px-4 py-2.5 lg:px-5">
+          <Link href={demoPath()} className="flex shrink-0 items-center gap-2 lg:w-[13.5rem]">
             <ProductLockup />
           </Link>
 
-          {/* Breadcrumb — where in the portfolio you are */}
-          {org && (
-            <div className="hidden min-w-0 items-center gap-2 sm:flex">
-              <span className="text-[var(--ds-text-3)]">/</span>
-              <span className="truncate text-[13px] font-medium">{org.name}</span>
-            </div>
-          )}
-
-          <div className="ml-auto flex items-center gap-2">
+          {/* Main menu. Where you are within a client lives in the body's breadcrumb. */}
+          <nav aria-label="Main" className="ml-0.5 flex items-center gap-1 border-l border-[var(--ds-border)] pl-2 sm:ml-2 sm:pl-3 lg:ml-0 lg:border-l-0 lg:pl-0">
             <Link
               href={demoPath()}
-              className="hidden rounded-md px-2 py-1 text-[12.5px] font-medium text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)] sm:inline-flex"
+              aria-current={!org ? 'page' : undefined}
+              className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
+                !org
+                  ? 'bg-[var(--ds-subtle-2)] text-[var(--ds-text)]'
+                  : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]'
+              }`}
             >
               All clients
             </Link>
+          </nav>
+
+          {/* Quick access and what needs attention */}
+          <div className="ml-auto flex items-center gap-2">
+            <CommandPalette org={org?.slug ?? null} />
+            <HeaderAlerts />
+            <span className="mx-1 hidden h-5 w-px bg-[var(--ds-border)] sm:block" aria-hidden />
             <div className="hidden text-right lg:block">
-              <p className="text-[12.5px] font-medium leading-tight">{CONSULTANT.name}</p>
+              <p className="text-[13px] font-medium leading-tight">{CONSULTANT.name}</p>
               <p className="text-[11px] leading-tight text-[var(--ds-text-3)]">
                 {CONSULTANT.firm} · {CONSULTANT.role}
               </p>
@@ -148,9 +149,9 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
                   />
                   <div className="absolute right-0 z-50 mt-2 w-60 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-1 shadow-[var(--ds-shadow-md)]">
                     <div className="px-2.5 py-2">
-                      <p className="text-[12.5px] font-medium">{CONSULTANT.name}</p>
-                      <p className="truncate text-[11.5px] text-[var(--ds-text-2)]">{CONSULTANT.email}</p>
-                      <p className="mt-1 inline-flex rounded border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-1.5 py-px text-[10.5px] font-medium text-[var(--ds-text-2)]">
+                      <p className="text-[13px] font-medium">{CONSULTANT.name}</p>
+                      <p className="truncate text-[12px] text-[var(--ds-text-2)]">{CONSULTANT.email}</p>
+                      <p className="mt-1 inline-flex rounded border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-1.5 py-px text-[11px] font-medium text-[var(--ds-text-2)]">
                         {CONSULTANT.role}
                       </p>
                     </div>
@@ -161,7 +162,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
                     <button
                       type="button"
                       onClick={signOut}
-                      className="w-full rounded-md px-2.5 py-1.5 text-left text-[12.5px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
+                      className="w-full rounded-md px-2.5 py-1.5 text-left text-[13px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
                     >
                       Sign out
                     </button>
@@ -183,70 +184,104 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col lg:flex-row lg:gap-7 lg:px-6 lg:py-7">
-        {/* Module sidebar */}
+      <div className="flex w-full flex-1 flex-col lg:flex-row">
+        {/* Module sidebar — flush to the left edge, full height below the header. */}
         {org && (
           <nav
-            className={`${navOpen ? 'block' : 'hidden'} shrink-0 border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 py-3 lg:sticky lg:top-[57px] lg:block lg:h-fit lg:w-56 lg:rounded-lg lg:border lg:shadow-[var(--ds-shadow)]`}
+            aria-label="Client modules"
+            className={`${navOpen ? 'block' : 'hidden'} shrink-0 border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 py-4 lg:sticky lg:top-[57px] lg:block lg:h-[calc(100vh-57px)] lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r`}
           >
-            <div className="px-2 pb-2">
-              <p className="truncate text-[12.5px] font-semibold tracking-[-0.01em]">{org.name}</p>
-              <p className="mt-0.5 text-[11px] leading-snug text-[var(--ds-text-3)]">
+            <div className="px-2 pb-4">
+              <p className="truncate text-[13px] font-semibold tracking-[-0.01em]" title={org.name}>{org.name}</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-3)]">
                 {org.headcount} employees · {org.locations}
               </p>
-              <p className="mt-1.5 inline-flex rounded border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-1.5 py-px text-[10.5px] font-medium text-[var(--ds-text-2)]">
-                {org.engagement}
-              </p>
+              <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-2)]">{org.engagement}</p>
             </div>
 
-            <div className="my-2 h-px bg-[var(--ds-border)]" />
+            {NAV.map((group, gi) => (
+              <div key={group.title} className={gi > 0 ? 'mt-5' : ''}>
+                <p className="px-2 pb-1.5 text-[12px] font-medium text-[var(--ds-text-3)]">{group.title}</p>
+                <ul className="space-y-px">
+                  {group.items.map((m) => {
+                    const href = demoPath(org.slug, m.seg);
+                    const active = activeSeg === m.seg;
+                    const count = COUNTS[m.seg];
+                    return (
+                      <li key={m.label}>
+                        <Link
+                          href={href}
+                          onClick={() => setNavOpen(false)}
+                          aria-current={active ? 'page' : undefined}
+                          className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] transition-colors ${
+                            active
+                              ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]'
+                              : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]'
+                          }`}
+                        >
+                          <span className={active ? 'text-[var(--ds-accent)]' : 'text-[var(--ds-text-3)]'}>{ICONS[m.icon]}</span>
+                          <span className="min-w-0 flex-1 truncate">{m.label}</span>
+                          {count && (
+                            <span className={`ds-figure text-[11px] ${count === 'Due' ? 'text-[var(--ds-warn)]' : 'text-[var(--ds-text-3)]'}`}>
+                              {count}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
 
-            <p className="px-2 pb-1 ds-label text-[var(--ds-text-3)]">
-              Modules
-            </p>
-            <ul className="space-y-px">
-              {MODULES.map((m) => {
-                const href = demoPath(org.slug, m.seg);
-                const active = activeSeg === m.seg;
-                return (
-                  <li key={m.label}>
-                    <Link
-                      href={href}
-                      onClick={() => setNavOpen(false)}
-                      aria-current={active ? 'page' : undefined}
-                      className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors ${
-                        active
-                          ? 'bg-[var(--ds-accent-weak)] font-medium text-[var(--ds-accent-hover)]'
-                          : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]'
-                      }`}
-                    >
-                      <span className="truncate">{m.label}</span>
-                      <span className={`ds-figure text-[10.5px] ${active ? 'text-[var(--ds-accent)]' : 'text-[var(--ds-text-3)]'}`}>
-                        {m.code}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <div className="my-2 h-px bg-[var(--ds-border)]" />
             <Link
               href={demoPath()}
               onClick={() => setNavOpen(false)}
-              className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[12.5px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
+              className="mt-5 flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
             >
-              ← Switch client
+              <span className="text-[var(--ds-text-3)]">{ICONS.back}</span>
+              Switch client
             </Link>
           </nav>
         )}
 
-        <main className="min-w-0 flex-1 px-4 py-6 lg:px-0 lg:py-0">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
+          {org && (
+            <nav aria-label="Breadcrumb" className="mb-5">
+              <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px]">
+                <li>
+                  <Link href={demoPath()} className="text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]">
+                    All clients
+                  </Link>
+                </li>
+                <li aria-hidden className="text-[var(--ds-text-3)]">/</li>
+                <li className="min-w-0">
+                  {activeSeg ? (
+                    <Link href={demoPath(org.slug)} className="truncate text-[var(--ds-text-2)] transition-colors hover:text-[var(--ds-text)]">
+                      {org.name}
+                    </Link>
+                  ) : (
+                    <span aria-current="page" className="truncate font-medium text-[var(--ds-text)]">{org.name}</span>
+                  )}
+                </li>
+                {activeSeg && (
+                  <>
+                    <li aria-hidden className="text-[var(--ds-text-3)]">/</li>
+                    <li aria-current="page" className="font-medium text-[var(--ds-text)]">
+                      {navLabel(activeSeg)}
+                    </li>
+                  </>
+                )}
+              </ol>
+            </nav>
+          )}
+          {children}
+        </main>
       </div>
 
-      <footer className="mt-10 border-t border-[var(--ds-border)] bg-[var(--ds-subtle)] py-6">
-        <div className="mx-auto max-w-[96rem] px-4 lg:px-6">
-          <p className="max-w-4xl text-[11.5px] leading-relaxed text-[var(--ds-text-3)]">
+      <footer className="border-t border-[var(--ds-border)] py-6">
+        <div className="px-4 lg:px-5">
+          <p className="max-w-4xl text-[12px] leading-relaxed text-[var(--ds-text-3)]">
             DataSentry DPDP Console — interactive mock for review. Statutory references are drawn from
             secondary commentary and require verification against the Gazette text of the DPDP Act 2023 and
             the DPDP Rules 2025 (G.S.R. 846(E)) before any generated document is relied on.

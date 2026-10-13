@@ -41,6 +41,52 @@ export type Gap = {
   owner: string;
   due: string;
   evidence: string | null;
+  basis?: EvidenceBasis;
+};
+
+/**
+ * What a recorded fact rests on — no integrations or file imports in MVP, so
+ * every fact is one of these, with actor and timestamp. The evidence pack
+ * shows which, and never presents an attestation as a verified result.
+ */
+export type EvidenceBasis = 'declared' | 'observed' | 'attested';
+
+/** Something a consultant saw on a client's screen-share. Nothing was exported. */
+export type Observation = {
+  system: string;
+  looked: string;
+  /** What the register held before the walkthrough; null when it said nothing. */
+  declared: string | null;
+  observed: string;
+  result: 'matches' | 'differs' | 'new';
+  /** The gap finding this raised or confirmed. */
+  finding?: string;
+};
+
+export type Walkthrough = {
+  id: string;
+  date: string;
+  consultant: string;
+  attendees: string[];
+  observations: Observation[];
+  next: string;
+};
+
+/**
+ * Work the platform cannot do itself: an owner does it in their own system and
+ * attests it. Generated per system from the RoPA.
+ */
+export type FulfilmentTask = {
+  id: string;
+  source: { kind: 'Request' | 'Consent withdrawal' | 'Retention expiry' | 'Finding'; ref: string; label: string };
+  system: string;
+  action: string;
+  owner: string;
+  due: string;
+  status: 'Open' | 'Overdue' | 'Attested' | 'Retained';
+  attestation?: { by: string; at: string; note: string; proof: string | null };
+  /** The statutory ground, when the record is lawfully kept instead. */
+  retainedFor?: string;
 };
 
 export type Dsr = {
@@ -49,6 +95,8 @@ export type Dsr = {
   principal: string;
   relationship: string;
   received: string;
+  /** Where it came in — the platform is the system of record for both. */
+  channel?: 'Privacy centre' | 'Email';
   daysLeft: number | null;
   status: 'New' | 'In progress' | 'Awaiting client' | 'Closed';
   outcome?: string;
@@ -60,6 +108,8 @@ export type Incident = {
   title: string;
   awareness: string;
   deadline: string;
+  /** The Board-intimation deadline as an instant, for live clocks. */
+  deadlineIso?: string;
   affected: number;
   categories: string;
   status: 'Open' | 'Notified' | 'Closed';

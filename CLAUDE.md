@@ -25,19 +25,27 @@ src/app/                 routes only — keep page files thin
   (web)/                 datasentry.in/*      route group, no URL segment; cookie banner
   app/                   datasentry.in/app/*  product layout: console.css, noindex
     dpdp-demo/           the clickable DPDP mock
+      (console)/         consultant console — sign-in gate + DemoShell; [org]/<module>
+      (public)/p/[org]/  client-branded public pages: privacy centre, request, incident report
 src/modules/web/         marketing components
-src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, console.css
+src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, Icons.tsx, console.css
 src/modules/app/dpdp/    the DPDP product
-  components/            shell, sign-in, data map, countdowns, discovery interview
-  types.ts, statute.ts   domain types and statutory dates — real, reused by a live app
+  components/            shell, sign-in, data map, countdowns, discovery interview, command palette
+  types.ts, statute.ts   domain types, statutory dates and the data principal's rights — real, reused by a live app
+  nav.ts                 modules and intake pages — the sidebar, breadcrumb and ⌘K palette all read it
+  attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   routes.ts              DEMO_BASE + demoPath()
+  time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
+  useNow.ts              the real clock, null until mounted
   mock/                  illustrative data; the only part a live app replaces
 ```
 
 - **Web and app don't import each other.** Shared needs go through the root layout.
 - **The live app** goes at `src/app/app/dpdp/` (→ `/app/dpdp`), beside `dpdp-demo/`, reusing
   `@/modules/app` and swapping `dpdp/mock` for a real data layer.
-- **Links inside the mock use `demoPath(...)`**, never a hard-coded `/app/dpdp-demo`.
+- **Links inside the mock use `demoPath(...)`**, never a hard-coded `/app/dpdp-demo`. Public pages are
+  `demoPath('p', org, ...)`; they sit outside the sign-in gate and are white-labelled by overriding the
+  `--ds-accent*` tokens with the client's colour (`CLIENT_THEME`).
 - `/demo` 308-redirects to `/app/dpdp-demo` (`next.config.ts`).
 
 ## Console design system (`src/modules/app/ui`)
@@ -48,6 +56,24 @@ src/modules/app/dpdp/    the DPDP product
   labels, column heads), `ds-figure` (DM Mono tabular numbers). Every headline number is
   `ds-figure`. Tailwind's `font-mono` does **not** work inside `.demo-root` — a font reset
   outranks it — so use these classes.
+- **White canvas, hairlines, no shadows.** Grey is for hover, the active nav item, table heads
+  and disabled inputs — never a surface. Stats sit in one strip (`gap-px` grid on a
+  border-coloured background), not as separate cards. `PageHeader` is one title plus one line:
+  no eyebrow, no second greyed-out headline — the breadcrumb says where you are.
+- **Type scale**: 11 / 12 / 13 / 14px plus the display size. No half-pixel sizes.
+- **Nav icons** live in `Icons.tsx` (inline SVG, 16px, `currentColor`).
+- **Flag things with the accent bar, never a tinted box.** `Callout` (2px bar + title + action;
+  `boxed` sets it in a plain hairline card for page-level alerts), `Card tone=…` and `DemoNote` all
+  use the `.ds-bar` / `.ds-bar-<tone>` classes in `console.css`. No pink/amber/blue panels, no
+  coloured borders on cards.
+- **Labels inside a page body** use `ds-meta` (sentence case). `ds-label` (mono uppercase) is for
+  table column heads and the brand only.
+- **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates
+  and event times — exact date in the prerendered HTML, relative after mount, red when overdue,
+  amber within a week.
+- **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, breadcrumb, bell and ⌘K
+  palette pick them up. Overlays that must escape the header portal into `.demo-root` (the
+  header's backdrop blur traps `position: fixed`).
 - **Colour carries meaning only**: red = overdue/unlawful, amber = needs attention,
   green = settled, blue = the one primary action. Everything else is grey.
 - **Radius**: the marketing `globals.css` forces `border-radius: 0 !important` on every
@@ -65,6 +91,11 @@ src/modules/app/dpdp/    the DPDP product
   in an effect body; set it from a timer callback or use `useSyncExternalStore`.
 - **Respect reduced motion.** Animated visuals render their settled state when
   `prefers-reduced-motion: reduce` is set.
+- **No integrations and no file imports in MVP** (`docs/dpdp-mvp-scope.md`, "Data intake without
+  integrations"). Don't add upload, export or connector flows to the mock. Every fact is *declared*
+  (interview, check-in), *observed* (consultant walkthrough) or *attested* (owner, on a task) — label it
+  with `BasisTag`, and never present an attestation as verified.
+- **Timestamps from user actions** use `time.ts` inside event handlers, never during render.
 - **Model fills fields; the rule engine draws conclusions.** Copy and UI in the mock keep
   that line: AI-suggested content carries provenance; findings cite a provision.
 - **Statutory citations need Gazette verification** before any generated document is

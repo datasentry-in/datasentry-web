@@ -28,7 +28,7 @@ const ITEMISED = [
 function Check({ on = true }: { on?: boolean }) {
   return (
     <span
-      className={`inline-flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded border text-[10px] leading-none ${
+      className={`inline-flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded border text-[11px] leading-none ${
         on
           ? 'border-[var(--ds-accent)] bg-[var(--ds-accent)] text-white'
           : 'border-[var(--ds-border-strong)] bg-[var(--ds-panel)] text-transparent'
@@ -47,12 +47,11 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="M2 · Notice & consent"
         title="Notice & consent"
         sub="Narrow by design — candidates, and the handful of employee purposes that fall outside s.7(i)."
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Active candidate consents" value={C.activeCandidate.toLocaleString('en-IN')} note={C.noticeVersion} tone="good" />
         <Stat label="Withdrawn" value={C.withdrawn} note="each raised an erasure task" tone="warn" />
         <Stat label="Retention clock expired" value={C.expiredClock} note="talent pool past 180 days" tone="bad" />
@@ -66,7 +65,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
               <p className="text-[13px] font-semibold tracking-[-0.01em]">No consent needed — 10 activities</p>
               <CiteLink provision="s.7(i)" />
             </div>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
               Payroll, attendance, performance, onboarding, exit, statutory filings, CCTV, visitor register, IT
               monitoring and DLP all run on a legitimate use. Asking for consent here would be misleading, and
               withdrawal would be meaningless because the processing would continue regardless.
@@ -74,7 +73,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
           </Card>
           <Card>
             <p className="text-[13px] font-semibold tracking-[-0.01em]">Consent genuinely needed</p>
-            <ul className="mt-1.5 space-y-1 text-[12.5px] text-[var(--ds-text-2)]">
+            <ul className="mt-1.5 space-y-1 text-[13px] text-[var(--ds-text-2)]">
               {[
                 'Candidate screening and background verification',
                 'Dependant enrolment in the group policy, including 61 minors',
@@ -88,7 +87,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[12.5px] font-medium">
+            <p className="mt-2 text-[13px] font-medium">
               {C.employeeExceptions} employee exception consents on record
             </p>
           </Card>
@@ -110,18 +109,18 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
       >
         {/* Preview of the applicant-facing notice */}
         <div className="overflow-hidden rounded-lg border border-[var(--ds-border)]">
-          <div className="border-b border-[var(--ds-border)] bg-[var(--ds-subtle)] px-4 py-3">
-            <p className="ds-label text-[var(--ds-text-3)]">
+          <div className="border-b border-[var(--ds-border)] px-4 py-3">
+            <p className="ds-meta text-[var(--ds-text-3)]">
               Northstar BPO Services Pvt Ltd
             </p>
             <p className="mt-0.5 text-[15px] font-semibold tracking-[-0.01em]">Notice to applicants</p>
-            <p className="mt-0.5 text-[11.5px] text-[var(--ds-text-3)]">
+            <p className="mt-0.5 text-[12px] text-[var(--ds-text-3)]">
               Notice v3 · published 01 Oct 2026 · available in English, हिन्दी, मराठी, ಕನ್ನಡ
             </p>
           </div>
 
           <div className="p-4">
-            <p className="max-w-3xl text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
               We are Northstar BPO Services Pvt Ltd. We will use the information below only for the purposes
               listed beside it. You may withdraw your consent at any time, ask us for a summary of what we hold,
               ask us to correct or erase it, or complain to the Data Protection Board of India.
@@ -153,7 +152,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
             </div>
 
             <div className="mt-4 space-y-2 border-t border-[var(--ds-border)] pt-3">
-              <p className="ds-label text-[var(--ds-text-3)]">
+              <p className="ds-meta text-[var(--ds-text-3)]">
                 Separate choices
               </p>
               {[
@@ -165,14 +164,14 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
                   <span className="mt-px">
                     <Check on={Boolean(on)} />
                   </span>
-                  <span className="text-[12.5px] text-[var(--ds-text-2)]">{label}</span>
+                  <span className="text-[13px] text-[var(--ds-text-2)]">{label}</span>
                 </label>
               ))}
             </div>
 
             <div className="mt-4 flex flex-wrap gap-4 border-t border-[var(--ds-border)] pt-3">
               {['Withdraw consent', 'Exercise your rights', 'Complain to the Board'].map((l) => (
-                <span key={l} className="text-[12.5px] font-medium text-[var(--ds-accent-hover)] underline underline-offset-2">
+                <span key={l} className="text-[13px] font-medium text-[var(--ds-accent-hover)] underline underline-offset-2">
                   {l}
                 </span>
               ))}
@@ -206,7 +205,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
             <tbody>
               {CONSENT_LEDGER.map((r) => (
                 <tr key={r.ts + r.principal} className="hover:bg-[var(--ds-subtle)]">
-                  <Td className="ds-figure whitespace-nowrap text-[11.5px] text-[var(--ds-text-3)]">{r.ts}</Td>
+                  <Td className="ds-figure whitespace-nowrap text-[12px] text-[var(--ds-text-3)]">{r.ts}</Td>
                   <Td className="font-medium">{r.principal}</Td>
                   <Td className="text-[var(--ds-text-2)]">{r.type}</Td>
                   <Td className="text-[var(--ds-text-2)]">{r.purposes}</Td>
@@ -234,13 +233,13 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
               <Card>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-[13px] font-semibold tracking-[-0.01em]">{who}</p>
-                  <p className="text-[11.5px] text-[var(--ds-text-3)]">{trigger}</p>
+                  <p className="text-[12px] text-[var(--ds-text-3)]">{trigger}</p>
                 </div>
-                <p className="mt-1.5 text-[12.5px] text-[var(--ds-text-2)]">
+                <p className="mt-1.5 text-[13px] text-[var(--ds-text-2)]">
                   <span className="font-medium text-[var(--ds-text)]">Affected systems — </span>
                   {systems}
                 </p>
-                <p className="mt-1 text-[12.5px] font-medium text-[var(--ds-warn)]">{task}</p>
+                <p className="mt-1 text-[13px] font-medium text-[var(--ds-warn)]">{task}</p>
               </Card>
             </li>
           ))}

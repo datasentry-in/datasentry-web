@@ -1,4 +1,5 @@
-import { DSRS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { DSRS, ORGS, TASKS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { demoPath } from '@/modules/app/dpdp/routes';
 import {
   Button, Card, CiteLink, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
 } from '@/modules/app/ui/ui';
@@ -20,12 +21,11 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="M3 · DSR desk"
         title="Data principal requests"
         sub={`Access, correction, erasure, grievance and nomination · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Open requests" value={open.length} note="none past SLA" tone="warn" />
         <Stat label="Closed this quarter" value={closed.length} note="median 4 days to close" tone="good" />
         <Stat label="Erasure conflicts" value={1} note="statutory retention applies" tone="bad" />
@@ -42,6 +42,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                 <Th>Data principal</Th>
                 <Th>Relationship</Th>
                 <Th>Received</Th>
+                <Th>Channel</Th>
                 <Th>SLA</Th>
                 <Th>Status</Th>
               </tr>
@@ -59,6 +60,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                   <Td className="font-medium">{d.principal}</Td>
                   <Td className="text-[var(--ds-text-2)]">{d.relationship}</Td>
                   <Td className="tnum text-[var(--ds-text-2)]">{d.received}</Td>
+                  <Td className="text-[var(--ds-text-2)]">{d.channel ?? '—'}</Td>
                   <Td className={`tnum font-medium ${d.daysLeft !== null && d.daysLeft <= 7 ? 'text-[var(--ds-warn)]' : ''}`}>
                     {d.daysLeft} days left
                   </Td>
@@ -83,7 +85,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
               &ldquo;I left Northstar in March 2024. I want all my personal data deleted from your systems
               including my salary records and the complaint file. Please confirm when this is done.&rdquo;
             </p>
-            <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[11.5px] text-[var(--ds-text-2)]">
+            <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--ds-text-2)]">
               <Tag tone="ok">Identity verified</Tag>
               08 Oct 2026 — employee ID, date of birth and last working day matched the HRMS exit roster
             </p>
@@ -136,11 +138,27 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
             </div>
           </div>
 
+          <Card tone="subtle">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="ds-meta text-[var(--ds-text-3)]">Fulfilment</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+                  {(() => {
+                    const t = TASKS.filter((x) => x.source.ref === focus.id);
+                    const n = (s: string) => t.filter((x) => x.status === s).length;
+                    return `${t.length} tasks — one per system the register lists for this person: ${n('Attested')} attested, ${n('Open')} open, ${n('Retained')} kept on a statutory ground. The owners do the erasure in their own systems; the response goes out once every task is attested.`;
+                  })()}
+                </p>
+              </div>
+              <Button as="link" href={demoPath(org.slug, 'tasks')}>Tasks & attestations</Button>
+            </div>
+          </Card>
+
           <Card>
-            <p className="ds-label text-[var(--ds-text-3)]">
+            <p className="ds-meta text-[var(--ds-text-3)]">
               Generated response — draft
             </p>
-            <p className="mt-1.5 max-w-3xl text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
               We have erased your personnel file, your recruitment record, your alumni mailing entry and the
               photograph you asked about. We are unable to erase four categories of record because we are
               required by law to keep them: your Provident Fund member records under the Employees&rsquo;
@@ -179,7 +197,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                   </div>
                 </div>
                 <p className="ds-figure mt-0.5 text-[11px] text-[var(--ds-text-3)]">{d.id}</p>
-                <p className="mt-1 text-[12.5px] leading-snug text-[var(--ds-text-2)]">{d.outcome}</p>
+                <p className="mt-1 text-[13px] leading-snug text-[var(--ds-text-2)]">{d.outcome}</p>
               </li>
             ))}
           </ul>
@@ -196,10 +214,10 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
               <li key={String(right)}>
                 <Card tone={prov === 's.13' ? 'danger' : 'plain'} className="p-2.5">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="text-[12.5px] font-medium">{right}</span>
+                    <span className="text-[13px] font-medium">{right}</span>
                     <CiteLink provision={String(prov)} />
                   </div>
-                  <p className="mt-0.5 text-[11.5px] text-[var(--ds-text-2)]">{note}</p>
+                  <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">{note}</p>
                 </Card>
               </li>
             ))}

@@ -19,12 +19,11 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="M1 · Register"
         title="Record of processing activities"
         sub={`RoPA v4 · confirmed 08 Oct 2026 · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Activities" value={ACTIVITIES.length} note={`${org.exemptActivities} exempt`} />
         <Stat label="Data items itemised" value={items} note="Rule 3 requires item-level detail" />
         <Stat label="Processors engaged" value={processors} note="8 of 10 have a DPA" tone="warn" />
@@ -135,10 +134,10 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
               <li key={String(label)}>
                 <Card tone={label === 'Not determined' ? 'danger' : 'plain'} className="p-2.5">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[12.5px] font-medium">{label}</span>
+                    <span className="text-[13px] font-medium">{label}</span>
                     <span className="ds-figure text-[15px]">{n}</span>
                   </div>
-                  <p className="mt-0.5 text-[11.5px] leading-snug text-[var(--ds-text-2)]">{note}</p>
+                  <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-2)]">{note}</p>
                 </Card>
               </li>
             ))}

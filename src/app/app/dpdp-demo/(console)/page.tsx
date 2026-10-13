@@ -13,16 +13,14 @@ export default function Portfolio() {
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="Consultant console"
         title="Client portfolio"
-        muted={`${ORGS.length} engagements, ${totalHigh} high-severity gaps.`}
-        sub="One login across every engagement. This is the screen a consultant opens on a Monday morning."
+        sub={`${ORGS.length} engagements, ${totalHigh} high-severity gaps across them.`}
       />
 
       {/* The clock everyone is working against */}
       <DeadlineCountdown />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Clients engaged" value={ORGS.length} note="2 in assessment, 1 in discovery" />
         <Stat label="High-severity gaps" value={totalHigh} note="across all clients" tone="bad" />
         <Stat label="Open DSRs" value={totalDsr} note={`${breaching} past SLA`} tone={breaching ? 'bad' : 'warn'} />
@@ -53,7 +51,7 @@ export default function Portfolio() {
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[13.5px] font-semibold leading-tight tracking-[-0.01em] group-hover:text-[var(--ds-accent-hover)]">
+                    <h3 className="text-[14px] font-semibold leading-tight tracking-[-0.01em] group-hover:text-[var(--ds-accent-hover)]">
                       {o.name}
                     </h3>
                     <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">

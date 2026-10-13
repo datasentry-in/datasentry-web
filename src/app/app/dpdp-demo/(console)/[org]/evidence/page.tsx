@@ -17,22 +17,21 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="M5 · Evidence"
         title="Evidence & audit pack"
         sub={`The compliance file a board or a Board of India query actually asks for · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="RoPA v4 as source" tone="warn" />
         <Stat label="Blocked or pending" value={blocked} note="each traces to a finding" tone="bad" />
         <Stat label="Languages" value={4} note="EN, HI, MR, KN" tone="good" />
         <Stat label="Pack version" value="v4" note="hash-stamped 08 Oct 2026" />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 shadow-[var(--ds-shadow)] sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 sm:p-5">
         <div className="min-w-0">
           <p className="text-[15px] font-semibold tracking-[-0.01em]">Export the compliance file</p>
-          <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
             Single PDF plus a ZIP of every artefact. Each document carries its generation timestamp, the source
             RoPA version and the reviewer who signed it off.
           </p>
@@ -86,8 +85,8 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
               ['s.17(1)(d) applicability memo', 'Per-engagement reasoning for the two exempt activities'],
             ].map(([doc, note]) => (
               <li key={String(doc)} className="border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5">
-                <p className="text-[12.5px] font-medium">{doc}</p>
-                <p className="mt-0.5 text-[11.5px] leading-snug text-[var(--ds-text-2)]">{note}</p>
+                <p className="text-[13px] font-medium">{doc}</p>
+                <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-2)]">{note}</p>
               </li>
             ))}
           </ul>
@@ -111,10 +110,10 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
               <li key={String(doc)}>
                 <Card tone="danger" className="p-2.5">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="text-[12.5px] font-medium">{doc}</span>
+                    <span className="text-[13px] font-medium">{doc}</span>
                     <Tag tone="alert">{gap}</Tag>
                   </div>
-                  <p className="mt-0.5 text-[11.5px] text-[var(--ds-text-2)]">{why}</p>
+                  <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">{why}</p>
                 </Card>
               </li>
             ))}
@@ -142,17 +141,17 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
             <tbody>
               {[
                 ['10 Oct 2026, 14:22:08', 'CISO, Northstar', 'Incident INC-2026-003 created', '8f3c…a104'],
-                ['09 Oct 2026, 18:05:44', 'Dharita Gada', 'Evidence file reconciled — 3 findings raised', '2b7e…c9f1'],
+                ['09 Oct 2026, 18:05:44', 'Dharita Gada', 'Walkthrough recorded — 7 observations, 3 findings raised', '2b7e…c9f1'],
                 ['08 Oct 2026, 16:40:12', 'HR Operations Manager', 'RoPA v4 confirmed — 19 activities', 'd041…7b22'],
                 ['08 Oct 2026, 15:55:01', 'Dharita Gada', 'PA-12 basis set to Not determined', '5a9d…1e68'],
                 ['08 Oct 2026, 11:02:37', 'System', 'Gap report generated — rule set v1.4', 'c7f0…4d3a'],
                 ['01 Oct 2026, 09:14:55', 'Dharita Gada', 'Notice v3 published — EN, HI, MR, KN', '9e22…b70c'],
               ].map(([ts, who, what, hash]) => (
                 <tr key={String(ts)} className="hover:bg-[var(--ds-subtle)]">
-                  <Td className="ds-figure whitespace-nowrap text-[11.5px] text-[var(--ds-text-3)]">{ts}</Td>
+                  <Td className="ds-figure whitespace-nowrap text-[12px] text-[var(--ds-text-3)]">{ts}</Td>
                   <Td className="font-medium">{who}</Td>
                   <Td className="text-[var(--ds-text-2)]">{what}</Td>
-                  <Td className="ds-figure text-[11.5px] text-[var(--ds-text-3)]">{hash}</Td>
+                  <Td className="ds-figure text-[12px] text-[var(--ds-text-3)]">{hash}</Td>
                 </tr>
               ))}
             </tbody>

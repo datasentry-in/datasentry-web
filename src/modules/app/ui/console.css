@@ -5,20 +5,22 @@
 /* ==========================================================================
    DPDP Console — product UI theme
    The marketing site is deliberately brutalist; the console is not. Inside
-   `.demo-root` we run a quiet, Linear-style surface: 1px hairlines, soft
-   radii, Inter, and colour used only where it carries meaning.
+   `.demo-root` we run a quiet, Linear-style surface: a white canvas, 1px
+   hairlines instead of shadows, soft radii, Inter, and colour used only where
+   it carries meaning. Grey is for hover, the active nav item, table heads and
+   disabled inputs — not for surfaces.
    ========================================================================== */
 
 .demo-root {
-  --ds-bg: #fbfbfc;
+  --ds-bg: #ffffff;
   --ds-panel: #ffffff;
   --ds-subtle: #f7f7f8;
   --ds-subtle-2: #f1f1f3;
-  --ds-border: #e7e7e9;
+  --ds-border: #ebebed;
   --ds-border-strong: #d7d8dc;
   --ds-text: #0e0f11;
-  --ds-text-2: #63666e;
-  --ds-text-3: #8b8f98;
+  --ds-text-2: #4b4f57;
+  --ds-text-3: #757983;
   /* DataSentry brand. #009FE3 is the mark's blue; the interactive blue is a
      step deeper so white button text clears 4.5:1. Yellow is the accent from
      the logo's rule and is used only as a highlight, never as a surface. */
@@ -89,7 +91,7 @@
 
 /* The document scrollbar belongs to <html>, not to `.demo-root`, so the
    marketing site's dark track would otherwise frame the console. */
-body:has(.demo-root) { background: #fbfbfc; }
+body:has(.demo-root) { background: #ffffff; }
 body:has(.demo-root) ::-webkit-scrollbar-track,
 html:has(.demo-root) ::-webkit-scrollbar-track { background: transparent; }
 body:has(.demo-root) ::-webkit-scrollbar-thumb,
@@ -133,14 +135,60 @@ html:has(.demo-root) ::-webkit-scrollbar-thumb {
 }
 .demo-root .ds-label {
   font-family: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 400;
   line-height: 1.4;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .demo-root .ds-figure {
   font-family: 'DM Mono', ui-monospace, SFMono-Regular, monospace;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
+}
+
+/* Sticky header and sidebar. The marketing globals set `overflow-x: hidden` on
+   html and body, which makes body a scroll container that never scrolls — and
+   position: sticky then has nothing to stick to. `clip` still stops sideways
+   overflow but creates no scroll container. Scoped to console pages. */
+html:has(.demo-root),
+body:has(.demo-root) {
+  overflow-x: clip;
+}
+
+/* ---- Meta labels -------------------------------------------------------------
+   Field names and small headings inside a page body: sentence case, Inter.
+   `ds-label` (mono uppercase) is kept for table column heads and the brand.
+   Colour comes from a utility, so the label can turn red or green. */
+.demo-root .ds-meta {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ---- Accent bar --------------------------------------------------------------
+   The one way the console marks something: a 2px bar on the left, no box, no
+   tint. `--bar` carries the meaning (red overdue, amber due, green settled,
+   blue the model or the primary path, yellow a design note). Plain CSS so the
+   padding outranks any utility passed alongside it. */
+.demo-root .ds-bar {
+  border-left: 2px solid var(--bar, var(--ds-border-strong));
+  padding: 2px 0 2px 12px;
+}
+.demo-root .ds-bar-danger { --bar: var(--ds-danger); }
+.demo-root .ds-bar-warn { --bar: #f5a524; }
+.demo-root .ds-bar-ok { --bar: #3fb37f; }
+.demo-root .ds-bar-accent { --bar: var(--ds-brand); }
+.demo-root .ds-bar-note { --bar: var(--ds-brand-yellow); }
+.demo-root .ds-bar-plain { --bar: var(--ds-border-strong); }
+
+/* ---- Overlays ----------------------------------------------------------------
+   Command palette entrance. */
+@keyframes ds-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+.demo-root .ds-pop { animation: ds-pop 0.14s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-root .ds-pop { animation: none !important; }
 }

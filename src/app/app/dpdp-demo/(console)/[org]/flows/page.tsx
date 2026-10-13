@@ -68,12 +68,11 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow="M1 · Register"
         title="Data flow map"
         sub={`Derived from the register — no separate authoring step. ${org.name}, RoPA v4.`}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
         <Stat label="Systems in scope" value={11} note="5 holding, 6 receiving" />
         <Stat label="Processors" value={FLOWS.processors.length} note="2 flagged" tone="bad" />
         <Stat label="Cross-border destinations" value={2} note="United States, United Kingdom" tone="warn" />
@@ -152,7 +151,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
                   <p className="text-[13px] font-semibold tracking-[-0.01em]">Zoho Recruit → AuthBridge</p>
                   <Tag tone="alert">G-02</Tag>
                 </div>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
                   Candidate identity, education, employment and criminal-record data leaves for background
                   verification with no data processing agreement in place.
                 </p>
@@ -167,7 +166,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
                   <p className="text-[13px] font-semibold tracking-[-0.01em]">Keka HR → Mailchimp → United States</p>
                   <Tag tone="alert">G-06</Tag>
                 </div>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
                   1,340 ex-employee contact records are used for alumni marketing with no lawful basis recorded, and
                   transferred outside India in the process.
                 </p>
@@ -184,7 +183,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
             <li>
               <Card>
                 <p className="text-[13px] font-semibold tracking-[-0.01em]">United States — 4 transfers</p>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
                   Client LMS (PA-08), Mailchimp (PA-12), Microsoft and Forcepoint (PA-15), HubSpot (PA-18).
                 </p>
               </Card>
@@ -192,7 +191,7 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
             <li>
               <Card tone="ok">
                 <p className="text-[13px] font-semibold tracking-[-0.01em]">United Kingdom — exempt</p>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--ds-text-2)]">
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
                   PA-17 client delivery. Principals are outside India under contract with a person outside India.
                 </p>
               </Card>
