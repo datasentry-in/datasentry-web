@@ -390,11 +390,11 @@ export default function DataMapScan() {
   }, [reduced]);
 
   const grid =
-    'grid grid-cols-[var(--sys)_minmax(0,1fr)] gap-x-4 sm:grid-cols-[var(--sys)_minmax(0,1fr)_var(--out)]';
+    'grid grid-cols-[var(--sys)_minmax(0,1fr)] gap-x-4 @xl:grid-cols-[var(--sys)_minmax(0,1fr)_var(--out)]';
 
   return (
-    <div className="min-w-0">
-      <div className="relative [--og:0rem] [--out:0rem] [--sys:7.75rem] sm:[--og:1rem] sm:[--out:11rem] sm:[--sys:13rem]">
+    <div className="@container min-w-0">
+      <div className="relative [--og:0rem] [--out:0rem] [--sys:7.75rem] @xl:[--og:1rem] @xl:[--out:11rem] @xl:[--sys:13rem]">
         {/* Column heads */}
         <div className={`${grid} ds-label border-b border-[var(--ds-border)] pb-2 text-[var(--ds-text-3)]`}>
           <span>System</span>
@@ -402,7 +402,7 @@ export default function DataMapScan() {
             <span>Records · newest</span>
             <span>oldest →</span>
           </span>
-          <span className="hidden sm:block">Outcome</span>
+          <span className="hidden @xl:block">Outcome</span>
         </div>
 
         {/* Scan layer: highlighter behind the dots, rule in front */}
@@ -422,7 +422,7 @@ export default function DataMapScan() {
           {SYSTEMS.map((s, i) => (
             <li key={s.id} className={`${grid} items-center border-b border-[var(--ds-border)] py-2.5 last:border-b-0`}>
               <div className="flex min-w-0 items-center gap-2.5">
-                <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--ds-border)] bg-[var(--ds-subtle)] text-[var(--ds-text-2)] sm:flex">
+                <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--ds-border)] bg-[var(--ds-subtle)] text-[var(--ds-text-2)] @xl:flex">
                   <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     {s.icon}
                   </svg>
@@ -449,7 +449,7 @@ export default function DataMapScan() {
                     ref={(el) => {
                       verdictRefs.current[i * 2 + 1] = el;
                     }}
-                    className={`mt-1 flex items-center gap-1 text-[11px] font-medium opacity-0 sm:hidden ${toneText[s.verdict.tone]}`}
+                    className={`mt-1 flex items-center gap-1 text-[11px] font-medium opacity-0 @xl:hidden ${toneText[s.verdict.tone]}`}
                   >
                     <ToneGlyph tone={s.verdict.tone} />
                     {s.verdict.text}
@@ -467,7 +467,7 @@ export default function DataMapScan() {
                 />
               </div>
 
-              <div className="relative hidden min-w-0 sm:block">
+              <div className="relative hidden min-w-0 @xl:block">
                 <p
                   ref={(el) => {
                     pendingRefs.current[i] = el;
