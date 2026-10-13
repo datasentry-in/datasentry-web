@@ -79,14 +79,14 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
                       <span className={`min-w-0 flex-1 truncate ${hideOnRail}`}>{m.label}</span>
                       {count && (
                         <>
-                          <span className={`ds-figure text-[11px] ${count === 'Due' ? 'text-[var(--ds-warn)]' : 'text-[var(--ds-text-3)]'} ${hideOnRail}`}>
+                          <span className={`ds-figure text-[11px] ${count === 'Due' ? 'text-[var(--ds-warn)]' : count.endsWith('late') ? 'text-[var(--ds-danger)]' : 'text-[var(--ds-text-3)]'} ${hideOnRail}`}>
                             {count}
                           </span>
                           {collapsed && (
                             <span
                               aria-hidden
                               className={`absolute right-1.5 top-1.5 hidden h-1.5 w-1.5 rounded-full lg:block ${
-                                count === 'Due' ? 'bg-[var(--ds-warn)]' : 'bg-[var(--ds-text-3)]'
+                                count === 'Due' ? 'bg-[var(--ds-warn)]' : count.endsWith('late') ? 'bg-[var(--ds-danger)]' : 'bg-[var(--ds-text-3)]'
                               }`}
                             />
                           )}

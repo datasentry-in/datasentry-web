@@ -75,9 +75,10 @@ export const ORGS: Org[] = [
     locations: 'Chennai, Coimbatore',
     score: 19,
     trend: 'baseline',
-    openGaps: { high: 7, medium: 9, low: 3 },
-    activities: 22,
-    exemptActivities: 4,
+    // In discovery: no register yet, so no activities and no findings.
+    openGaps: { high: 0, medium: 0, low: 0 },
+    activities: 0,
+    exemptActivities: 0,
     dsrOpen: 5,
     dsrBreaching: 2,
     incidentOpen: 0,

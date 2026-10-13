@@ -1,4 +1,6 @@
-import { ORGS, WALKTHROUGH, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import type { Observation } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import WalkthroughAgenda from '@/modules/app/dpdp/components/WalkthroughAgenda';
@@ -16,6 +18,15 @@ const resultTag = (r: Observation['result']) =>
 export default async function Walkthroughs({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const WALKTHROUGH = clientData(slug).walkthrough;
+  if (!WALKTHROUGH) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Consultant walkthroughs" sub={org.name} />
+        <ModulePending org={org.slug} what="A walkthrough agenda" />
+      </div>
+    );
+  }
   const obs = WALKTHROUGH.observations;
   const findings = [...new Set(obs.map((o) => o.finding).filter(Boolean))];
 
@@ -73,7 +84,7 @@ export default async function Walkthroughs({ params }: { params: Promise<{ org: 
         </div>
       </Panel>
 
-      <WalkthroughAgenda />
+      {clientData(slug).walkthroughAgenda.length > 0 && <WalkthroughAgenda org={org.slug} />}
 
       <DemoNote>
         The client drives the screen; the consultant records. Nothing leaves the client&rsquo;s system — not a file,

@@ -1,4 +1,5 @@
-import { DSRS, ORGS, PRIVACY_CENTRE, TASKS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import SlaBar from '@/modules/app/dpdp/components/SlaBar';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
@@ -15,9 +16,17 @@ const statusTone = (s: string) =>
 export default async function Dsr({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const data = clientData(slug);
+  const DSRS = data.dsrs;
+  const TASKS = data.tasks;
+  const responseDays = data.privacyCentre?.responseDays ?? 30;
   const open = DSRS.filter((d) => d.status !== 'Closed');
   const closed = DSRS.filter((d) => d.status === 'Closed');
-  const focus = DSRS.find((d) => d.id === 'DSR-2026-0041')!;
+  const late = open.filter((d) => d.daysLeft !== null && d.daysLeft < 0).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0));
+  const conflicts = DSRS.filter((d) => d.conflicts?.length).length;
+  const grievance = data.privacyCentre?.grievanceOfficer ?? null;
+  // The request worked through in detail on this page, when the client has one.
+  const focus = data.dsrFocus ? DSRS.find((d) => d.id === data.dsrFocus) : undefined;
 
   return (
     <div className="space-y-8">
@@ -27,19 +36,26 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
       />
 
       <Facts>
-        <Fact label="Open requests" value={open.length} note="none past SLA" tone="warn" />
-        <Fact label="Closed this quarter" value={closed.length} note="median 4 days to close" tone="good" />
-        <Fact label="Erasure conflicts" value={1} note="statutory retention applies" tone="bad" />
-        <Fact label="Grievance contact" value="None" note="no one named to handle complaints (G-09, s.13)" tone="bad" />
+        <Fact label="Open requests" value={open.length} note={late.length ? `${late.length} past the response window` : 'none past the response window'} tone={late.length ? 'bad' : open.length ? 'warn' : 'plain'} />
+        <Fact label="Closed this quarter" value={closed.length} note="the log is the evidence" tone={closed.length ? 'good' : 'plain'} />
+        <Fact label="Erasure conflicts" value={conflicts} note="statutory retention applies" tone={conflicts ? 'bad' : 'plain'} />
+        <Fact label="Grievance contact" value={grievance ?? 'None'} note={grievance ? 'published on the privacy centre' : 'no one named to handle complaints (s.13)'} tone={grievance ? 'good' : 'bad'} />
       </Facts>
 
-      <NextStep
-        title={`Send ${focus.principal} a partial-erasure response`}
-        action={<Button as="link" href="#dsr-focus">Review the drafted response</Button>}
-      >
-        Four of her records are kept by law. The response has to name each one and the statute that keeps it — the
-        draft below already does.
-      </NextStep>
+      {focus ? (
+        <NextStep
+          title={`Send ${focus.principal} a partial-erasure response`}
+          action={<Button as="link" href="#dsr-focus">Review the drafted response</Button>}
+        >
+          Four of her records are kept by law. The response has to name each one and the statute that keeps it — the
+          draft below already does.
+        </NextStep>
+      ) : late.length ? (
+        <NextStep title={`Respond to ${late[0].principal} — ${-(late[0].daysLeft ?? 0)} days past the response window`}>
+          {late.map((d) => `${d.id} (${d.type.toLowerCase()}, received ${d.received} by ${d.channel?.toLowerCase() ?? 'email'})`).join(' · ')}. Each
+          arrived at the published email address and was forwarded into the desk; the window ran from the day it arrived.
+        </NextStep>
+      ) : null}
 
       <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining" flush>
         <TableWrap>
@@ -60,7 +76,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
               {open.map((d) => (
                 <tr
                   key={d.id}
-                  className={d.id === focus.id ? 'bg-[var(--ds-accent-weak)]' : 'hover:bg-[var(--ds-subtle)]'}
+                  className={d.id === focus?.id ? 'bg-[var(--ds-accent-weak)]' : 'hover:bg-[var(--ds-subtle)]'}
                 >
                   <Td className="ds-id whitespace-nowrap text-[12px]">{d.id}</Td>
                   <Td>
@@ -71,7 +87,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                   <Td className="tnum text-[var(--ds-text-2)]">{d.received}</Td>
                   <Td className="text-[var(--ds-text-2)]">{d.channel ?? '—'}</Td>
                   <Td>
-                    <SlaBar received={d.received} days={PRIVACY_CENTRE.responseDays} />
+                    <SlaBar received={d.received} days={responseDays} />
                   </Td>
                   <Td>
                     <Tag tone={statusTone(d.status)}>{d.status}</Tag>
@@ -84,6 +100,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
       </Panel>
 
       {/* The hard case — this is the screen that sells the product to a consultant. */}
+      {focus && (<>
       <div id="dsr-focus" className="scroll-mt-20" />
       <Panel
         title={`${focus.id} — erasure request from an ex-employee`}
@@ -193,6 +210,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
           </DemoNote>
         </div>
       </Panel>
+      </>)}
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Closed requests" sub="The log is the evidence of a working mechanism" flush>

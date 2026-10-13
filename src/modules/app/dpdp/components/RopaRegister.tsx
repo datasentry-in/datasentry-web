@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ACTIVITIES, GAPS, OWNERS, auditFor, type AuditEntry } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import type { AuditEntry } from '@/modules/app/dpdp/mock/data';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { Activity, Basis } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
@@ -55,9 +56,13 @@ function BasisValue({ basis }: { basis: Basis }) {
 const editable =
   'group/edit -mx-1.5 rounded px-1.5 py-0.5 text-left transition-colors hover:bg-[var(--ds-subtle-2)] focus-visible:bg-[var(--ds-subtle-2)]';
 
-export default function RopaRegister() {
+export default function RopaRegister({ org }: { org: string }) {
+  const d = clientData(org);
+  const GAPS = d.gaps;
+  const OWNERS = d.owners;
+  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
   const toast = useToast();
-  const [rows, setRows] = useState<Activity[]>(ACTIVITIES);
+  const [rows, setRows] = useState<Activity[]>(d.activities);
   const [edits, setEdits] = useState<AuditEntry[]>([]);
   const [editing, setEditing] = useState<{ id: string; field: 'basis' | 'retention' } | null>(null);
   const [draft, setDraft] = useState('');
@@ -248,7 +253,7 @@ export default function RopaRegister() {
             </SheetSection>
 
                     <SheetSection title="Discussion">
-              <Discussion refId={open.id} client="Northstar" />
+              <Discussion org={org} refId={open.id} />
             </SheetSection>
             <SheetSection title="History">
               <AuditTimeline entries={history} empty="No changes since RoPA v4 was confirmed." />

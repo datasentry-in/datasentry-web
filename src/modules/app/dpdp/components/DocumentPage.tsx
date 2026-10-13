@@ -95,7 +95,7 @@ function Section({ n, s, onSave, locked }: { n: number; s: DocSection; onSave: (
   );
 }
 
-export default function DocumentPage({ doc, backHref, backLabel, client }: { doc: ComplianceDoc; backHref: string; backLabel: string; client: string }) {
+export default function DocumentPage({ org, doc, backHref, backLabel, client }: { org: string; doc: ComplianceDoc; backHref: string; backLabel: string; client: string }) {
   const toast = useToast();
   const [sections, setSections] = useState(doc.sections);
   const [versions, setVersions] = useState(doc.versions);
@@ -191,7 +191,7 @@ export default function DocumentPage({ doc, backHref, backLabel, client }: { doc
         <aside className="min-w-0 space-y-8 xl:border-l xl:border-[var(--ds-border)] xl:pl-8">
           <section>
             <h2 className="mb-3 text-[15px] font-semibold">Comments</h2>
-            <Discussion refId={doc.ref} client={client} />
+            <Discussion org={org} refId={doc.ref} />
           </section>
           <section>
             <h2 className="mb-3 text-[15px] font-semibold">Versions</h2>

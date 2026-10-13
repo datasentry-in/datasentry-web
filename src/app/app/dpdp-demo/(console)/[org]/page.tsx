@@ -1,32 +1,36 @@
-import {
-  ACTIVITIES, AUDIT, CONSENT_SUMMARY, EVIDENCE_PACK, GAPS, INCIDENTS, ORGS, OWNERS, QUESTIONNAIRE, SCORE_HISTORY, getOrg,
-} from '@/modules/app/dpdp/mock/data';
+import Link from 'next/link';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { MODULES } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import AttentionList from '@/modules/app/dpdp/components/AttentionList';
-import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import When from '@/modules/app/dpdp/components/When';
+import { ICONS } from '@/modules/app/ui/Icons';
 import {
-  Button, Change, CiteLink, DemoNote, NextStep, Person, Meter, PageHeader, Panel, ScoreBlock, SeverityTag, Stat, Tag,
+  Button, Change, CiteLink, DemoNote, NextStep, Person, PageHeader, Panel, ScoreBlock, Stat,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
 }
 
+/**
+ * The client's home: the one next step, the score, one worklist (what needs
+ * attention, then high-severity findings), where each module stands, and what
+ * changed. Everything comes from the client's own data.
+ */
 export default async function Overview({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
-  const openIncident = org.incidentOpen > 0 ? INCIDENTS.find((i) => i.status === 'Open') : undefined;
-  const topGaps = GAPS.filter((g) => g.severity === 'High');
-  const generated = EVIDENCE_PACK.filter((e) => e.status === 'Generated').length;
+  const d = clientData(slug);
+  const openIncident = d.incidents.find((i) => i.status === 'Open' && i.deadlineIso);
+  const generated = d.evidence.filter((e) => e.status === 'Generated').length;
+  const left = d.evidence.filter((e) => e.status !== 'Generated' && e.status !== 'Not started');
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Readiness overview"
-        sub={`${org.engagement} · last reviewed ${org.lastReview}`}
-      />
+      <PageHeader title="Readiness overview" sub={`${org.engagement} · last reviewed ${org.lastReview}`} />
 
       {/* One next step per client: the most urgent thing, named as an action. */}
       {openIncident ? (
@@ -37,127 +41,120 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
           {openIncident.affected} data principals affected · Rule 7 deadline{' '}
           <span className="font-medium text-[var(--ds-danger)]">{openIncident.deadline}</span>
         </NextStep>
-      ) : org.engagement.startsWith('Discovery') ? (
+      ) : !d.registerBuilt ? (
         <NextStep
           title="Run the discovery interview with the HR head"
           action={<Button as="link" variant="primary" href={demoPath(org.slug, 'discovery')}>Start the interview</Button>}
         >
           Nothing is on the register yet. Six seed questions decide what the engine asks next — about 40 minutes.
         </NextStep>
+      ) : left.length ? (
+        <NextStep
+          title={`Close out the evidence pack — ${left.length} artefact${left.length === 1 ? '' : 's'} left`}
+          action={<Button as="link" variant="primary" href={demoPath(org.slug, 'evidence')}>Finish the evidence pack</Button>}
+        >
+          {left.map((e) => `${e.name} (${e.status.toLowerCase()})`).join(' · ')}
+        </NextStep>
       ) : null}
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-7">
         <div className="col-span-2 grid lg:col-span-3">
-          <ScoreBlock score={org.score} trend={org.trend} history={(SCORE_HISTORY[org.slug] ?? []).map((h) => ({ at: parseDisplayDate(h.on)!.getTime(), value: h.score, label: h.on }))} />
+          <ScoreBlock
+            score={org.score}
+            trend={org.trend}
+            history={d.scoreHistory.map((h) => ({ at: parseDisplayDate(h.on)!.getTime(), value: h.score, label: h.on }))}
+          />
         </div>
-        <Stat label="Processing activities" value={org.activities} note={`${org.exemptActivities} exempt s.17(1)(d)`} />
-        <Stat label="High gaps" value={org.openGaps.high} note={`${org.openGaps.medium} medium, ${org.openGaps.low} low`} tone="bad" />
-        <Stat label="Open DSRs" value={org.dsrOpen} note="none past SLA" />
-        <Stat label="Evidence artefacts" value={`${generated}/${EVIDENCE_PACK.length}`} note="generated" />
+        <Stat label="Processing activities" value={d.registerBuilt ? org.activities : '—'} note={d.registerBuilt ? `${org.exemptActivities} exempt s.17(1)(d)` : 'after discovery'} />
+        <Stat label="High gaps" value={d.registerBuilt ? org.openGaps.high : '—'} note={d.registerBuilt ? `${org.openGaps.medium} medium, ${org.openGaps.low} low` : 'after discovery'} tone={org.openGaps.high ? 'bad' : 'plain'} />
+        <Stat label="Open requests" value={org.dsrOpen} note={org.dsrBreaching ? `${org.dsrBreaching} past the response window` : 'none past the window'} tone={org.dsrBreaching ? 'bad' : 'plain'} />
+        <Stat label="Evidence artefacts" value={`${generated}/${d.evidence.length}`} note="generated" />
       </div>
 
       <AttentionList org={org.slug} exclude={openIncident ? [openIncident.id] : []} />
 
+      {/* Where each module stands — a card per module, each a way in. */}
+      <section>
+        <h2 className="mb-3 text-[17px] font-semibold tracking-[-0.015em]">Where each module stands</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {d.progress.map((p) => {
+            const nav = MODULES.find((m) => m.seg === p.seg);
+            return (
+              <Link
+                key={p.module}
+                href={demoPath(org.slug, p.seg)}
+                className="group rounded-lg border border-[var(--ds-border)] p-3.5 transition-colors hover:border-[var(--ds-border-strong)] hover:bg-[var(--ds-subtle)]"
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-[var(--ds-text-3)] group-hover:text-[var(--ds-accent)]">{nav && ICONS[nav.icon]}</span>
+                  <span className="ds-figure text-[13px] text-[var(--ds-text-2)]">{p.pct}%</span>
+                </span>
+                <span className="mt-2.5 block text-[13px] font-semibold leading-snug">{p.module}</span>
+                <span className="mt-2 block h-1 overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
+                  <span className="block h-full rounded-full bg-[var(--ds-accent)]" style={{ width: `${p.pct}%` }} />
+                </span>
+                <span className="mt-2 block text-[12px] leading-snug text-[var(--ds-text-3)]">{p.note}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       <div className="grid gap-8 lg:grid-cols-2">
-        <Panel title="Where this client stands" sub="Module completion across the engagement">
-          <ul className="space-y-3.5">
-            {[
-              { m: 'Scope & role register', pct: 86, note: `${ACTIVITIES.length} activities mapped, ${QUESTIONNAIRE.total - QUESTIONNAIRE.answered} questions open` },
-              { m: 'Notice & consent', pct: 54, note: `notice ${CONSENT_SUMMARY.noticeVersion}, candidate capture live` },
-              { m: 'DSR & grievance desk', pct: 40, note: 'intake live, no grievance contact published' },
-              { m: 'Breach register', pct: 25, note: 'register opened, SOP not signed off' },
-              { m: 'Evidence & audit pack', pct: 69, note: `${generated} of ${EVIDENCE_PACK.length} artefacts generated` },
-            ].map((r) => (
-              <li key={r.m}>
-                <Meter label={r.m} pct={r.pct} note={r.note} />
+        <Panel title="Role determination" sub="Decided per activity, never per department">
+          {d.roles ? (
+            <>
+              <ul className="-mt-1 divide-y divide-[var(--ds-border)]">
+                <li className="py-3">
+                  <p className="flex items-baseline justify-between gap-3 text-[13px] font-semibold tracking-[-0.01em]">
+                    Data Fiduciary <span className="ds-figure text-[13px] font-normal text-[var(--ds-text-2)]">{d.roles.fiduciary.count} activities</span>
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{d.roles.fiduciary.text}</p>
+                </li>
+                <li className="py-3">
+                  <p className="flex items-baseline justify-between gap-3 text-[13px] font-semibold tracking-[-0.01em]">
+                    <span className="flex items-center gap-2">Exempt <CiteLink provision="s.17(1)(d)" /></span>
+                    <span className="ds-figure text-[13px] font-normal text-[var(--ds-ok)]">{d.roles.exempt.count} activities</span>
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{d.roles.exempt.text}</p>
+                </li>
+              </ul>
+              <div className="mt-3">
+                <DemoNote>
+                  This is the panel that changes the sales conversation: it tells the client which processing they can
+                  stop worrying about. Security safeguards and processor contracts still survive the exemption.
+                </DemoNote>
+              </div>
+            </>
+          ) : (
+            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">
+              Decided once the discovery interview has built the register — for each activity, whether{' '}
+              {org.name} is the Data Fiduciary, a processor for a client, or exempt.
+            </p>
+          )}
+        </Panel>
+
+        <Panel title="Recent activity" sub="From the append-only audit log — each change shows the old and the new value" flush>
+          <ul>
+            {d.audit.slice(0, 6).map((e) => (
+              <li
+                key={e.at + e.what}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px]">
+                    <span className="ds-id mr-1.5 text-[11px] text-[var(--ds-text-3)]">{e.ref}</span>
+                    {e.what}
+                  </span>
+                  {e.change && <Change {...e.change} />}
+                </span>
+                <Person name={e.who} compact />
+                <When date={e.at} kind="event" className="w-20 shrink-0 text-right text-[12px] text-[var(--ds-text-3)]" />
               </li>
             ))}
           </ul>
         </Panel>
-
-        <Panel title="Role determination" sub="Decided per activity, never per department">
-          <ul className="-mt-1 divide-y divide-[var(--ds-border)]">
-            <li className="py-3">
-              <p className="flex items-baseline justify-between gap-3 text-[13px] font-semibold tracking-[-0.01em]">
-                Data Fiduciary <span className="ds-figure text-[13px] font-normal text-[var(--ds-text-2)]">17 activities</span>
-              </p>
-              <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
-                Employee, candidate, ex-employee, dependant, visitor, vendor and prospect data. Obligations apply
-                in full.
-              </p>
-            </li>
-            <li className="py-3">
-              <p className="flex items-baseline justify-between gap-3 text-[13px] font-semibold tracking-[-0.01em]">
-                <span className="flex items-center gap-2">Exempt <CiteLink provision="s.17(1)(d)" /></span>
-                <span className="ds-figure text-[13px] font-normal text-[var(--ds-ok)]">2 activities</span>
-              </p>
-              <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
-                Offshore delivery for the US payer and the UK retailer. Principals are outside India under
-                contract with a person outside India.
-              </p>
-            </li>
-          </ul>
-          <div className="mt-3">
-            <DemoNote>
-              This is the panel that changes the sales conversation: it tells the client which processing they can
-              stop worrying about. Security safeguards and processor contracts still survive the exemption.
-            </DemoNote>
-          </div>
-        </Panel>
       </div>
-
-      <Panel
-        title="High-severity findings"
-        sub="Each finding cites a provision and carries an owner and a date"
-        right={<Button as="link" href={demoPath(org.slug, 'gaps')}>Work through all {GAPS.length} findings</Button>}
-        flush
-      >
-        <ul>
-          {topGaps.map((g) => (
-            <li
-              key={g.id}
-              className="ds-row flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium tracking-[-0.01em]">{g.title}</p>
-              </div>
-              <div className="flex w-full items-center gap-4 sm:w-auto">
-                <Person name={OWNERS[g.owner] ?? g.owner} role={OWNERS[g.owner] ? g.owner : undefined} compact />
-                <When date={g.due} className="ds-figure text-[12px]" />
-                <span className="ds-row-actions">
-                  <RemindButton person={OWNERS[g.owner] ?? g.owner} what={`${g.id} — ${g.title}`} />
-                </span>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                <CiteLink provision={g.provision} />
-                <Tag>{g.id}</Tag>
-                <SeverityTag s={g.severity} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Panel>
-
-      <Panel title="Recent activity" sub="From the append-only audit log — each change shows the old and the new value" flush>
-        <ul>
-          {AUDIT.slice(0, 7).map((e) => (
-            <li
-              key={e.at + e.what}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block text-[13px]">
-                  <span className="ds-id mr-1.5 text-[11px] text-[var(--ds-text-3)]">{e.ref}</span>
-                  {e.what}
-                </span>
-                {e.change && <Change {...e.change} />}
-              </span>
-              <Person name={e.who} compact />
-              <When date={e.at} kind="event" className="w-24 shrink-0 text-right text-[12px] text-[var(--ds-text-3)]" />
-            </li>
-          ))}
-        </ul>
-      </Panel>
     </div>
   );
 }

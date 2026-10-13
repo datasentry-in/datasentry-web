@@ -1,4 +1,14 @@
-import { EVIDENCE_PACK, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
+
+/** A short, stable stand-in for an entry's chain hash. */
+const hashOf = (s: string) => {
+  let h = 2166136261;
+  for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+  const hex = h.toString(16).padStart(8, '0');
+  return `${hex.slice(0, 4)}…${hex.slice(4)}`;
+};
 import {
   Button, Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
@@ -13,6 +23,16 @@ const tone = (s: string) =>
 export default async function Evidence({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const d = clientData(slug);
+  if (!d.registerBuilt) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Evidence & audit pack" sub={org.name} />
+        <ModulePending org={org.slug} what="The evidence pack" />
+      </div>
+    );
+  }
+  const EVIDENCE_PACK = d.evidence;
   const generated = EVIDENCE_PACK.filter((e) => e.status === 'Generated').length;
   const blocked = EVIDENCE_PACK.filter((e) => e.status !== 'Generated').length;
 
@@ -24,10 +44,10 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
       />
 
       <Facts>
-        <Fact label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="RoPA v4 as source" tone="warn" />
+        <Fact label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="the confirmed register is the source" tone={generated < EVIDENCE_PACK.length ? 'warn' : 'good'} />
         <Fact label="Blocked or pending" value={blocked} note="each traces to a finding" tone="bad" />
         <Fact label="Languages" value={4} note="EN, HI, MR, KN" tone="good" />
-        <Fact label="Pack version" value="v4" note="hash-stamped 08 Oct 2026" />
+        <Fact label="Register as source" value={org.lastReview} note="hash-stamped on generation" />
       </Facts>
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 sm:p-5">
@@ -39,7 +59,7 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
           </p>
         </div>
         <Button variant="primary" className="px-4 py-2 text-[13px]">
-          Generate pack v5
+          Generate the pack
         </Button>
       </div>
 
@@ -79,7 +99,7 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
             {[
               ['Employee privacy notice', 'Lists the 10 activities running on s.7(i) and the 5 needing consent'],
               ['Candidate privacy notice', 'Rule 3 itemised — 14 data items, purpose per item, withdrawal link'],
-              ['Retention & erasure policy', 'Keyed to all 19 activities plus the statutory retention matrix'],
+              ['Retention & erasure policy', `Keyed to all ${d.activities.length} activities plus the statutory retention matrix`],
               ['DSR standard operating procedure', 'Intake, identity verification, SLA, lawful part-refusal'],
               ['Breach response SOP', '72-hour clock, escalation ladder, both notification templates'],
               ['Processor DPA template', 's.8(2) clauses — purpose limitation, security, sub-processing, erasure'],
@@ -141,19 +161,12 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
               </tr>
             </thead>
             <tbody>
-              {[
-                ['10 Oct 2026, 14:22:08', 'CISO, Northstar', 'Incident INC-2026-003 created', '8f3c…a104'],
-                ['09 Oct 2026, 18:05:44', 'Dharita Gada', 'Walkthrough recorded — 7 observations, 3 findings raised', '2b7e…c9f1'],
-                ['08 Oct 2026, 16:40:12', 'HR Operations Manager', 'RoPA v4 confirmed — 19 activities', 'd041…7b22'],
-                ['08 Oct 2026, 15:55:01', 'Dharita Gada', 'PA-12 basis set to Not determined', '5a9d…1e68'],
-                ['08 Oct 2026, 11:02:37', 'System', 'Gap report generated — rule set v1.4', 'c7f0…4d3a'],
-                ['01 Oct 2026, 09:14:55', 'Dharita Gada', 'Notice v3 published — EN, HI, MR, KN', '9e22…b70c'],
-              ].map(([ts, who, what, hash]) => (
+              {d.audit.map((e) => [e.at, e.who, `${e.ref} — ${e.what}`, hashOf(e.at + e.what)]).map(([ts, who, what, hash]) => (
                 <tr key={String(ts)} className="hover:bg-[var(--ds-subtle)]">
                   <Td className="ds-figure whitespace-nowrap text-[12px] text-[var(--ds-text-3)]">{ts}</Td>
                   <Td className="font-medium">{who}</Td>
                   <Td className="text-[var(--ds-text-2)]">{what}</Td>
-                  <Td className="ds-figure text-[12px] text-[var(--ds-text-3)]">{hash}</Td>
+                  <Td className="ds-id text-[12px] text-[var(--ds-text-3)]">{hash}</Td>
                 </tr>
               ))}
             </tbody>

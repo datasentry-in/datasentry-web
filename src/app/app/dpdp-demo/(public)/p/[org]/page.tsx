@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CONSENT_SUMMARY, PRIVACY_CENTRE, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData, publicCentre } from '@/modules/app/dpdp/mock/clients';
+import { getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { RIGHTS } from '@/modules/app/dpdp/statute';
-import { DemoNote } from '@/modules/app/ui/ui';
+import { Callout, DemoNote } from '@/modules/app/ui/ui';
 
 export async function generateMetadata({ params }: { params: Promise<{ org: string }> }): Promise<Metadata> {
   const { org } = await params;
@@ -13,6 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<{ org: stri
 export default async function PrivacyCentre({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const PRIVACY_CENTRE = publicCentre(org.slug);
+  const notice = clientData(org.slug).consent?.summary.noticeVersion ?? 'not published yet';
 
   return (
     <div className="space-y-8">
@@ -24,6 +27,13 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
           {PRIVACY_CENTRE.responseDays} days.
         </p>
       </div>
+
+      {!PRIVACY_CENTRE.live && (
+        <Callout boxed tone="warn" title="Preview — this page is not live">
+          {org.name} publishes an email address only: {PRIVACY_CENTRE.contactEmail}. Requests sent there are forwarded
+          into the request desk and run on the same clock. This is what DataSentry would host once the notice is ready.
+        </Callout>
+      )}
 
       <section aria-label="What would you like to do?">
         <div className="grid gap-3 sm:grid-cols-2">
@@ -50,7 +60,7 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
           <ul className="mt-2 space-y-2 text-[13px]">
             <li className="flex items-baseline justify-between gap-3">
               <span>Notice to job applicants</span>
-              <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{CONSENT_SUMMARY.noticeVersion}</span>
+              <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{notice}</span>
             </li>
             <li className="flex items-baseline justify-between gap-3">
               <span>Notice to employees</span>

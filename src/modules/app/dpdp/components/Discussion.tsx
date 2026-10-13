@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { COMMENTS, PEOPLE, type RecordComment } from '@/modules/app/dpdp/mock/data';
+import { useRef, useState } from 'react';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, PEOPLE, type RecordComment } from '@/modules/app/dpdp/mock/data';
 import { formatIst } from '@/modules/app/dpdp/time';
 import { useToast } from '@/modules/app/ui/Toast';
 import { Avatar } from '@/modules/app/ui/ui';
@@ -15,10 +16,12 @@ import When from './When';
  */
 
 const ME = 'Dharita Gada';
-const names = PEOPLE.map((p) => p.name);
-const MENTION = new RegExp(`@(${names.map((n) => n.replace(/ /g, '\\s')).join('|')})`, 'g');
+/** The DataSentry team, who can be mentioned on any client's records. */
+const TEAM = PEOPLE.filter((p) => p.side === 'DataSentry');
+const mentionPattern = (names: string[]) => new RegExp(`@(${names.map((n) => n.replace(/ /g, '\\s')).join('|')})`, 'g');
 
-function Body({ text }: { text: string }) {
+function Body({ text, names }: { text: string; names: string[] }) {
+  const MENTION = mentionPattern(names);
   const parts = text.split(MENTION);
   return (
     <p className="mt-0.5 whitespace-pre-wrap text-[13px] leading-relaxed text-[var(--ds-text)]">
@@ -41,7 +44,11 @@ function Visibility({ v }: { v: RecordComment['visibility'] }) {
   );
 }
 
-export default function Discussion({ refId, client = 'the client' }: { refId: string; client?: string }) {
+export default function Discussion({ org, refId }: { org: string; refId: string }) {
+  const data = clientData(org);
+  const client = ORGS.find((o) => o.slug === org)?.name.split(' ')[0] ?? 'the client';
+  const people = [...TEAM.map((p) => ({ ...p, side: 'DataSentry' as const })), ...data.people.map((p) => ({ ...p, side: 'Client' as const }))];
+  const names = people.map((p) => p.name);
   const toast = useToast();
   const [added, setAdded] = useState<RecordComment[]>([]);
   const [text, setText] = useState('');
@@ -49,8 +56,8 @@ export default function Discussion({ refId, client = 'the client' }: { refId: st
   const [picking, setPicking] = useState<string | null>(null);
   const box = useRef<HTMLTextAreaElement>(null);
 
-  const thread = useMemo(() => [...COMMENTS.filter((c) => c.ref === refId), ...added], [refId, added]);
-  const suggestions = picking === null ? [] : PEOPLE.filter((p) => p.name.toLowerCase().startsWith(picking.toLowerCase())).slice(0, 5);
+  const thread = [...data.comments.filter((c) => c.ref === refId), ...added];
+  const suggestions = picking === null ? [] : people.filter((p) => p.name.toLowerCase().startsWith(picking.toLowerCase())).slice(0, 5);
 
   const onType = (v: string) => {
     setText(v);
@@ -90,7 +97,7 @@ export default function Discussion({ refId, client = 'the client' }: { refId: st
               <When date={c.at} kind="event" className="text-[var(--ds-text-3)]" />
               <Visibility v={c.visibility} />
             </p>
-            <Body text={c.text} />
+            <Body text={c.text} names={names} />
           </div>
         </div>
       ))}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { CONSULTANT, WALKTHROUGH, WALKTHROUGH_AGENDA } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { CONSULTANT } from '@/modules/app/dpdp/mock/data';
 import { formatIst } from '@/modules/app/dpdp/time';
 import { BasisTag, Panel, Tag } from '@/modules/app/ui/ui';
 
@@ -29,8 +30,11 @@ function consequence(r: Result, finding?: string) {
   return 'Added to the register as an observed fact; the rule engine re-runs on save.';
 }
 
-export default function WalkthroughAgenda() {
-  const [open, setOpen] = useState<string | null>(WALKTHROUGH_AGENDA[0].id);
+export default function WalkthroughAgenda({ org }: { org: string }) {
+  const d = clientData(org);
+  const WALKTHROUGH = d.walkthrough!;
+  const WALKTHROUGH_AGENDA = d.walkthroughAgenda;
+  const [open, setOpen] = useState<string | null>(WALKTHROUGH_AGENDA[0]?.id ?? null);
   const [drafts, setDrafts] = useState<Record<string, { observed: string; result: Result | null }>>({});
   const [saved, setSaved] = useState<Record<string, Saved>>({});
 

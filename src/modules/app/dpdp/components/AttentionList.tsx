@@ -1,25 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { attentionAt } from '@/modules/app/dpdp/attention';
-import { OWNERS } from '@/modules/app/dpdp/mock/data';
+import { workFor } from '@/modules/app/dpdp/attention';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { EmptyState, Panel, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
 /**
- * One client's "needs attention" rows, from the same derivation as the header
- * bell: what it is, who has to act, when it is due, and a reminder on hover. `exclude` drops items
+ * One client's worklist — what needs attention, then its high-severity
+ * findings — from the same derivation as the header bell: what it is, who has
+ * to act, when it is due, and a reminder on hover. `exclude` drops items
  * the page already shows more prominently (the running breach clock).
  */
 export default function AttentionList({ org, exclude = [] }: { org: string; exclude?: string[] }) {
   const now = useNow(30_000);
-  const items = attentionAt(now).filter((a) => a.org === org && !exclude.includes(a.id));
+  const items = workFor(org, now).filter((a) => !exclude.includes(a.id));
+  const owners = clientData(org).owners;
   return (
     <Panel
-      title="Needs attention"
-      sub={items.length ? `${items.length} item${items.length === 1 ? '' : 's'} with an owner and a date` : undefined}
+      title="What needs doing"
+      sub={items.length ? `${items.length} item${items.length === 1 ? '' : 's'} — what is late or due first, then high-severity findings` : undefined}
       flush
     >
       {items.length === 0 ? (
@@ -29,7 +31,7 @@ export default function AttentionList({ org, exclude = [] }: { org: string; excl
       ) : (
         <ul>
           {items.map((a) => {
-            const person = a.owner ? OWNERS[a.owner] ?? a.owner : null;
+            const person = a.owner ? owners[a.owner] ?? a.owner : null;
             return (
               <li
                 key={a.id}
@@ -49,9 +51,9 @@ export default function AttentionList({ org, exclude = [] }: { org: string; excl
                 </div>
                 <div className="min-w-0 pl-4 md:pl-0">
                   {person ? (
-                    <Person name={person} role={OWNERS[a.owner!] ? a.owner : undefined} />
+                    <Person name={person} role={owners[a.owner!] ? a.owner : undefined} />
                   ) : (
-                    <span className="text-[12px] text-[var(--ds-text-3)]">{a.owners ? `${a.owners} owners` : 'Consultant'}</span>
+                    <span className="text-[12px] text-[var(--ds-text-3)]">{a.owners ? `${a.owners} owner${a.owners === 1 ? '' : 's'}` : 'Consultant'}</span>
                   )}
                 </div>
                 <p className="pl-4 text-[12px] font-medium md:pl-0 md:text-right">

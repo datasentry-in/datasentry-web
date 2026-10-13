@@ -1,4 +1,5 @@
-import { ORGS, QUESTIONNAIRE as Q, WALKTHROUGH, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import DiscoveryInterview from '@/modules/app/dpdp/components/DiscoveryInterview';
 import {
@@ -22,11 +23,13 @@ const SECTIONS = [
 export default async function Discovery({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
-  const pct = Math.round((Q.answered / Q.total) * 100);
+  const data = clientData(slug);
+  const Q = data.questionnaire;
+  const WALKTHROUGH = data.walkthrough;
 
   // Meridian is in discovery, phase 1 — so its interview is empty and live.
   // Northstar's is mid-flight and shown as a worked example.
-  if (org.engagement.startsWith('Discovery')) {
+  if (!Q) {
     return (
       <div className="space-y-8">
         <PageHeader
@@ -38,6 +41,8 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
     );
   }
 
+  const pct = Math.round((Q.answered / Q.total) * 100);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -46,10 +51,10 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
       />
 
       <Facts>
-        <Fact label="Questions answered" value={`${Q.answered}/${Q.total}`} note={`${pct}% complete`} tone="warn" />
+        <Fact label="Questions answered" value={`${Q.answered}/${Q.total}`} note={`${pct}% complete`} tone={pct < 100 ? 'warn' : 'good'} />
         <Fact label="Current section" value={`${Q.section} of ${Q.sections}`} note={Q.sectionName} />
         <Fact label="Activities derived" value={19} note="2 proposed by the model, 17 from the ITES pack" />
-        <Fact label="Walkthrough observations" value={WALKTHROUGH.observations.length} note={`${WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length} differed from what was declared`} tone="warn" />
+        {WALKTHROUGH && <Fact label="Walkthrough observations" value={WALKTHROUGH.observations.length} note={`${WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length} differed from what was declared`} tone="warn" />}
       </Facts>
 
       <Panel title="Interview progress" sub={`${pct}% of the question set answered`} flush>
@@ -194,6 +199,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
         </Panel>
       </div>
 
+      {WALKTHROUGH && (
       <Panel
         title="Declared, then observed"
         sub={`What the interview said, against what the client showed on the ${WALKTHROUGH.date.split(',')[0]} walkthrough`}
@@ -233,6 +239,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
           </DemoNote>
         </div>
       </Panel>
+      )}
     </div>
   );
 }

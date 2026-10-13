@@ -1,4 +1,5 @@
-import { CHECK_IN, INCIDENTS, ORGS, TASKS } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 
@@ -26,10 +27,6 @@ export type Attention = {
   due?: string;
 };
 
-// In the mock, the worked example (Northstar) carries the incident, tasks and
-// check-in; DSRs past SLA come from each org's own headline figures.
-const NORTHSTAR = ORGS[0];
-
 /** "4h 05m left", "2d 3h left" or "overdue 1h 40m" for an hour-level clock. */
 export function clockLeft(ms: number) {
   const abs = Math.abs(ms);
@@ -39,44 +36,74 @@ export function clockLeft(ms: number) {
   return ms <= 0 ? `overdue ${span}` : `${span} left`;
 }
 
-/** The open incident whose Board-intimation clock is running, if any. */
-export const runningBreach = () => INCIDENTS.find((x) => x.status === 'Open' && x.deadlineIso) ?? null;
+const time = (d?: string) => (d ? parseDisplayDate(d)?.getTime() ?? 0 : 0);
 
-export function attentionAt(now: number | null): Attention[] {
+/** One client's items: running clocks, late requests, overdue and open tasks, a due check-in. */
+function forClient(slug: string, now: number | null): Attention[] {
+  const o = ORGS.find((x) => x.slug === slug)!;
+  const d = clientData(slug);
   const out: Attention[] = [];
-  for (const i of INCIDENTS.filter((x) => x.status === 'Open' && x.deadlineIso)) {
+  for (const i of d.incidents.filter((x) => x.status === 'Open' && x.deadlineIso)) {
     const ms = new Date(i.deadlineIso!).getTime() - (now ?? 0);
     out.push({
-      id: i.id, org: NORTHSTAR.slug, tone: 'danger', title: `${i.id} — Board intimation not sent`, client: NORTHSTAR.name,
-      meta: now === null ? '72-hour clock running' : `72-hour clock · ${clockLeft(ms)}`, href: demoPath(NORTHSTAR.slug, 'breach'),
+      id: i.id, org: slug, tone: 'danger', title: `${i.id} — Board intimation not sent`, client: o.name,
+      meta: now === null ? '72-hour clock running' : `72-hour clock · ${clockLeft(ms)}`, href: demoPath(slug, 'breach'),
       owner: 'CISO',
     });
   }
-  for (const o of ORGS.filter((x) => x.dsrBreaching > 0)) {
+  const late = d.dsrs.filter((x) => x.status !== 'Closed' && x.daysLeft !== null && x.daysLeft < 0);
+  if (late.length) {
     out.push({
-      id: `dsr-${o.slug}`, org: o.slug, tone: 'danger', title: `${o.dsrBreaching} DSRs past SLA`, client: o.name,
-      meta: 'Requests waiting longer than the committed response time', href: demoPath(o.slug, 'dsr'),
+      id: `dsr-${slug}`, org: slug, tone: 'danger', title: `${late.length} request${late.length === 1 ? '' : 's'} past the response window`, client: o.name,
+      meta: late.map((x) => `${x.id} ${x.type.toLowerCase()}`).join(', '), href: demoPath(slug, 'dsr'),
     });
   }
-  for (const t of TASKS.filter((x) => x.status === 'Overdue')) {
+  for (const t of d.tasks.filter((x) => x.status === 'Overdue')) {
     out.push({
-      id: t.id, org: NORTHSTAR.slug, tone: 'danger', title: `${t.id} overdue — ${t.system}`, client: NORTHSTAR.name,
-      meta: t.action, href: demoPath(NORTHSTAR.slug, 'tasks'), owner: t.owner, due: t.due,
+      id: t.id, org: slug, tone: 'danger', title: `${t.id} overdue — ${t.system}`, client: o.name,
+      meta: t.action, href: demoPath(slug, 'tasks'), owner: t.owner, due: t.due,
     });
   }
-  const open = TASKS.filter((x) => x.status === 'Open');
+  const open = d.tasks.filter((x) => x.status === 'Open');
   if (open.length) {
     out.push({
-      id: 'tasks-open', org: NORTHSTAR.slug, tone: 'warn', title: `${open.length} tasks awaiting attestation`, client: NORTHSTAR.name,
-      meta: 'Owners to do the work in their systems and attest it', href: demoPath(NORTHSTAR.slug, 'tasks'),
+      id: `tasks-${slug}`, org: slug, tone: 'warn', title: `${open.length} task${open.length === 1 ? '' : 's'} awaiting attestation`, client: o.name,
+      meta: 'Owners to do the work in their systems and attest it', href: demoPath(slug, 'tasks'),
       owners: new Set(open.map((t) => t.owner)).size,
-      due: [...open].sort((a, b) => (parseDisplayDate(a.due)?.getTime() ?? 0) - (parseDisplayDate(b.due)?.getTime() ?? 0))[0].due,
+      due: [...open].sort((a, b) => time(a.due) - time(b.due))[0].due,
     });
   }
-  out.push({
-    id: 'check-in', org: NORTHSTAR.slug, tone: 'warn', title: `${CHECK_IN.label} due`, client: NORTHSTAR.name,
-    meta: `Sent to the ${CHECK_IN.sentTo} on ${CHECK_IN.sentOn}`, href: demoPath(NORTHSTAR.slug, 'check-in'),
-    owner: CHECK_IN.sentTo, due: CHECK_IN.due,
-  });
+  if (d.checkIn) {
+    out.push({
+      id: `check-in-${slug}`, org: slug, tone: 'warn', title: `${d.checkIn.label} due`, client: o.name,
+      meta: `Sent to the ${d.checkIn.sentTo} on ${d.checkIn.sentOn}`, href: demoPath(slug, 'check-in'),
+      owner: d.checkIn.sentTo, due: d.checkIn.due,
+    });
+  }
   return out;
 }
+
+/** Everything that needs attention across every client — the header bell and the palette. */
+export function attentionAt(now: number | null): Attention[] {
+  return ORGS.flatMap((o) => forClient(o.slug, now));
+}
+
+/**
+ * One client's worklist for the overview: what needs attention, then its
+ * high-severity findings — one list, ordered by what is due first.
+ */
+export function workFor(slug: string, now: number | null): Attention[] {
+  const o = ORGS.find((x) => x.slug === slug)!;
+  const findings: Attention[] = clientData(slug).gaps
+    .filter((g) => g.severity === 'High')
+    .map((g) => ({
+      id: g.id, org: slug, tone: 'warn', title: g.title, client: o.name,
+      meta: `${g.id} · high-severity finding`, href: demoPath(slug, 'gaps'), owner: g.owner, due: g.due,
+    }));
+  const urgent = forClient(slug, now);
+  return [...urgent, ...findings.sort((a, b) => time(a.due) - time(b.due))];
+}
+
+/** The open incident whose Board-intimation clock is running, if any, across clients. */
+export const runningBreach = () =>
+  ORGS.flatMap((o) => clientData(o.slug).incidents).find((x) => x.status === 'Open' && x.deadlineIso) ?? null;

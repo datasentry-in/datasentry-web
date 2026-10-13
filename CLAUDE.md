@@ -38,11 +38,17 @@ src/modules/app/dpdp/    the DPDP product
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock, null until mounted
   mock/                  illustrative data; the only part a live app replaces
+    clients.ts           clientData(slug) — every page reads a client's data through this
+    quadrant.ts, meridian.ts  per-client datasets; Northstar's lives in data.ts
 ```
 
 - **Web and app don't import each other.** Shared needs go through the root layout.
 - **The live app** goes at `src/app/app/dpdp/` (→ `/app/dpdp`), beside `dpdp-demo/`, reusing
   `@/modules/app` and swapping `dpdp/mock` for a real data layer.
+- **Pages read a client's data through `clientData(org.slug)`** (`mock/clients.ts`), never a
+  dataset constant — that is how Northstar's data stopped leaking onto other clients. Components that
+  show records take an `org` prop. A client still in discovery has `registerBuilt: false`: modules
+  built from the register render `ModulePending`, never another client's data.
 - **Links inside the mock use `demoPath(...)`**, never a hard-coded `/app/dpdp-demo`. Public pages are
   `demoPath('p', org, ...)`; they sit outside the sign-in gate and are white-labelled by overriding the
   `--ds-accent*` tokens with the client's colour (`CLIENT_THEME`).

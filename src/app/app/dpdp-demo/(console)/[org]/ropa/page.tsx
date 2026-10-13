@@ -1,4 +1,6 @@
-import { ACTIVITIES, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import RopaRegister from '@/modules/app/dpdp/components/RopaRegister';
 import {
   Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
@@ -11,7 +13,19 @@ export function generateStaticParams() {
 export default async function Ropa({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const d = clientData(slug);
+  if (!d.registerBuilt) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Record of processing activities" sub={org.name} />
+        <ModulePending org={org.slug} what="The record of processing activities" />
+      </div>
+    );
+  }
+  const ACTIVITIES = d.activities;
   const items = ACTIVITIES.reduce((n, a) => n + a.items, 0);
+  const legitimate = d.basisBreakdown.filter((b) => b.label.startsWith('s.7(i)') || b.label === 'Legal obligation').reduce((n, b) => n + b.count, 0);
+  const withDpa = d.processors.filter((p) => p.dpa !== 'MISSING' && !p.dpa.startsWith('Standard')).length;
   const undetermined = ACTIVITIES.filter((a) => a.basis === 'Not determined').length;
   const processors = new Set(ACTIVITIES.flatMap((a) => a.processors)).size;
 
@@ -19,14 +33,14 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
     <div className="space-y-8">
       <PageHeader
         title="Record of processing activities"
-        sub={`RoPA v4 · confirmed 08 Oct 2026 · ${org.name}`}
+        sub={`Register confirmed ${org.lastReview} · ${org.name}`}
       />
 
       <Facts>
         <Fact label="Activities" value={ACTIVITIES.length} note={`${org.exemptActivities} exempt`} />
         <Fact label="Data items itemised" value={items} note="each item listed, as notices must (Rule 3)" />
-        <Fact label="Processors engaged" value={processors} note="8 of 10 have a DPA" tone="warn" />
-        <Fact label="Basis not determined" value={undetermined} note="blocks the evidence pack" tone="bad" />
+        <Fact label="Processors engaged" value={processors} note={`${withDpa} of ${d.processors.length} have a DPA`} tone={withDpa < d.processors.length ? 'warn' : 'plain'} />
+        <Fact label="Basis not determined" value={undetermined} note="blocks the evidence pack" tone={undetermined ? 'bad' : 'plain'} />
       </Facts>
 
       <Panel
@@ -34,26 +48,19 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
         sub="Click a lawful basis or retention to change it · open an activity for its findings and history"
         right={
           <div className="flex flex-wrap gap-1.5">
-            <Tag tone="dark">Fiduciary 17</Tag>
-            <Tag tone="ok">Exempt 2</Tag>
+            <Tag tone="dark">Fiduciary {ACTIVITIES.filter((a) => a.role === 'Fiduciary').length}</Tag>
+            <Tag tone="ok">Exempt {ACTIVITIES.filter((a) => a.role === 'Exempt').length}</Tag>
           </div>
         }
         flush
       >
-        <RopaRegister />
+        <RopaRegister org={org.slug} />
       </Panel>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="How the basis breaks down" sub="The correction most clients need to hear">
           <ul className="space-y-2">
-            {[
-              ['s.7(i) employment purposes', 7, 'Payroll, attendance, performance, onboarding, exit — no consent needed'],
-              ['s.7(i) safeguarding', 3, 'CCTV, visitor register, IT monitoring and DLP'],
-              ['Legal obligation', 3, 'PF/ESIC/PT/TDS filings, POSH records, vendor financial records'],
-              ['Consent', 4, 'Candidate screening and BGV, dependant enrolment, website enquiries'],
-              ['s.17(1)(d) exempt', 2, 'Offshore delivery for the US and UK clients'],
-              ['Not determined', 1, 'Alumni marketing — raised as G-06'],
-            ].map(([label, n, note]) => (
+            {d.basisBreakdown.map(({ label, count: n, note }) => (
               <li key={String(label)}>
                 <Card tone={label === 'Not determined' ? 'danger' : 'plain'} className="p-2.5">
                   <div className="flex items-baseline justify-between gap-2">
@@ -67,8 +74,8 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
           </ul>
           <div className="mt-3">
             <DemoNote>
-              Ten of nineteen activities run on a legitimate use, not consent. Building an employee consent engine
-              would have been building the wrong product.
+              {legitimate} of {ACTIVITIES.length} activities run on a legitimate use or a legal obligation, not
+              consent. Building an employee consent engine would have been building the wrong product.
             </DemoNote>
           </div>
         </Panel>
@@ -84,18 +91,7 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ['Zoho Corporation', 'PA-01, PA-04, PA-19', 'Executed 12 Apr 2024'],
-                  ['Keka Technologies', 'PA-03, PA-07, PA-11', 'Executed 03 Jun 2024'],
-                  ['AuthBridge Research Services', 'PA-02', 'MISSING'],
-                  ['Niva Bupa', 'PA-09', 'Executed 01 Apr 2026'],
-                  ['Marsh India (broker)', 'PA-09', 'MISSING'],
-                  ['Matrix Comsec', 'PA-06', 'Executed 20 Jan 2025'],
-                  ['Intuit Mailchimp', 'PA-12', 'Standard terms accepted'],
-                  ['Microsoft', 'PA-15', 'DPA via enterprise agreement'],
-                  ['Forcepoint', 'PA-15', 'Executed 15 Feb 2025'],
-                  ['HubSpot', 'PA-18', 'Standard terms accepted'],
-                ].map(([p, act, dpa]) => (
+                {d.processors.map(({ name: p, activities: act, dpa }) => (
                   <tr key={p} className={dpa === 'MISSING' ? 'bg-[var(--ds-danger-weak)]' : 'hover:bg-[var(--ds-subtle)]'}>
                     <Td className="font-medium">{p}</Td>
                     <Td className="tnum text-[var(--ds-text-2)]">{act}</Td>

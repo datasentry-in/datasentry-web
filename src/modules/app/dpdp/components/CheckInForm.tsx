@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { CHECK_IN, OWNERS } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { getOrg } from '@/modules/app/dpdp/mock/data';
 import { formatIst } from '@/modules/app/dpdp/time';
 import { BasisTag, Box, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
 
@@ -16,9 +17,7 @@ import { BasisTag, Box, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
 type Answer = { yes: boolean | null; detail: string };
 type Change = { title: string; detail: string; next: string; proposed: boolean };
 
-const BASE_HEADCOUNT = 240;
-
-function compare(answers: Record<string, Answer>, headcount: string): Change[] {
+function compare(answers: Record<string, Answer>, headcount: string, BASE_HEADCOUNT: number): Change[] {
   const out: Change[] = [];
   const a = (id: string) => answers[id] ?? { yes: null, detail: '' };
   const quote = (s: string) => (s.trim() ? `“${s.trim()}”` : 'no detail given');
@@ -36,13 +35,17 @@ function compare(answers: Record<string, Answer>, headcount: string): Change[] {
   return out;
 }
 
-const TRACE = [
-  'Reading your answers against the register (v4, confirmed 08 Oct 2026).',
-  'Matching named tools against the 11 systems and 10 processors on record.',
-  'Checking new purposes and client changes against the rule set (v1.4).',
-];
 
-export default function CheckInForm() {
+export default function CheckInForm({ org }: { org: string }) {
+  const d = clientData(org);
+  const o = getOrg(org);
+  const CHECK_IN = d.checkIn!;
+  const OWNERS = d.owners;
+  const TRACE = [
+    `Reading your answers against the register (confirmed ${o.lastReview}).`,
+    `Matching named tools against the ${d.activities.length} activities and ${d.processors.length} processors on record.`,
+    'Checking new purposes and client changes against the rule set (v1.4).',
+  ];
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [headcount, setHeadcount] = useState('');
   const [phase, setPhase] = useState<'form' | 'checking' | 'done'>('form');
@@ -75,7 +78,7 @@ export default function CheckInForm() {
     setPhase('form');
   };
 
-  const changes = phase === 'done' ? compare(answers, headcount) : [];
+  const changes = phase === 'done' ? compare(answers, headcount, o.headcount) : [];
   const owner = OWNERS[CHECK_IN.sentTo] ?? CHECK_IN.sentTo;
 
   return (

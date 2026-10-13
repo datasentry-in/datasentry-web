@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { CLIENT_THEME, ORGS, PRIVACY_CENTRE, getOrg } from '@/modules/app/dpdp/mock/data';
+import { publicCentre } from '@/modules/app/dpdp/mock/clients';
+import { CLIENT_THEME, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
 import ClientMark from '@/modules/app/dpdp/components/ClientMark';
@@ -21,6 +22,7 @@ export default async function ClientPublicLayout({
   const { org: slug } = await params;
   const org = getOrg(slug);
   const t = CLIENT_THEME[org.slug] ?? CLIENT_THEME.northstar;
+  const PRIVACY_CENTRE = publicCentre(org.slug);
   const theme = {
     '--ds-accent': t.accent,
     '--ds-accent-hover': t.hover,

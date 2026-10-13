@@ -2,7 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
-import { ORGS, TASKS } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink, ProductLockup } from '@/modules/app/ui/Brand';
 import { ToastProvider } from '@/modules/app/ui/Toast';
@@ -50,8 +51,16 @@ const writeSession = (on: boolean) => {
 const serverSnapshot = () => null;
 
 /** Badges beside a nav item: what needs attention there. */
-const openTasks = TASKS.filter((t) => t.status === 'Open' || t.status === 'Overdue').length;
-const COUNTS: Record<string, string> = { tasks: String(openTasks), 'check-in': 'Due' };
+const countsFor = (slug: string): Record<string, string> => {
+  const d = clientData(slug);
+  const open = d.tasks.filter((t) => t.status === 'Open' || t.status === 'Overdue').length;
+  const late = d.dsrs.filter((r) => r.status !== 'Closed' && r.daysLeft !== null && r.daysLeft < 0).length;
+  const c: Record<string, string> = {};
+  if (open) c.tasks = String(open);
+  if (d.checkIn) c['check-in'] = 'Due';
+  if (late) c.dsr = `${late} late`;
+  return c;
+};
 
 export default function DemoShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? DEMO_BASE;
@@ -123,7 +132,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex w-full flex-1 flex-col lg:flex-row">
         {org && (
-          <Sidebar org={org.slug} activeSeg={activeSeg} counts={COUNTS} open={navOpen} onNavigate={() => setNavOpen(false)} />
+          <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug)} open={navOpen} onNavigate={() => setNavOpen(false)} />
         )}
         <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">{children}</main>
       </div>

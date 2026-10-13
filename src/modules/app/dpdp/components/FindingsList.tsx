@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { GAPS, OWNERS, auditFor } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { Gap, Severity } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
@@ -40,9 +40,13 @@ const SORTS: Sort<Gap>[] = [
   { id: 'due', label: 'Due', compare: (a, b) => due(a) - due(b) },
   { id: 'id', label: 'ID', compare: (a, b) => a.id.localeCompare(b.id) },
 ];
-const search = (g: Gap) => `${g.id} ${g.title} ${g.provision} ${g.activity} ${g.owner} ${OWNERS[g.owner] ?? ''}`;
 
-export default function FindingsList() {
+export default function FindingsList({ org }: { org: string }) {
+  const d = clientData(org);
+  const GAPS = d.gaps;
+  const OWNERS = d.owners;
+  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
+  const search = (g: Gap) => `${g.id} ${g.title} ${g.provision} ${g.activity} ${g.owner} ${OWNERS[g.owner] ?? ''}`;
   const [openId, setOpenId] = useState<string | null>(null);
   const t = useTableView({ rows: GAPS, views: VIEWS, sorts: SORTS, search });
   const open = GAPS.find((g) => g.id === openId) ?? null;
@@ -135,7 +139,7 @@ export default function FindingsList() {
               </p>
             </SheetSection>
                     <SheetSection title="Discussion">
-              <Discussion refId={open.id} client="Northstar" />
+              <Discussion org={org} refId={open.id} />
             </SheetSection>
             <SheetSection title="History">
               <AuditTimeline entries={auditFor(open.id)} empty="Raised 08 Oct 2026 by rule engine v1.4. No changes since." />

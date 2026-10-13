@@ -1,4 +1,6 @@
-import { CONSENT_LEDGER, CONSENT_SUMMARY as C, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import {
   Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
@@ -12,7 +14,7 @@ const ITEMISED = [
   ['Mobile number', 'Schedule interviews and send interview outcomes'],
   ['Email address', 'Send the application acknowledgement, interview invitations and the outcome'],
   ['Date of birth', 'Confirm you meet the minimum age for the role'],
-  ['Current and preferred location', 'Match you to openings at our Pune and Bengaluru centres'],
+  ['Current and preferred location', 'Match you to openings at our centres'],
   ['Curriculum vitae', 'Assess your experience against the role requirements'],
   ['Current and expected salary', 'Determine whether the role is within your expectation'],
   ['Notice period', 'Plan the joining date if an offer is made'],
@@ -43,6 +45,30 @@ function Check({ on = true }: { on?: boolean }) {
 export default async function Consent({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const d = clientData(slug);
+  if (!d.consent) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Notice & consent" sub={org.name} />
+        <ModulePending org={org.slug} what="The notice and the consent ledger" />
+      </div>
+    );
+  }
+  const C = d.consent.summary;
+  const CONSENT_LEDGER = d.consent.ledger;
+  const legitimate = d.basisBreakdown.filter((b) => b.label.startsWith('s.7(i)')).reduce((n, b) => n + b.count, 0);
+  const languages = d.privacyCentre?.languages.join(', ') ?? C.languages.join(', ');
+  // Each withdrawal or expired clock, with the systems its tasks touch — from the client's own tasks.
+  const withdrawalWork = [...new Set(d.tasks.filter((t) => t.source.kind === 'Consent withdrawal' || t.source.kind === 'Retention expiry').map((t) => t.source.ref))].map((ref) => {
+    const ts = d.tasks.filter((t) => t.source.ref === ref);
+    const pending = ts.filter((t) => t.status === 'Open' || t.status === 'Overdue').length;
+    return [
+      ts[0].source.label,
+      ts[0].source.kind,
+      ts.map((t) => t.system).join(', '),
+      pending ? `${pending} of ${ts.length} task${ts.length === 1 ? '' : 's'} open · owner ${ts[0].owner}` : 'All tasks attested',
+    ];
+  });
 
   return (
     <div className="space-y-8">
@@ -62,7 +88,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
         <div className="grid gap-3 lg:grid-cols-2">
           <Card tone="ok">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[13px] font-semibold tracking-[-0.01em]">No consent needed — 10 activities</p>
+              <p className="text-[13px] font-semibold tracking-[-0.01em]">No consent needed — {legitimate} activities</p>
               <CiteLink provision="s.7(i)" />
             </div>
             <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
@@ -74,13 +100,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
           <Card>
             <p className="text-[13px] font-semibold tracking-[-0.01em]">Consent genuinely needed</p>
             <ul className="mt-1.5 space-y-1 text-[13px] text-[var(--ds-text-2)]">
-              {[
-                'Candidate screening and background verification',
-                'Dependant enrolment in the group policy, including 61 minors',
-                'Employee photographs used in marketing',
-                'Optional wellness programme participation',
-                'Alumni communications after exit',
-              ].map((l) => (
+              {d.consent.employeeConsentPurposes.map((l) => (
                 <li key={l} className="flex gap-2">
                   <span className="text-[var(--ds-text-3)]">·</span>
                   {l}
@@ -110,18 +130,16 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
         {/* Preview of the applicant-facing notice */}
         <div className="overflow-hidden rounded-lg border border-[var(--ds-border)]">
           <div className="border-b border-[var(--ds-border)] px-4 py-3">
-            <p className="ds-meta text-[var(--ds-text-3)]">
-              Northstar BPO Services Pvt Ltd
-            </p>
+            <p className="ds-meta text-[var(--ds-text-3)]">{org.name}</p>
             <p className="mt-0.5 text-[15px] font-semibold tracking-[-0.01em]">Notice to applicants</p>
             <p className="mt-0.5 text-[12px] text-[var(--ds-text-3)]">
-              Notice v3 · published 01 Oct 2026 · available in English, हिन्दी, मराठी, ಕನ್ನಡ
+              Notice {C.noticeVersion} · available in {languages}
             </p>
           </div>
 
           <div className="p-4">
             <p className="max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">
-              We are Northstar BPO Services Pvt Ltd. We will use the information below only for the purposes
+              We are {org.name}. We will use the information below only for the purposes
               listed beside it. You may withdraw your consent at any time, ask us for a summary of what we hold,
               ask us to correct or erase it, or complain to the Data Protection Board of India.
             </p>
@@ -225,10 +243,10 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
 
       <Panel title="Withdrawal does something" sub="Data is erased once consent is withdrawn or the purpose is served (s.8(7))">
         <ul className="space-y-2">
-          {[
-            ['Deepa Krishnan', 'Consent withdrawn 09 Oct 2026, 17:55', 'Zoho Recruit record, AuthBridge BGV file, Drive CV copy', 'Assigned to Head of Talent Acquisition · due 16 Oct 2026'],
-            ['212 candidates', 'Talent-pool clock expired', 'Zoho Recruit records', 'Bulk purge task · awaiting approval'],
-          ].map(([who, trigger, systems, task]) => (
+          {withdrawalWork.length === 0 && (
+            <li className="text-[14px] text-[var(--ds-text-3)]">No withdrawals or expired clocks waiting on work.</li>
+          )}
+          {withdrawalWork.map(([who, trigger, systems, task]) => (
             <li key={String(who)}>
               <Card>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">

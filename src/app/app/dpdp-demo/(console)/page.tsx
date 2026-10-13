@@ -60,12 +60,16 @@ export default function Portfolio() {
                       {o.sector} · {o.headcount} employees · {o.locations}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <Tag tone="alert">{o.openGaps.high} high</Tag>
-                      <Tag tone="watch">{o.openGaps.medium} medium</Tag>
-                      <Tag>{o.openGaps.low} low</Tag>
-                      <Tag tone="info">{o.activities} activities</Tag>
-                      {o.exemptActivities > 0 && <Tag tone="ok">{o.exemptActivities} exempt s.17(1)(d)</Tag>}
-                      {o.dsrOpen > 0 && <Tag tone="dark">{o.dsrOpen} open DSR</Tag>}
+                      {o.activities > 0 ? (
+                        <>
+                          <Tag tone="alert">{o.openGaps.high} high</Tag>
+                          <Tag tone="watch">{o.openGaps.medium} medium</Tag>
+                          <Tag>{o.openGaps.low} low</Tag>
+                          <Tag tone="info">{o.activities} activities</Tag>
+                          {o.exemptActivities > 0 && <Tag tone="ok">{o.exemptActivities} exempt s.17(1)(d)</Tag>}
+                        </>
+                      ) : null}
+                      {o.dsrOpen > 0 && <Tag tone={o.dsrBreaching ? 'alert' : 'dark'}>{o.dsrOpen} open DSR{o.dsrBreaching ? ` · ${o.dsrBreaching} late` : ''}</Tag>}
                       {o.incidentOpen > 0 && <Tag tone="alert">Incident open</Tag>}
                       {o.engagement.startsWith('Discovery') && <Tag tone="watch">Interview not started</Tag>}
                     </div>
@@ -82,8 +86,9 @@ export default function Portfolio() {
 
         <div className="border-t border-[var(--ds-border)] p-4 sm:p-5">
           <DemoNote>
-            Northstar BPO is the fully worked example — open it to see every module populated. The other two
-            engagements carry realistic headline numbers only.
+            Three clients at three stages. Northstar (phase 2) is the fully worked example, with a live incident.
+            Quadrant (phase 3) is a mature programme close to done. Meridian (discovery) has no register yet, so
+            only its request desk is running — and two requests are already late.
           </DemoNote>
         </div>
       </Panel>

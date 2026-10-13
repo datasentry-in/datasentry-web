@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { OWNERS, TASKS } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
@@ -30,7 +30,7 @@ const sourceHref = (org: string, t: FulfilmentTask) =>
     : t.source.kind === 'Finding' ? demoPath(org, 'gaps')
       : demoPath(org, 'consent');
 
-function AttestForm({ task, onAttest }: { task: FulfilmentTask; onAttest: (note: string, proof: string | null) => void }) {
+function AttestForm({ task, owners: OWNERS, onAttest }: { task: FulfilmentTask; owners: Record<string, string>; onAttest: (note: string, proof: string | null) => void }) {
   const [note, setNote] = useState('');
   const [proof, setProof] = useState<string | null>(null);
   const [sure, setSure] = useState(false);
@@ -72,6 +72,9 @@ function AttestForm({ task, onAttest }: { task: FulfilmentTask; onAttest: (note:
 }
 
 export default function TaskBoard({ org }: { org: string }) {
+  const d = clientData(org);
+  const TASKS = d.tasks;
+  const OWNERS = d.owners;
   const [tasks, setTasks] = useState<FulfilmentTask[]>(TASKS);
   const [viewer, setViewer] = useState<string>('all');
   const [attesting, setAttesting] = useState<string | null>(null);
@@ -187,7 +190,7 @@ export default function TaskBoard({ org }: { org: string }) {
                     </p>
                   )}
 
-                  {attesting === t.id && <AttestForm task={t} onAttest={(n, p) => attest(t.id, n, p)} />}
+                  {attesting === t.id && <AttestForm task={t} owners={OWNERS} onAttest={(n, p) => attest(t.id, n, p)} />}
                 </li>
               ))}
             </ul>

@@ -1,8 +1,9 @@
-import { INCIDENTS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, Fact, Facts, NextStep, PageHeader, Panel, Tag,
+  Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, NextStep, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -12,7 +13,10 @@ export function generateStaticParams() {
 export default async function Breach({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
-  const open = INCIDENTS.find((i) => i.status === 'Open')!;
+  const d = clientData(slug);
+  const INCIDENTS = d.incidents;
+  const open = INCIDENTS.find((i) => i.status === 'Open');
+  const sop = d.evidence.find((e) => e.name === 'Breach response SOP');
   const closed = INCIDENTS.filter((i) => i.status !== 'Open');
 
   return (
@@ -24,12 +28,13 @@ export default async function Breach({ params }: { params: Promise<{ org: string
       />
 
       <Facts>
-        <Fact label="Open incidents" value={1} note="clock running" tone="bad" />
-        <Fact label="Closed this year" value={closed.length} note="both notified in time" tone="good" />
-        <Fact label="Principals affected" value={open.affected} note="this incident" tone="bad" />
-        <Fact label="Response SOP" value="Unsigned" note="finding G-04" tone="bad" />
+        <Fact label="Open incidents" value={open ? 1 : 0} note={open ? 'clock running' : 'none open'} tone={open ? 'bad' : 'plain'} />
+        <Fact label="Closed this year" value={closed.length} note="each notified in time" tone={closed.length ? 'good' : 'plain'} />
+        {open && <Fact label="Principals affected" value={open.affected} note="this incident" tone="bad" />}
+        <Fact label="Response SOP" value={sop?.status === 'Generated' ? 'Signed off' : sop?.status === 'Not started' ? 'Not started' : 'Unsigned'} note={sop?.detail} tone={sop?.status === 'Generated' ? 'good' : 'bad'} />
       </Facts>
 
+      {open ? (<>
       <NextStep
         title={`Send the Board intimation for ${open.id}`}
         action={<Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>}
@@ -134,8 +139,15 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           </DemoNote>
         </div>
       </Panel>
+      </>) : (
+        <EmptyState title="No incident open">
+          When a member of staff reports a suspected breach through the staff form, the 72-hour clock starts from when
+          they became aware, and the Board intimation is drafted from the record.
+        </EmptyState>
+      )}
 
       <Panel title="Closed incidents" sub="The register itself is evidence that a mechanism exists" flush>
+        {closed.length === 0 && <p className="px-4 py-4 text-[13px] text-[var(--ds-text-3)] sm:px-5">No incidents recorded yet.</p>}
         <ul>
           {closed.map((i) => (
             <li key={i.id} className="border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5">

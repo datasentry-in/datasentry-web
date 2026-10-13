@@ -1,4 +1,6 @@
-import { FLOW_EDGES, FLOW_NODES, GAPS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import DataFlowMap from '@/modules/app/dpdp/components/DataFlowMap';
 import {
   Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
@@ -12,6 +14,18 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
   const { org: slug } = await params;
   const org = getOrg(slug);
 
+  const d = clientData(slug);
+  if (!d.registerBuilt) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Data flow map" sub={org.name} />
+        <ModulePending org={org.slug} what="The data flow map" />
+      </div>
+    );
+  }
+  const FLOW_NODES = d.flowNodes;
+  const FLOW_EDGES = d.flowEdges;
+  const GAPS = d.gaps;
   const node = (id: string) => FLOW_NODES.find((n) => n.id === id)!;
   const thirdParties = FLOW_NODES.filter((n) => n.zone !== 'internal');
   const noContract = thirdParties.filter((n) => n.safeguard === 'No DPA' || n.safeguard === 'Terms only');
@@ -22,14 +36,14 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
     <div className="space-y-8">
       <PageHeader
         title="Data flow map"
-        sub={`Derived from the register — no separate authoring step. ${org.name}, RoPA v4.`}
+        sub={`Derived from the register — no separate authoring step. ${org.name}.`}
       />
 
       <Facts>
         <Fact label="Own systems" value={FLOW_NODES.filter((n) => n.zone === 'internal').length} note="holding personal data" />
         <Fact label="Third parties" value={thirdParties.length} note={`${noContract.length} without a DPA`} tone={noContract.length ? 'bad' : 'plain'} />
-        <Fact label="Cross-border flows" value={abroad.length} note="United States, United Kingdom" tone="warn" />
-        <Fact label="Flows with a finding" value={flagged.length} note={flagged.map((e) => e.finding).join(', ')} tone="bad" />
+        <Fact label="Cross-border flows" value={abroad.length} note={[...new Set(abroad.map((e) => node(e.to).region))].join(', ')} tone={abroad.length ? 'warn' : 'plain'} />
+        <Fact label="Flows with a finding" value={flagged.length} note={flagged.map((e) => e.finding).join(', ')} tone={flagged.length ? 'bad' : 'plain'} />
       </Facts>
 
       <Panel
@@ -37,11 +51,12 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
         sub="Hover a system to trace its flows; click a system or a flow for the record behind it"
         flush
       >
-        <DataFlowMap />
+        <DataFlowMap org={org.slug} />
       </Panel>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Flagged flows" sub="Each links back to a gap finding">
+          {flagged.length === 0 && <p className="text-[14px] text-[var(--ds-text-3)]">No flow has a finding against it.</p>}
           <ul className="space-y-4">
             {flagged.map((e) => {
               const g = GAPS.find((x) => x.id === e.finding)!;
@@ -67,22 +82,14 @@ export default async function Flows({ params }: { params: Promise<{ org: string 
 
         <Panel title="Cross-border position" sub="Record destinations; do not assess them yet">
           <ul className="space-y-4">
-            <li>
-              <Card>
-                <p className="text-[13px] font-semibold tracking-[-0.01em]">United States — 4 transfers</p>
-                <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
-                  Mapped: Mailchimp (PA-12), Forcepoint (PA-15). Also on the register: client LMS (PA-08), HubSpot (PA-18).
-                </p>
-              </Card>
-            </li>
-            <li>
-              <Card tone="ok">
-                <p className="text-[13px] font-semibold tracking-[-0.01em]">United Kingdom — exempt</p>
-                <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
-                  PA-17 client delivery. Principals are outside India under contract with a person outside India.
-                </p>
-              </Card>
-            </li>
+            {d.crossBorder.map((c) => (
+              <li key={c.title}>
+                <Card tone={c.tone === 'ok' ? 'ok' : 'plain'}>
+                  <p className="text-[13px] font-semibold tracking-[-0.01em]">{c.title}</p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{c.text}</p>
+                </Card>
+              </li>
+            ))}
             <li>
               <DemoNote>
                 The product records destinations and stops there. The s.16 restricted-country list has not been

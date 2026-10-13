@@ -1,4 +1,7 @@
-import { GAPS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { parseDisplayDate } from '@/modules/app/dpdp/time';
+import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import FindingsList from '@/modules/app/dpdp/components/FindingsList';
 import RemindButton from '@/modules/app/dpdp/components/RemindButton';
 import {
@@ -12,6 +15,20 @@ export function generateStaticParams() {
 export default async function Gaps({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
+  const d = clientData(slug);
+  if (!d.registerBuilt) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Gap report" sub={org.name} />
+        <ModulePending org={org.slug} what="The gap report" />
+      </div>
+    );
+  }
+  const GAPS = d.gaps;
+  // The next step is the most severe finding that falls due first.
+  const rank = { High: 0, Medium: 1, Low: 2 } as const;
+  const top = [...GAPS].sort((a, b) => rank[a.severity] - rank[b.severity] || (parseDisplayDate(a.due)?.getTime() ?? 0) - (parseDisplayDate(b.due)?.getTime() ?? 0))[0];
+  const topOwner = top ? d.owners[top.owner] ?? top.owner : '';
   const counts = {
     High: GAPS.filter((g) => g.severity === 'High').length,
     Medium: GAPS.filter((g) => g.severity === 'Medium').length,
@@ -22,7 +39,7 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
     <div className="space-y-8">
       <PageHeader
         title="Gap report"
-        sub={`Rule set v1.4 · ${org.activities} activities evaluated · generated 08 Oct 2026`}
+        sub={`Rule set v1.4 · ${org.activities} activities evaluated · generated ${org.lastReview}`}
       />
 
       <Facts>
@@ -32,16 +49,17 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
         <Fact label="Low" value={counts.Low} note="remediate by Mar 2027" />
       </Facts>
 
-      <NextStep
-        title="Get the 180-day purge switched on in Zoho Recruit"
-        action={<RemindButton person="Ritu Sharma" what="G-01 — candidate records past 180 days" />}
-      >
-        G-01 is the largest exposure: 4,812 candidate records past their purpose, observed on 09 Oct. Ritu Sharma owns it;
-        the purge task is already overdue.
-      </NextStep>
+      {top && (
+        <NextStep
+          title={`Close ${top.id} — ${top.title.charAt(0).toLowerCase()}${top.title.slice(1)}`}
+          action={<RemindButton person={topOwner} what={`${top.id} — ${top.title}`} />}
+        >
+          {top.detail.split('. ')[0]}. {topOwner} ({top.owner}) owns it, due {top.due}.
+        </NextStep>
+      )}
 
       <Panel title="Findings" sub="Produced by the rule engine, not by the model — each cites a provision. Open one for its evidence and history." flush>
-        <FindingsList />
+        <FindingsList org={org.slug} />
       </Panel>
 
       <Panel title="What this report is not">

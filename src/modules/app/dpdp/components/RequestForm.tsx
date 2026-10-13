@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { PRIVACY_CENTRE } from '@/modules/app/dpdp/mock/data';
+import { publicCentre } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { RIGHTS, type RightType } from '@/modules/app/dpdp/statute';
 import { formatDate, formatIst } from '@/modules/app/dpdp/time';
@@ -84,6 +84,7 @@ function Choice({ on, onClick, children }: { on: boolean; onClick: () => void; c
 }
 
 export default function RequestForm({ orgName, orgSlug, initialType }: { orgName: string; orgSlug: string; initialType: RightType | null }) {
+  const PRIVACY_CENTRE = publicCentre(orgSlug);
   const [step, setStep] = useState(initialType ? 1 : 0);
   const [type, setType] = useState<RightType | null>(initialType);
   const [rel, setRel] = useState<Rel | null>(null);

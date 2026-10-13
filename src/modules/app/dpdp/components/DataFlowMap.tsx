@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { FLOW_EDGES, FLOW_NODES, GAPS, OWNERS } from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
 import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import { CiteLink, Person, SeverityTag, Tag } from '@/modules/app/ui/ui';
@@ -69,10 +69,6 @@ const Y: Record<string, number> = {
   mailchimp: 70, forcepoint: 424, ukclient: 512,
 };
 
-const byId = new Map(FLOW_NODES.map((n) => [n.id, n]));
-const gap = (id?: string): Gap | undefined => (id ? GAPS.find((g) => g.id === id) : undefined);
-const sevColor = (id?: string) => (gap(id)?.severity === 'High' ? C.danger : gap(id) ? C.warn : C.line);
-const crossBorder = (e: FlowEdge) => byId.get(e.to)?.zone === 'abroad';
 
 const SAFEGUARD_TONE: Record<FlowNode['safeguard'], string> = {
   Internal: C.accent, 'DPA in place': C.ok, 'No DPA': C.danger, 'Terms only': C.warn, Statutory: '#475467', Exempt: '#0f766e',
@@ -88,43 +84,57 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'Ex-employees', label: 'Ex-employees' },
   { id: 'Client end-users', label: 'Client end-users' },
 ];
-const matches = (e: FlowEdge, f: Filter) =>
-  f === 'all' ? true : f === 'finding' ? !!e.finding : f === 'border' ? crossBorder(e) : e.principals === f;
 
 /* ------------------------------------------------------------------ geometry */
 
-const pos = (id: string) => {
-  const n = byId.get(id)!;
-  return { x: COL[n.zone], y: Y[id] ?? 0 };
-};
-function curve(e: FlowEdge) {
-  const a = pos(e.from);
-  const b = pos(e.to);
-  const p0 = { x: a.x + NODE_W, y: a.y + NODE_H / 2 };
-  const p3 = { x: b.x, y: b.y + NODE_H / 2 };
-  const mid = (p0.x + p3.x) / 2;
-  const p1 = { x: mid, y: p0.y };
-  const p2 = { x: mid, y: p3.y };
-  const at = (t: number) => {
-    const u = 1 - t;
-    return {
-      x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-      y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
-    };
+/**
+ * One client's graph and the helpers that draw it. Built per client, so the
+ * map shows that client's systems, flows and findings — never another's.
+ */
+function graphFor(org: string) {
+  const d = clientData(org);
+  const nodes = d.flowNodes;
+  const edges = d.flowEdges;
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const gap = (id?: string): Gap | undefined => (id ? d.gaps.find((g) => g.id === id) : undefined);
+  const sevColor = (id?: string) => (gap(id)?.severity === 'High' ? C.danger : gap(id) ? C.warn : C.line);
+  const crossBorder = (e: FlowEdge) => byId.get(e.to)?.zone === 'abroad';
+  const matches = (e: FlowEdge, f: Filter) =>
+    f === 'all' ? true : f === 'finding' ? !!e.finding : f === 'border' ? crossBorder(e) : e.principals === f;
+  const pos = (id: string) => {
+    const n = byId.get(id)!;
+    return { x: COL[n.zone], y: Y[id] ?? 0 };
   };
-  // Where the flow crosses the India border, if it does.
-  let crossing: { x: number; y: number } | null = null;
-  if (p0.x < BORDER_X && p3.x > BORDER_X) {
-    let lo = 0;
-    let hi = 1;
-    for (let i = 0; i < 24; i++) {
-      const m = (lo + hi) / 2;
-      if (at(m).x < BORDER_X) lo = m;
-      else hi = m;
+  function curve(e: FlowEdge) {
+    const a = pos(e.from);
+    const b = pos(e.to);
+    const p0 = { x: a.x + NODE_W, y: a.y + NODE_H / 2 };
+    const p3 = { x: b.x, y: b.y + NODE_H / 2 };
+    const mid = (p0.x + p3.x) / 2;
+    const p1 = { x: mid, y: p0.y };
+    const p2 = { x: mid, y: p3.y };
+    const at = (t: number) => {
+      const u = 1 - t;
+      return {
+        x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+        y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+      };
+    };
+    // Where the flow crosses the India border, if it does.
+    let crossing: { x: number; y: number } | null = null;
+    if (p0.x < BORDER_X && p3.x > BORDER_X) {
+      let lo = 0;
+      let hi = 1;
+      for (let i = 0; i < 24; i++) {
+        const m = (lo + hi) / 2;
+        if (at(m).x < BORDER_X) lo = m;
+        else hi = m;
+      }
+      crossing = at((lo + hi) / 2);
     }
-    crossing = at((lo + hi) / 2);
+    return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, mid: at(0.5), crossing };
   }
-  return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, mid: at(0.5), crossing };
+  return { nodes, edges, owners: d.owners, byId, gap, sevColor, crossBorder, matches, pos, curve };
 }
 
 /* --------------------------------------------------------------------- icons */
@@ -145,7 +155,8 @@ function KindIcon({ kind, x, y, color }: { kind: FlowNode['kind']; x: number; y:
 
 type Selected = { type: 'node'; id: string } | { type: 'edge'; id: string } | null;
 
-export default function DataFlowMap() {
+export default function DataFlowMap({ org }: { org: string }) {
+  const { nodes: FLOW_NODES, edges: FLOW_EDGES, byId, gap, sevColor, matches, pos, curve } = graphFor(org);
   const [filter, setFilter] = useState<Filter>('all');
   const [hover, setHover] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selected>(null);
@@ -309,7 +320,7 @@ export default function DataFlowMap() {
 
       <Legend />
 
-      <FlowSheet selected={selected} onSelect={setSelected} />
+      <FlowSheet org={org} selected={selected} onSelect={setSelected} />
     </>
   );
 }
@@ -352,7 +363,8 @@ function Legend() {
 
 /* ---------------------------------------------------------------- the sheet */
 
-function FindingBlock({ id }: { id: string }) {
+function FindingBlock({ org, id }: { org: string; id: string }) {
+  const { gap, owners: OWNERS } = graphFor(org);
   const g = gap(id);
   if (!g) return null;
   const person = OWNERS[g.owner] ?? g.owner;
@@ -390,7 +402,8 @@ function Rows({ rows }: { rows: [string, ReactNode][] }) {
 const safeguardText = (s: FlowNode['safeguard']) => <span className="font-medium" style={{ color: SAFEGUARD_TONE[s] }}>{s}</span>;
 const where = (n: FlowNode) => ({ IN: 'India', US: 'United States', UK: 'United Kingdom' })[n.region];
 
-function FlowSheet({ selected, onSelect }: { selected: Selected; onSelect: (s: Selected) => void }) {
+function FlowSheet({ org, selected, onSelect }: { org: string; selected: Selected; onSelect: (s: Selected) => void }) {
+  const { edges: FLOW_EDGES, byId, crossBorder } = graphFor(org);
   const edge = selected?.type === 'edge' ? FLOW_EDGES.find((e) => e.id === selected.id) : undefined;
   const node = selected?.type === 'node' ? byId.get(selected.id) : undefined;
   const close = () => onSelect(null);
@@ -425,9 +438,9 @@ function FlowSheet({ selected, onSelect }: { selected: Selected; onSelect: (s: S
             ]}
           />
         </SheetSection>
-        {edge.finding && <FindingBlock id={edge.finding} />}
+        {edge.finding && <FindingBlock org={org} id={edge.finding} />}
         <SheetSection title="Discussion">
-          <Discussion refId={edge.finding ?? edge.activity.split(' ')[0]} client="Northstar" />
+          <Discussion org={org} refId={edge.finding ?? edge.activity.split(' ')[0]} />
         </SheetSection>
       </Sheet>
     );
@@ -466,7 +479,7 @@ function FlowSheet({ selected, onSelect }: { selected: Selected; onSelect: (s: S
             <ul className="space-y-1.5">{list(inn, 'from')}{list(out, 'to')}</ul>
           )}
         </SheetSection>
-        {node.finding && <FindingBlock id={node.finding} />}
+        {node.finding && <FindingBlock org={org} id={node.finding} />}
       </Sheet>
     );
   }

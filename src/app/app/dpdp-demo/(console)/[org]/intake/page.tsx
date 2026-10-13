@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import {
-  CHECK_IN, CONSENT_SUMMARY, DSRS, ORGS, PRIVACY_CENTRE, QUESTIONNAIRE, TASKS, WALKTHROUGH, getOrg,
-} from '@/modules/app/dpdp/mock/data';
+import { clientData } from '@/modules/app/dpdp/mock/clients';
+import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import type { EvidenceBasis } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
@@ -57,35 +56,49 @@ export default async function Intake({ params }: { params: Promise<{ org: string
   const { org: slug } = await params;
   const org = getOrg(slug);
 
-  const byChannel = (c: 'Privacy centre' | 'Email') => DSRS.filter((d) => d.channel === c).length;
-  const open = TASKS.filter((t) => t.status === 'Open').length;
-  const overdue = TASKS.filter((t) => t.status === 'Overdue').length;
-  const attested = TASKS.filter((t) => t.status === 'Attested').length;
-  const differs = WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length;
+  const d = clientData(slug);
+  const pc = d.privacyCentre;
+  const inbox = pc?.inbox ?? `requests.${org.slug}@in.datasentry.in`;
+  const byChannel = (c: 'Privacy centre' | 'Email') => d.dsrs.filter((r) => r.channel === c).length;
+  const open = d.tasks.filter((t) => t.status === 'Open').length;
+  const overdue = d.tasks.filter((t) => t.status === 'Overdue').length;
+  const attested = d.tasks.filter((t) => t.status === 'Attested').length;
+  const differs = d.walkthrough ? d.walkthrough.observations.filter((o) => o.result !== 'matches').length : 0;
+  const lastIncident = d.incidents[0];
+  const Q = d.questionnaire;
 
   const created: Channel[] = [
-    {
-      name: 'Privacy centre',
-      does: 'Data principals make requests, raise grievances and withdraw consent on a page branded for the client.',
-      detail: PRIVACY_CENTRE.url,
-      activity: `${byChannel('Privacy centre')} requests this quarter`,
-      href: demoPath('p', org.slug),
-      cta: 'Open the public page',
-      external: true,
-    },
+    pc
+      ? {
+          name: 'Privacy centre',
+          does: 'Data principals make requests, raise grievances and withdraw consent on a page branded for the client.',
+          detail: pc.url,
+          activity: `${byChannel('Privacy centre')} requests this quarter`,
+          href: demoPath('p', org.slug),
+          cta: 'Open the public page',
+          external: true,
+        }
+      : {
+          name: 'Privacy centre',
+          does: `Not set up — ${org.name} publishes an email address only. A hosted page can follow once the notice exists.`,
+          detail: 'Not live',
+          activity: 'Requests arrive by email for now',
+          href: demoPath(org.slug, 'dsr'),
+          cta: 'DSR desk',
+        },
     {
       name: 'Request inbox',
-      does: 'Requests that arrive by email are forwarded here, timestamped and put on the same SLA clock.',
-      detail: PRIVACY_CENTRE.inbox,
-      activity: `${byChannel('Email')} request this quarter`,
+      does: 'Requests that arrive by email are forwarded here, timestamped and put on the same response clock.',
+      detail: inbox,
+      activity: `${byChannel('Email')} request${byChannel('Email') === 1 ? '' : 's'} this quarter`,
       href: demoPath(org.slug, 'dsr'),
       cta: 'DSR desk',
     },
     {
       name: 'Consent capture',
       does: 'A hosted consent page, embedded on the careers site with one line. The consent ledger lives here.',
-      detail: PRIVACY_CENTRE.consentSnippet,
-      activity: `${CONSENT_SUMMARY.activeCandidate.toLocaleString('en-IN')} active candidate consents`,
+      detail: pc?.consentSnippet ?? 'Not live — follows the notice',
+      activity: d.consent ? `${d.consent.summary.activeCandidate.toLocaleString('en-IN')} active candidate consents` : 'Starts after discovery',
       href: demoPath(org.slug, 'consent'),
       cta: 'Consent ledger',
     },
@@ -93,7 +106,7 @@ export default async function Intake({ params }: { params: Promise<{ org: string
       name: 'Incident report',
       does: 'Any member of staff reports a suspected breach. The 72-hour clock starts from when they became aware.',
       detail: 'Staff link · no login needed',
-      activity: 'Last report 10 Oct 2026 — INC-2026-003',
+      activity: lastIncident ? `Last report ${lastIncident.awareness.split(',')[0]} — ${lastIncident.id}` : 'No reports yet',
       href: demoPath('p', org.slug, 'report'),
       cta: 'Open the form',
       external: true,
@@ -104,8 +117,8 @@ export default async function Intake({ params }: { params: Promise<{ org: string
     {
       name: 'Discovery interview',
       does: 'The adaptive questionnaire. Counts and dates are read off the client’s own screens, never exported.',
-      detail: `${QUESTIONNAIRE.answered} of ${QUESTIONNAIRE.total} answered`,
-      activity: `Section ${QUESTIONNAIRE.section} of ${QUESTIONNAIRE.sections} — ${QUESTIONNAIRE.sectionName}`,
+      detail: Q ? `${Q.answered} of ${Q.total} answered` : 'Not started',
+      activity: Q ? `Section ${Q.section} of ${Q.sections} — ${Q.sectionName}` : 'Six seed questions, about 40 minutes',
       basis: 'declared',
       href: demoPath(org.slug, 'discovery'),
       cta: 'Interview',
@@ -113,8 +126,8 @@ export default async function Intake({ params }: { params: Promise<{ org: string
     {
       name: 'Consultant walkthroughs',
       does: 'On a review call the client screen-shares a system; the consultant records what they saw.',
-      detail: `Last ${WALKTHROUGH.date.split(',')[0]} · next ${WALKTHROUGH.next}`,
-      activity: `${WALKTHROUGH.observations.length} observations, ${differs} differed from the register`,
+      detail: d.walkthrough ? `Last ${d.walkthrough.date.split(',')[0]} · next ${d.walkthrough.next}` : 'None yet',
+      activity: d.walkthrough ? `${d.walkthrough.observations.length} observations, ${differs} differed from the register` : 'First one after the register is drafted',
       basis: 'observed',
       href: demoPath(org.slug, 'walkthrough'),
       cta: 'Walkthroughs',
@@ -122,8 +135,8 @@ export default async function Intake({ params }: { params: Promise<{ org: string
     {
       name: 'Quarterly check-in',
       does: 'Six questions a quarter. Answers are compared with the register and anything new is flagged.',
-      detail: `Due ${CHECK_IN.due} · sent to ${CHECK_IN.sentTo}`,
-      activity: `Last on ${CHECK_IN.last.on} — ${CHECK_IN.last.changes} changes flagged`,
+      detail: d.checkIn ? `Due ${d.checkIn.due} · sent to ${d.checkIn.sentTo}` : 'Not scheduled',
+      activity: d.checkIn ? `Last on ${d.checkIn.last.on} — ${d.checkIn.last.changes} changes flagged` : 'Starts once the register is confirmed',
       basis: 'declared',
       href: demoPath(org.slug, 'check-in'),
       cta: 'Check-in',
@@ -134,7 +147,7 @@ export default async function Intake({ params }: { params: Promise<{ org: string
     {
       name: 'Fulfilment tasks',
       does: 'Erasures, withdrawals and expiries become a task per system. The owner does the work and attests it.',
-      detail: `${TASKS.length} tasks generated from the register`,
+      detail: `${d.tasks.length} tasks generated from the register`,
       activity: `${open} open · ${overdue} overdue · ${attested} attested`,
       basis: 'attested',
       href: demoPath(org.slug, 'tasks'),
@@ -153,7 +166,7 @@ export default async function Intake({ params }: { params: Promise<{ org: string
         <Fact label="Channels live" value={created.length + register.length + attestedWork.length} note="none touch a client system" tone="good" />
         <Fact label="Requests this quarter" value={byChannel('Privacy centre') + byChannel('Email')} note={`${byChannel('Privacy centre')} privacy centre, ${byChannel('Email')} email`} />
         <Fact label="Tasks awaiting attestation" value={open + overdue} note={`${overdue} overdue`} tone={overdue ? 'bad' : 'warn'} />
-        <Fact label="Check-in" value="Due" note={`${CHECK_IN.label} · ${CHECK_IN.due}`} tone="warn" />
+        <Fact label="Check-in" value={d.checkIn ? 'Due' : '—'} note={d.checkIn ? `${d.checkIn.label} · ${d.checkIn.due}` : 'after the register'} tone={d.checkIn ? 'warn' : 'plain'} />
       </Facts>
 
       <Panel
