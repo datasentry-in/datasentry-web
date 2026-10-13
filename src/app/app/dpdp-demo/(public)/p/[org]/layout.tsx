@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { CLIENT_THEME, ORGS, PRIVACY_CENTRE, getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
+import ClientMark from '@/modules/app/dpdp/components/ClientMark';
 
 /**
  * Client-facing pages — the privacy centre, the request form, the staff
@@ -32,13 +33,7 @@ export default async function ClientPublicLayout({
       <header className="border-b border-[var(--ds-border)] bg-white">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-5 py-3.5">
           <Link href={demoPath('p', org.slug)} className="flex items-center gap-2.5">
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-md text-[12px] font-bold text-white"
-              style={{ background: t.accent }}
-              aria-hidden
-            >
-              {t.initials}
-            </span>
+            <ClientMark slug={org.slug} size={32} />
             <span className="leading-tight">
               <span className="block text-[14px] font-semibold tracking-[-0.01em]">{org.name}</span>
               <span className="block text-[12px] text-[var(--ds-text-3)]">Privacy centre · {PRIVACY_CENTRE.url}</span>

@@ -80,8 +80,8 @@ src/modules/app/dpdp/    the DPDP product
   main link (it stretches over the row), `ds-row-actions` on the buttons. Always visible on touch.
 - **Empty lists** render `EmptyState` with what it means, never a blank panel.
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
-- **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar, its border continuing the
-  sidebar's) + `ClientSwitcher` (client name, phase,
+- **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
+  sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,
   details and the other clients) + search, alerts, account. Inside a client, `Sidebar` is the left
   rail: collapsible to icons (`[`, state in localStorage via `sidebarState.ts`), "Powered by
   DataSentry" at its foot. Pages without a sidebar carry "Powered by" in the footer.

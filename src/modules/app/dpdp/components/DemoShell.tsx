@@ -86,15 +86,14 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
       {/* Top bar: product, the client you are in, then quick access and alerts. */}
       <header className="sticky top-0 z-40 h-14 border-b border-[var(--ds-border)] bg-[rgba(255,255,255,0.86)] backdrop-blur-md">
         <div className="flex h-full items-center gap-2 pr-4 lg:pr-5">
-          {/* The product cell lines up with the sidebar: same width, and its
-              right border continues the sidebar's. Collapsed, it keeps its
-              natural width — "DPDP Console" does not fit the icon rail. */}
+          {/* The product cell is as wide as the sidebar, so the pipe after it
+              sits on the sidebar's border line. Collapsed, it keeps its natural
+              width — "DPDP Console" does not fit the icon rail. */}
           <div
-            className={`flex h-full shrink-0 items-center border-r border-[var(--ds-border)] px-4 lg:px-5 ${
-              org && !collapsed ? 'lg:w-60' : ''
-            }`}
+            className={`relative flex h-full shrink-0 items-center px-4 lg:px-5 ${org && !collapsed ? 'lg:w-60' : ''}`}
           >
             <ProductLockup href={demoPath()} byline={false} />
+            <span className="absolute right-0 top-1/2 h-5 w-px -translate-y-1/2 bg-[var(--ds-border)]" aria-hidden />
           </div>
           <div className="min-w-0 flex-1 pl-1 sm:pl-2">
             <ClientSwitcher org={org} />

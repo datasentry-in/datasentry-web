@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import ClientMark from '@/modules/app/dpdp/components/ClientMark';
 import DeadlineCountdown from '@/modules/app/dpdp/components/DeadlineCountdown';
 import { DemoNote, PageHeader, Panel, Stat, Tag } from '@/modules/app/ui/ui';
 
@@ -51,7 +52,8 @@ export default function Portfolio() {
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[14px] font-semibold leading-tight tracking-[-0.01em] group-hover:text-[var(--ds-accent-hover)]">
+                    <h3 className="flex items-center gap-2 text-[14px] font-semibold leading-tight tracking-[-0.01em] group-hover:text-[var(--ds-accent-hover)]">
+                      <ClientMark slug={o.slug} />
                       {o.name}
                     </h3>
                     <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">

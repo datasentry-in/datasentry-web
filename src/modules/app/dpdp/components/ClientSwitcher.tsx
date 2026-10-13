@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import type { Org } from '@/modules/app/dpdp/types';
+import ClientMark from './ClientMark';
 
 /**
  * The header's context: which client you are in, and the way to any other.
@@ -43,6 +44,7 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
         aria-haspopup="menu"
         className="flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--ds-subtle)]"
       >
+        {org && <ClientMark slug={org.slug} />}
         <span className="min-w-0 truncate text-[13px] font-medium text-[var(--ds-text)]">{org ? org.name : 'All clients'}</span>
         {org && <span className="hidden shrink-0 text-[12px] text-[var(--ds-text-3)] md:inline">· {phase(org)}</span>}
         <Chevron />
@@ -54,7 +56,10 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
           <div role="menu" className="ds-pop fixed inset-x-4 top-14 z-50 sm:absolute sm:inset-x-auto sm:left-0 sm:top-auto sm:mt-1.5 sm:w-[20rem] overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow-md)]">
             {org && (
               <div className="border-b border-[var(--ds-border)] px-3.5 py-3">
-                <p className="text-[13px] font-semibold tracking-[-0.01em]">{org.name}</p>
+                <p className="flex items-center gap-2 text-[13px] font-semibold tracking-[-0.01em]">
+                  <ClientMark slug={org.slug} size={24} />
+                  {org.name}
+                </p>
                 <p className="mt-0.5 text-[12px] text-[var(--ds-text-3)]">{org.sector}</p>
                 <p className="text-[12px] text-[var(--ds-text-3)]">
                   {org.headcount} employees · {org.locations}
@@ -72,11 +77,12 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-[var(--ds-subtle)]"
                   >
-                    <span className="ds-figure w-6 text-right text-[13px]" style={{ color: scoreTone(o.score) }}>{o.score}</span>
+                    <ClientMark slug={o.slug} size={24} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[13px] text-[var(--ds-text)]">{o.name}</span>
                       <span className="block truncate text-[12px] text-[var(--ds-text-3)]">{phase(o)}</span>
                     </span>
+                    <span className="ds-figure text-[13px]" style={{ color: scoreTone(o.score) }} title="Readiness score">{o.score}</span>
                   </Link>
                 </li>
               ))}
