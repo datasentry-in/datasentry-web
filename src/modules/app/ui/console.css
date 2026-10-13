@@ -247,6 +247,15 @@ body:has(.demo-root) {
 .demo-root .ds-work-row:hover,
 .demo-root .ds-work-row[aria-current='true'] { --row-bg: var(--ds-subtle); }
 .demo-root .ds-row-float { position: absolute; padding-left: 2rem; background: linear-gradient(to right, transparent, var(--row-bg) 1.5rem); }
+.demo-root .ds-work-row:focus-within { --row-bg: var(--ds-subtle); }
+.demo-root .ds-work-row[data-selected] { --row-bg: var(--ds-accent-weak); }
+/* The selection checkbox sits in the row's gutter: shown on hover, on the
+   keyboard's row, once anything is selected, or when checked. */
+.demo-root .ds-row-check { opacity: 0; border-radius: 3px !important; transition: opacity var(--ds-dur-quick) var(--ds-ease-out); }
+.demo-root .ds-row-check[aria-checked='true'] { opacity: 1; background: var(--ds-accent); border-color: var(--ds-accent); }
+.demo-root .ds-work-row:hover .ds-row-check,
+.demo-root .ds-work-row:focus-within .ds-row-check,
+.demo-root [data-selecting] .ds-row-check { opacity: 1; }
 
 /* The row's main link takes keyboard focus for the whole row. */
 .demo-root .ds-row-link:focus-visible::after { outline: 2px solid var(--ds-accent); outline-offset: -2px; }

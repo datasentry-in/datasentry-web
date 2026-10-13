@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst, parseDisplayDate } from '@/modules/app/dpdp/time';
@@ -11,7 +11,10 @@ import { TASK_LABEL, TASK_STATUS } from '@/modules/app/dpdp/workStatus';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import { useToast } from '@/modules/app/ui/Toast';
 import { StatusIcon, WorkGroup, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
+import BulkBar, { BulkAction } from '@/modules/app/ui/BulkBar';
 import FilterBar from '@/modules/app/ui/FilterBar';
+import { useMenu } from '@/modules/app/ui/Menu';
+import { useListKeys } from '@/modules/app/ui/useListKeys';
 import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
 import { Panel, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
@@ -101,6 +104,9 @@ export default function TaskBoard({ org }: { org: string }) {
   const toast = useToast();
   const [tasks, setTasks] = useState<FulfilmentTask[]>(TASKS);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const list = useRef<HTMLUListElement>(null);
+  const menu = useMenu();
   const open = tasks.find((t) => t.id === openId) ?? null;
   const nameOf = (t: FulfilmentTask) => personFor(OWNERS, t.owner).name;
   const ownerName = (role: string) => personFor(OWNERS, role).name;
@@ -116,6 +122,33 @@ export default function TaskBoard({ org }: { org: string }) {
     );
     toast(`${id} attested`, `Recorded as attested by ${nameOf(t)} — not machine-verified. The next walkthrough looks at it on screen.`);
   };
+
+  const toggle = (id: string) => setSelected((x) => {
+    const next = new Set(x);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+  /** Remind the owners of the tasks still waiting on them; attested and kept ones need nothing. */
+  const remind = (ids: string[]) => {
+    const waiting = tasks.filter((x) => ids.includes(x.id) && live(x));
+    const owners = new Set(waiting.map((x) => x.owner));
+    if (!waiting.length) {
+      toast('Nothing to remind', 'Every selected task is already attested or kept.');
+      return;
+    }
+    toast(
+      waiting.length === 1 ? `Reminder sent to ${nameOf(waiting[0])}` : `Reminders sent to ${owners.size} owner${owners.size === 1 ? '' : 's'}`,
+      `${waiting.map((x) => x.id).join(', ')} · ${formatIst(new Date())} · in this mock nothing is emailed`,
+    );
+  };
+  // A task's status changes one way only — the owner attests it — so "s" opens the task to attest.
+  useListKeys(list, {
+    onSelect: toggle,
+    onStatus: (id) => setOpenId(id),
+    onClear: () => setSelected(new Set()),
+    hasSelection: selected.size > 0,
+  });
 
   // Who a task waits on is a filter ("Owner is Ritu Sharma") — the view an owner sees of their own work.
   const FIELDS: Field<FulfilmentTask>[] = [
@@ -137,6 +170,17 @@ export default function TaskBoard({ org }: { org: string }) {
       title={x.action}
       onOpen={() => setOpenId(x.id)}
       current={openId === x.id}
+      selected={selected.has(x.id)}
+      onSelect={() => toggle(x.id)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        menu.openAt(e.clientX, e.clientY, [
+          { label: live(x) ? 'Open to attest' : 'Open', hint: '↵', onSelect: () => setOpenId(x.id) },
+          { label: selected.has(x.id) ? 'Deselect' : 'Select', hint: 'X', onSelect: () => toggle(x.id) },
+          { label: `Remind ${nameOf(x)}`, disabled: !live(x), onSelect: () => remind([x.id]) },
+          { label: 'Copy ID', onSelect: () => { void navigator.clipboard?.writeText(x.id); toast(`Copied ${x.id}`); } },
+        ], `Actions for ${x.id}`);
+      }}
       meta={t.grouping === 'system' ? x.source.label : x.system}
       actions={live(x) && (
         <>
@@ -191,13 +235,17 @@ export default function TaskBoard({ org }: { org: string }) {
     <>
       <Panel flush>
         <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search tasks…" />
-        <WorkList>
+        <WorkList ref={list} selecting={selected.size > 0}>
           {t.groups ? t.groups.map((g) => group(g.key, g.rows)) : t.shown.map(row)}
           {t.shown.length === 0 && (
             <li className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No tasks match this view.</li>
           )}
         </WorkList>
       </Panel>
+      {menu.element}
+      <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
+        <BulkAction onClick={() => remind([...selected])}>Remind owners</BulkAction>
+      </BulkBar>
 
       <Sheet
         open={!!open}

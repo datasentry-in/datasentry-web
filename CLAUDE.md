@@ -134,6 +134,13 @@ src/modules/app/dpdp/    the DPDP product
   the left; + Filter (field, then value; active filters as removable chips), search and `DisplayMenu`
   (grouping, ordering) on the right. Anything narrower than a saved view — one owner, one status — is a
   filter, not a view. Register tables (RoPA) keep `SortHead` chevrons.
+- **Lists answer the keyboard** (`ui/useListKeys.ts`): `j`/`k` (↓/↑ inside the list) move focus row
+  to row, Enter opens, `x` selects (the gutter checkbox does too) and `BulkBar` floats in with the bulk
+  actions, `s` changes status (a `Menu` under the row; for tasks it opens the attest sheet), Escape clears.
+  Right-click opens the row's `Menu` (`ui/Menu.tsx`: `useMenu().openAt` / `openBelow`). `Shortcuts` listens
+  in the capture phase and claims the `g` sequence keys, so a list never acts on "g s"; lists ignore
+  `defaultPrevented` keys, typing, and anything pressed while a dialog, sheet or menu is open. Pass the
+  `WorkList` a `ref` and give rows a `rowId` (WorkRow defaults it to `id`).
 - **Edits happen in place** (RoPA lawful basis and retention): the row turns consultant-reviewed, an
   audit entry records old → new (`Change`), and a toast says what the rule engine does with it.
 - **`NextStep` lives on the overview only**, in yellow, with a button named for the action ("Draft the

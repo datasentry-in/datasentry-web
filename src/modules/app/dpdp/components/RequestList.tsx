@@ -1,14 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { auditFor, clientData } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { responseWindow } from '@/modules/app/dpdp/sla';
 import type { Dsr } from '@/modules/app/dpdp/types';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { REQUEST_STATUS, TASK_LABEL, TASK_STATUS } from '@/modules/app/dpdp/workStatus';
+import { useMenu, type MenuItem } from '@/modules/app/ui/Menu';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import { useToast } from '@/modules/app/ui/Toast';
+import { useListKeys } from '@/modules/app/ui/useListKeys';
 import { StatusIcon, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
 import { Skeleton } from '@/modules/app/ui/ui';
 import AuditTimeline from './AuditTimeline';
@@ -25,8 +28,33 @@ export default function RequestList({ org }: { org: string }) {
   const days = d.privacyCentre?.responseDays ?? 30;
   const now = useNow(60_000);
   const [openId, setOpenId] = useState<string | null>(null);
-  const rows = d.dsrs.filter((r) => r.status !== 'Closed');
+  // Status changes made here (s, the row menu); a live app writes them to the request and its audit trail.
+  const [changed, setChanged] = useState<Record<string, Dsr['status']>>({});
+  const toast = useToast();
+  const menu = useMenu();
+  const list = useRef<HTMLUListElement>(null);
+  const rows = d.dsrs.filter((r) => r.status !== 'Closed').map((r) => (changed[r.id] ? { ...r, status: changed[r.id] } : r));
   const open = rows.find((r) => r.id === openId) ?? null;
+  const statusItems = (r: Dsr): MenuItem[] => [
+    { heading: 'Status' },
+    ...(['New', 'In progress', 'Awaiting client', 'Closed'] as Dsr['status'][]).map((s) => ({
+      label: s,
+      icon: <StatusIcon status={REQUEST_STATUS[s]} label={s} />,
+      checked: r.status === s,
+      onSelect: () => {
+        setChanged((c) => ({ ...c, [r.id]: s }));
+        toast(`${r.id} → ${s}`, s === 'Closed'
+          ? 'Marked closed. In the live app it moves to the closed log, which is the evidence, and the change is audited, old → new.'
+          : 'In the live app this is logged to the audit trail, old → new.');
+      },
+    })),
+  ];
+  useListKeys(list, {
+    onStatus: (id, el) => {
+      const r = rows.find((x) => x.id === id);
+      if (r) menu.openBelow(el, statusItems(r), `Status of ${id}`);
+    },
+  });
   const late = (r: Dsr) => now !== null && responseWindow(r.received, days, now).late;
   const status = (r: Dsr) => (
     <StatusIcon
@@ -37,7 +65,7 @@ export default function RequestList({ org }: { org: string }) {
 
   return (
     <>
-      <WorkList idWidth="6.75rem">
+      <WorkList idWidth="6.75rem" ref={list}>
         {rows.map((r) => (
           <WorkRow
             key={r.id}
@@ -46,11 +74,21 @@ export default function RequestList({ org }: { org: string }) {
             title={`${r.type} — ${r.principal}`}
             onOpen={() => setOpenId(r.id)}
             current={openId === r.id}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              menu.openAt(e.clientX, e.clientY, [
+                { label: 'Open', hint: '↵', onSelect: () => setOpenId(r.id) },
+                { label: 'Copy reference', onSelect: () => { void navigator.clipboard?.writeText(r.id); toast(`Copied ${r.id}`); } },
+                'separator',
+                ...statusItems(r),
+              ], `Actions for ${r.id}`);
+            }}
             meta={`${r.relationship} · ${r.channel ?? 'Email'}`}
             due={<WindowLeft received={r.received} days={days} now={now} />}
           />
         ))}
       </WorkList>
+      {menu.element}
 
       <Sheet
         open={!!open}

@@ -115,6 +115,7 @@ const MAIN = 'ds-row-link min-w-0 truncate text-left text-[13px] font-medium tex
 
 export function WorkRow({
   priority, id, status, title, href, onOpen, meta, actions, due, owner, current = false,
+  rowId = id, selected, onSelect, onContextMenu,
 }: {
   priority?: ReactNode;
   id?: string;
@@ -131,15 +132,42 @@ export function WorkRow({
   due?: ReactNode;
   /** `null` keeps the avatar's space, for rows nobody owns. */
   owner?: { name: string; role?: string } | null;
-  /** The record open beside the list, or the keyboard's place in it. */
+  /** The record open beside the list. */
   current?: boolean;
+  /** What the keyboard (useListKeys) and menus call this row; defaults to `id`. */
+  rowId?: string;
+  /** Selection for bulk actions: a checkbox in the row's gutter, shown on hover or once anything is selected. */
+  selected?: boolean;
+  onSelect?: () => void;
+  /** Right-click: the row's menu (ui/Menu). */
+  onContextMenu?: (e: React.MouseEvent<HTMLLIElement>) => void;
 }) {
   const grow = meta ? 'flex-1 @3xl:flex-initial' : 'flex-1';
   return (
     <li
       aria-current={current || undefined}
+      data-row-id={rowId}
+      data-selected={selected || undefined}
+      onContextMenu={onContextMenu}
       className="ds-row ds-work-row flex min-h-11 items-center gap-3 border-b border-[var(--ds-border)] px-4 py-1.5 transition-colors last:border-b-0 sm:px-5"
     >
+      {onSelect && (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={!!selected}
+          aria-label={`Select ${title}`}
+          tabIndex={-1}
+          onClick={onSelect}
+          className="ds-row-check absolute left-0.5 top-1/2 z-[1] flex h-3.5 w-3.5 -translate-y-1/2 items-center justify-center border border-[var(--ds-border-strong)] bg-[var(--ds-panel)] sm:left-1"
+        >
+          {selected && (
+            <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m2.5 6.2 2.2 2.2 4.8-5" />
+            </svg>
+          )}
+        </button>
+      )}
       {priority}
       {id && <span className="ds-id hidden w-[var(--ds-id-w,3rem)] shrink-0 truncate text-[12px] text-[var(--ds-text-3)] @md:block">{id}</span>}
       {status}
@@ -169,11 +197,20 @@ export function WorkRow({
  * A worklist: rows, or groups of rows. It is a size container, so rows lay out
  * by the list's own width: below 28rem a row is two lines (title, then due) with no
  * ID or actions; IDs, actions and the due column appear from 28rem, labels from 48rem.
- * `idWidth` lines the IDs up (e.g. "6.75rem" for DSR-2026-0014).
+ * `idWidth` lines the IDs up (e.g. "6.75rem" for DSR-2026-0014). Pass `ref` to
+ * `useListKeys` for the keyboard; `selecting` keeps every row's checkbox shown.
  */
-export function WorkList({ children, idWidth }: { children: ReactNode; idWidth?: string }) {
+export function WorkList({
+  children, idWidth, ref, selecting = false,
+}: { children: ReactNode; idWidth?: string; ref?: React.Ref<HTMLUListElement>; selecting?: boolean }) {
   return (
-    <ul className="@container" style={idWidth ? ({ ['--ds-id-w' as string]: idWidth }) : undefined}>
+    <ul
+      ref={ref}
+      data-worklist=""
+      data-selecting={selecting || undefined}
+      className="@container"
+      style={idWidth ? ({ ['--ds-id-w' as string]: idWidth }) : undefined}
+    >
       {children}
     </ul>
   );

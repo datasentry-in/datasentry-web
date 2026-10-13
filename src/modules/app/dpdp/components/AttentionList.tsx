@@ -1,9 +1,11 @@
 'use client';
 
+import { useRef } from 'react';
 import { workFor, type Attention } from '@/modules/app/dpdp/attention';
 import { clientData, personFor } from '@/modules/app/dpdp/mock/clients';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { FINDING_STATUS } from '@/modules/app/dpdp/workStatus';
+import { useListKeys } from '@/modules/app/ui/useListKeys';
 import { StatusIcon, WorkList, WorkRow, type WorkStatus } from '@/modules/app/ui/WorkRow';
 import { EmptyState, Panel } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
@@ -32,6 +34,8 @@ function statusOf(a: Attention, org: string): { status: WorkStatus; label: strin
  */
 export default function AttentionList({ org, exclude = [] }: { org: string; exclude?: string[] }) {
   const now = useNow(30_000);
+  const list = useRef<HTMLUListElement>(null);
+  useListKeys(list);
   const items = workFor(org, now).filter((a) => !exclude.includes(a.id));
   const owners = clientData(org).owners;
   return (
@@ -45,7 +49,7 @@ export default function AttentionList({ org, exclude = [] }: { org: string; excl
           No clocks are running, no requests are past their deadline and no tasks are waiting on an owner.
         </EmptyState>
       ) : (
-        <WorkList>
+        <WorkList ref={list}>
           {items.map((a) => {
             const person = a.owner ? personFor(owners, a.owner) : null;
             const { status, label } = statusOf(a, org);

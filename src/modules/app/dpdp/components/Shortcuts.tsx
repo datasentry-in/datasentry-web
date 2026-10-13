@@ -9,7 +9,8 @@ import { SIDEBAR_COLLAPSED, togglePref } from '@/modules/app/ui/prefs';
 
 /**
  * Two-key navigation — "g" then a letter, as in Linear and GitHub — "[" to
- * collapse the sidebar, and "?" for the list. Keys come from `nav.ts`. Ignored while typing in a field, and
+ * collapse the sidebar, and "?" for the list, which also shows the list keys
+ * (useListKeys). Keys come from `nav.ts`. Ignored while typing in a field, and
  * page shortcuts only work inside a client.
  */
 
@@ -28,6 +29,9 @@ export default function Shortcuts({ org }: { org: string | null }) {
       if (pending.current !== null) {
         window.clearTimeout(pending.current);
         pending.current = null;
+        // The key after "g" belongs to the sequence, matched or not — claim it
+        // so a list on the page does not also act on it ("g s" is not "s").
+        e.preventDefault();
         if (k === ALL_CLIENTS_KEY) {
           e.preventDefault();
           router.push(demoPath());
@@ -43,11 +47,16 @@ export default function Shortcuts({ org }: { org: string | null }) {
       if (e.key === '[' && org) {
         e.preventDefault();
         togglePref(SIDEBAR_COLLAPSED, false);
-      } else if (k === 'g') pending.current = window.setTimeout(() => (pending.current = null), 1200);
+      } else if (k === 'g') {
+        e.preventDefault();
+        pending.current = window.setTimeout(() => (pending.current = null), 1200);
+      }
       else if (e.key === '?') setHelp((h) => !h);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // Capture phase: shortcuts see a key before any list does (useListKeys), so
+    // a claimed key arrives there already defaultPrevented.
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [org, router]);
 
   const rows: [string, string][] = [
@@ -55,6 +64,12 @@ export default function Shortcuts({ org }: { org: string | null }) {
     ['[', 'Collapse or expand the sidebar'],
     [`G ${ALL_CLIENTS_KEY.toUpperCase()}`, 'All clients'],
     ...NAV.flatMap((g) => g.items.map((m) => [`G ${m.key.toUpperCase()}`, m.label] as [string, string])),
+    ['J', 'Next row in a list'],
+    ['K', 'Previous row in a list'],
+    ['Enter', 'Open the row'],
+    ['X', 'Select the row'],
+    ['S', 'Change its status'],
+    ['Esc', 'Clear the selection'],
     ['?', 'This list'],
   ];
 
