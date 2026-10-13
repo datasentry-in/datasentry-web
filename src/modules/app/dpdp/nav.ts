@@ -36,7 +36,7 @@ export const INTAKE: NavItem[] = [
  */
 export const WORK: NavItem[] = [
   { seg: 'inbox', label: 'Inbox', icon: 'inbox', key: 'i', keywords: 'notifications changes comments mentions' },
-  { seg: 'my-work', label: 'My work', icon: 'myWork', key: 'm', keywords: 'assigned to me responses reviews' },
+  { seg: 'assigned', label: 'Assigned to me', icon: 'assigned', key: 'm', keywords: 'my work responses reviews to do' },
 ];
 
 export const NAV: NavGroup[] = [

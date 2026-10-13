@@ -114,7 +114,7 @@ export const ICONS = {
       <path d="M8 2.5v5M5.8 5.5 8 7.7l2.2-2.2" />
     </Svg>
   ),
-  myWork: (
+  assigned: (
     <Svg>
       <circle cx="8" cy="5.5" r="2.5" />
       <path d="M3 13.5c.8-2.4 2.8-3.7 5-3.7s4.2 1.3 5 3.7" />

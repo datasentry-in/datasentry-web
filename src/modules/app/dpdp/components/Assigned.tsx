@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef } from 'react';
 import { ORGS, currentUser } from '@/modules/app/dpdp/mock/clients';
-import { myWorkAt, type MyWorkItem, type WorkKind } from '@/modules/app/dpdp/myWork';
+import { assignedAt, type AssignedItem, type WorkKind } from '@/modules/app/dpdp/assigned';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import { useNow } from '@/modules/app/dpdp/useNow';
@@ -17,16 +17,16 @@ import ClientMark from './ClientMark';
 import When from './When';
 
 const KINDS: WorkKind[] = ['Board intimation', 'Request', 'Check-in', 'Discovery', 'Evidence', 'Walkthrough'];
-const due = (i: MyWorkItem) => (i.due ? parseDisplayDate(i.due)?.getTime() ?? Infinity : Infinity);
-const SORTS: Sort<MyWorkItem>[] = [
+const due = (i: AssignedItem) => (i.due ? parseDisplayDate(i.due)?.getTime() ?? Infinity : Infinity);
+const SORTS: Sort<AssignedItem>[] = [
   { id: 'due', label: 'Due date', compare: (a, b) => due(a) - due(b) },
   { id: 'client', label: 'Client', compare: (a, b) => a.client.localeCompare(b.client) || due(a) - due(b) },
 ];
-const FIELDS: Field<MyWorkItem>[] = [
+const FIELDS: Field<AssignedItem>[] = [
   { id: 'client', label: 'Client', value: (i) => i.org, display: (slug) => ORGS.find((o) => o.slug === slug)?.name ?? slug },
   { id: 'kind', label: 'Type', value: (i) => i.kind },
 ];
-const GROUPINGS: Grouping<MyWorkItem>[] = [
+const GROUPINGS: Grouping<AssignedItem>[] = [
   { id: 'client', label: 'Client', key: (i) => i.org },
   { id: 'kind', label: 'Type', key: (i) => i.kind, order: KINDS },
 ];
@@ -37,13 +37,13 @@ const WEEK = 7 * 86_400_000;
  * Board intimation to send, artefacts to review, check-ins to read, interviews
  * to run and attested fixes to look at — in one list, grouped by client.
  */
-export default function MyWork() {
+export default function Assigned() {
   const now = useNow(60_000);
-  const items = myWorkAt(now);
+  const items = assignedAt(now);
   const list = useRef<HTMLUListElement>(null);
   useListKeys(list);
 
-  const VIEWS: View<MyWorkItem>[] = [
+  const VIEWS: View<AssignedItem>[] = [
     { id: 'all', label: 'All', test: () => true },
     { id: 'week', label: 'Due this week', test: (i) => now !== null && due(i) - now <= WEEK },
     { id: 'overdue', label: 'Overdue', test: (i) => i.status === 'overdue' },
@@ -54,7 +54,7 @@ export default function MyWork() {
   });
   const byClient = t.grouping === 'client';
 
-  const row = (i: MyWorkItem) => (
+  const row = (i: AssignedItem) => (
     <WorkRow
       key={i.id}
       rowId={i.id}
@@ -71,7 +71,7 @@ export default function MyWork() {
   return (
     <div className="space-y-5">
       <ListHeader
-        title="My work"
+        title="Assigned to me"
         meta={`${currentUser.name} · ${items.length} items · ${new Set(items.map((i) => i.org)).size} clients`}
         about={
           <>
@@ -82,7 +82,7 @@ export default function MyWork() {
         }
       />
       <Panel flush>
-        <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search my work…" />
+        <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search assigned work…" />
         {t.shown.length === 0 ? (
           <EmptyState title="Nothing here">Nothing in this view. Try All, or clear the filters.</EmptyState>
         ) : (

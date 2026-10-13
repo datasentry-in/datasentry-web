@@ -6,7 +6,7 @@ import { REQUEST_STATUS } from '@/modules/app/dpdp/workStatus';
 import type { WorkStatus } from '@/modules/app/ui/WorkRow';
 
 /**
- * My work: everything on the consultant's side, across clients — the requests
+ * Assigned to me: everything on the consultant's side, across clients — the requests
  * to answer, the Board intimation to send, artefacts to review, check-ins to
  * read, interviews to run and attested fixes to look at on the next
  * walkthrough. Owners' work in their own systems is theirs (tasks); this is the
@@ -15,7 +15,7 @@ import type { WorkStatus } from '@/modules/app/ui/WorkRow';
 
 export type WorkKind = 'Request' | 'Board intimation' | 'Evidence' | 'Check-in' | 'Discovery' | 'Walkthrough';
 
-export type MyWorkItem = {
+export type AssignedItem = {
   id: string;
   org: string;
   client: string;
@@ -31,8 +31,8 @@ export type MyWorkItem = {
   statusLabel: string;
 };
 
-export function myWorkAt(now: number | null): MyWorkItem[] {
-  const out: MyWorkItem[] = [];
+export function assignedAt(now: number | null): AssignedItem[] {
+  const out: AssignedItem[] = [];
   for (const o of ORGS) {
     const d = clientData(o.slug);
     const base = { org: o.slug, client: o.name };

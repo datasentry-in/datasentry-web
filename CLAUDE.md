@@ -25,7 +25,7 @@ src/app/                 routes only — keep page files thin
   (web)/                 datasentry.in/*      route group, no URL segment; cookie banner
   app/                   datasentry.in/app/*  product layout: console.css, noindex
     dpdp-demo/           the clickable DPDP mock
-      (console)/         consultant console — sign-in gate + DemoShell; inbox, my-work, [org]/<module>
+      (console)/         consultant console — sign-in gate + DemoShell; inbox, assigned, [org]/<module>
       (public)/p/[org]/  client-branded public pages: privacy centre, request, incident report
 src/modules/web/         marketing components
 src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, Icons.tsx, console.css
@@ -40,7 +40,7 @@ src/modules/app/dpdp/    the DPDP product
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   workStatus.ts          finding/task/request statuses and severities → WorkRow glyphs (with hover labels)
   inbox.ts               the inbox: others' changes and comments across clients; unread state per viewer
-  myWork.ts              the consultant's work across clients (requests, intimations, reviews, check-ins…)
+  assigned.ts            the consultant's work across clients (requests, intimations, reviews, check-ins…)
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock (shared per tick rate), null while hydrating
@@ -98,11 +98,11 @@ src/modules/app/dpdp/    the DPDP product
   One date per row: the relative form, with the exact date on hover (detail panels may show both).
 - **The sidebar speaks the statute.** Modules and intake pages map one-to-one to DPDP compliance
   vocabulary (RoPA, notice & consent, data principal requests, breach register, evidence pack…). Never
-  merge, hide or rename them into generic product terms. Cross-cutting views (Inbox, My work) sit in their
+  merge, hide or rename them into generic product terms. Cross-cutting views (Inbox, Assigned to me) sit in their
   own section above "Modules" and name every item in the same vocabulary.
-- **Your work comes first.** Inbox (`g i`) and My work (`g m`) sit at the console root, above the
+- **Across clients comes first.** Inbox (`g i`) and Assigned to me (`g m`) sit at the console root, above the
   modules in the sidebar, which is on every page and never drops the modules. Inbox = what *others* changed or said (audit trail +
-  comments); running clocks stay in the bell. My work = the consultant's side; owners' work is Tasks.
+  comments); running clocks stay in the bell. Assigned to me = the consultant's side; owners' work is Tasks.
   The sidebar counts unread inbox items and late work only. Read state is per viewer (`ui/storedSet.ts`).
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
@@ -186,9 +186,10 @@ src/modules/app/dpdp/    the DPDP product
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
   sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,
   details and the other clients) + search, alerts, account. `Sidebar` is the left rail on every page,
-  always the same shape: "Your work", then a client's modules and intake pages — the client in view, or
-  outside one (portfolio, Inbox, My work) the last client opened (`LAST_CLIENT`), named in the "Modules"
-  heading; collapsible to icons (`[`,
+  always the same shape: "Across clients", then a client's modules and intake pages — the client in view, or
+  outside one (portfolio, Inbox, Assigned to me) the last client opened (`LAST_CLIENT`), named in the "Modules"
+  heading; it is sticky, and the footer sits inside the content column (not under the whole row) so on
+  a page shorter than the sidebar it never slides up under the header; collapsible to icons (`[`,
   state in localStorage via `ui/prefs.ts`), "Powered by DataSentry" at its foot.
 - **Overview order**: next step → "What needs doing" (one worklist) → "Where things stand" (score,
   headline figures, module cards) → context (role determination, recent activity). Action before status.

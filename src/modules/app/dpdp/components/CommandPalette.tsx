@@ -31,7 +31,7 @@ function buildCommands(org: string | null): Command[] {
   }
   for (const m of WORK) {
     out.push({
-      id: `work-${m.seg}`, group: 'Your work', label: m.label, keys: `G ${m.key.toUpperCase()}`, href: demoPath(m.seg),
+      id: `work-${m.seg}`, group: 'Across clients', label: m.label, keys: `G ${m.key.toUpperCase()}`, href: demoPath(m.seg),
       icon: ICONS[m.icon], terms: `${m.label} ${m.keywords ?? ''}`,
     });
   }

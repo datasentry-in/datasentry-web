@@ -18,7 +18,7 @@ import { LAST_CLIENT, SIDEBAR_COLLAPSED, setPrefValue, usePref, usePrefValue } f
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
 import { useUnreadInbox } from '@/modules/app/dpdp/inbox';
-import { myWorkAt } from '@/modules/app/dpdp/myWork';
+import { assignedAt } from '@/modules/app/dpdp/assigned';
 
 /**
  * The demo starts at sign-in once per browser session, so a walkthrough opens
@@ -87,7 +87,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   const collapsed = usePref(SIDEBAR_COLLAPSED, false);
   const now = useNow(60_000);
   const unread = useUnreadInbox().length;
-  const late = myWorkAt(now).filter((w) => w.status === 'overdue').length;
+  const late = assignedAt(now).filter((w) => w.status === 'overdue').length;
 
   const signIn = () => {
     writeSession(true);
@@ -101,7 +101,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   const parts = (pathname.startsWith(DEMO_BASE) ? pathname.slice(DEMO_BASE.length) : '').split('/').filter(Boolean);
   const org = ORGS.find((o) => o.slug === parts[0]) ?? null;
   const activeSeg = parts[1] ?? '';
-  // Outside a client (portfolio, Inbox, My work) the sidebar keeps the modules
+  // Outside a client (portfolio, Inbox, Assigned to me) the sidebar keeps the modules
   // of the last client opened, so the rail never changes shape.
   const remembered = usePrefValue(LAST_CLIENT, ORGS[0].slug);
   const modulesOrg = org?.slug ?? (ORGS.some((o) => o.slug === remembered) ? remembered : ORGS[0].slug);
@@ -155,7 +155,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="flex w-full flex-1 flex-col lg:flex-row">
-        {/* On every page: "Your work" across clients, then the client's modules when inside one. */}
+        {/* On every page: "Across clients" (Inbox, Assigned to me), then a client's modules. */}
         <Sidebar
           org={org?.slug ?? null}
           modulesOrg={modulesOrg}
@@ -164,28 +164,30 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
           counts={{
             ...countsFor(modulesOrg, now),
             ...(unread ? { inbox: String(unread) } : {}),
-            // My work is a list, not a backlog to count: only what is late is called out.
-            ...(late ? { 'my-work': `${late} late` } : {}),
+            // Assigned work is a list, not a backlog to count: only what is late is called out.
+            ...(late ? { assigned: `${late} late` } : {}),
           }}
           open={navOpen}
           onNavigate={() => setNavOpen(false)}
         />
-        <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
-          <Page path={pathname}>{children}</Page>
-        </main>
-      </div>
-
-      <footer className="border-t border-[var(--ds-border)] py-6">
-        <div className="px-4 lg:px-5">
-          {/* "Powered by" lives at the sidebar's foot, which is on every page. */}
-          <p className="max-w-4xl text-[12px] leading-relaxed text-[var(--ds-text-3)]">
-            DataSentry DPDP Console — interactive prototype for review; not a working product, and all data is
-            illustrative. Statutory references are drawn from
-            secondary commentary and require verification against the Gazette text of the DPDP Act 2023 and
-            the DPDP Rules 2025 (G.S.R. 846(E)) before any generated document is relied on.
-          </p>
+        {/* The footer sits inside the content column, not under the whole row, so
+            the sticky sidebar's range runs to the foot of the page: on a page
+            shorter than the sidebar it never slides up under the header. */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
+            <Page path={pathname}>{children}</Page>
+          </main>
+          <footer className="border-t border-[var(--ds-border)] px-4 py-6 lg:px-10">
+            {/* "Powered by" lives at the sidebar's foot, which is on every page. */}
+            <p className="max-w-4xl text-[12px] leading-relaxed text-[var(--ds-text-3)]">
+              DataSentry DPDP Console — interactive prototype for review; not a working product, and all data is
+              illustrative. Statutory references are drawn from
+              secondary commentary and require verification against the Gazette text of the DPDP Act 2023 and
+              the DPDP Rules 2025 (G.S.R. 846(E)) before any generated document is relied on.
+            </p>
+          </footer>
         </div>
-      </footer>
+      </div>
     </ToastProvider>
     </div>
   );

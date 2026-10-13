@@ -9,8 +9,8 @@ import { ICONS } from '@/modules/app/ui/Icons';
 import { SIDEBAR_COLLAPSED, togglePref, usePref } from '@/modules/app/ui/prefs';
 
 /**
- * The left rail, on every console page and always the same shape: "Your work"
- * (Inbox, My work — across clients) at the top, then a client's modules and
+ * The left rail, on every console page and always the same shape: "Across
+ * clients" (Inbox, Assigned to me) at the top, then a client's modules and
  * intake pages exactly as the statute names them — the client in view, or,
  * outside one, the last client opened, named in the heading. Collapses to an icon rail (`[` or the
  * button at the top); labels then show as tooltips and counts shrink to a dot.
@@ -19,13 +19,13 @@ import { SIDEBAR_COLLAPSED, togglePref, usePref } from '@/modules/app/ui/prefs';
  */
 
 type Props = {
-  /** The client in view, or null outside one (portfolio, Inbox, My work). */
+  /** The client in view, or null outside one (portfolio, Inbox, Assigned to me). */
   org: string | null;
   /** Whose modules to list: the client in view, else the last one opened. */
   modulesOrg: string;
   /** The module page in view ('' is the overview), when inside a client. */
   activeSeg: string | null;
-  /** The work page in view ('inbox', 'my-work'), when outside a client. */
+  /** The cross-client page in view ('inbox', 'assigned'), when outside a client. */
   activeWork: string | null;
   counts: Record<string, string>;
   /** Phone drawer state, owned by the shell's menu button. */
@@ -47,7 +47,7 @@ export default function Sidebar({ org, modulesOrg, activeSeg, activeWork, counts
       className={`${open ? 'flex' : 'hidden'} shrink-0 flex-col border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:border-b-0 lg:border-r lg:transition-[width] lg:duration-200 lg:ease-out motion-reduce:transition-none ${rail}`}
     >
       <div className="flex-1 overflow-y-auto py-4 lg:pt-3">
-        {[{ title: 'Your work', items: WORK, root: true }, ...NAV.map((g) => ({ ...g, root: false }))].map((group, gi) => (
+        {[{ title: 'Across clients', items: WORK, root: true }, ...NAV.map((g) => ({ ...g, root: false }))].map((group, gi) => (
           <div key={group.title} className={gi > 0 ? 'mt-5' : ''}>
             {/* The first heading carries the collapse control (desktop only). */}
             <div className={`flex items-center pb-1.5 ${collapsed ? 'lg:justify-center' : 'justify-between'}`}>

@@ -36,7 +36,7 @@ export default function Shortcuts({ org }: { org: string | null }) {
           router.push(demoPath());
           return;
         }
-        // Inbox and My work are across clients: they work from any page.
+        // Inbox and Assigned to me are across clients: they work from any page.
         const work = WORK.find((m) => m.key === k);
         if (work) {
           router.push(demoPath(work.seg));
