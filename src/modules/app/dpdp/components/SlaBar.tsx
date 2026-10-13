@@ -24,7 +24,7 @@ export default function SlaBar({ received, days }: { received: string; days: num
   const pct = Math.min(100, Math.max(0, ((now - from) / (end - from)) * 100));
   const tone = left < 0 ? 'var(--ds-danger)' : left <= 7 ? 'var(--ds-warn)' : 'var(--ds-accent)';
   return (
-    <div className="w-36" title={`Due ${new Date(end).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}`}>
+    <div className="ds-fade-in w-36" title={`Due ${new Date(end).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}`}>
       <p className="text-[12px] font-medium" style={{ color: left <= 7 ? tone : undefined }}>
         {left < 0 ? `${-left} days overdue` : `${left} days left`}
       </p>

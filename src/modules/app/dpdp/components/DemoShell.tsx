@@ -122,7 +122,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
                 className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] lg:hidden"
               >
                 <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
-                  {navOpen ? <path d="m4 4 8 8M12 4l-8 8" /> : <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
+                  {navOpen ? <path key="x" className="ds-icon-in" d="m4 4 8 8M12 4l-8 8" /> : <path key="menu" className="ds-icon-in" d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
                 </svg>
               </button>
             )}
@@ -134,7 +134,10 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
         {org && (
           <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug)} open={navOpen} onNavigate={() => setNavOpen(false)} />
         )}
-        <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
+          {/* Keyed by path so each page eases in as you arrive (texts reveal). */}
+          <div key={pathname} className="ds-page-in">{children}</div>
+        </main>
       </div>
 
       <footer className="border-t border-[var(--ds-border)] py-6">

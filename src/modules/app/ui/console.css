@@ -202,7 +202,6 @@ body:has(.demo-root) {
   from { opacity: 0; transform: translateY(-4px) scale(0.99); }
   to { opacity: 1; transform: none; }
 }
-.demo-root .ds-pop { animation: ds-pop 0.14s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .demo-root .ds-pop { animation: none !important; }
 }
@@ -254,7 +253,6 @@ body:has(.demo-root) {
   vertical-align: middle;
 }
 @keyframes ds-slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-.demo-root .ds-sheet { animation: ds-slide 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) {
   .demo-root .ds-skeleton, .demo-root .ds-sheet { animation: none !important; }
 }
@@ -273,3 +271,94 @@ body:has(.demo-root) {
 .demo-root p.leading-relaxed,
 .demo-root .ds-bar > p,
 .demo-root .ds-prose { max-width: 46rem; }
+
+/* ---- Motion ------------------------------------------------------------------
+   Subtle, quick, and only on transform / opacity (plus a small blur on numbers
+   and toasts). Things enter on an ease-out and leave faster than they came.
+   Every animation here is switched off under prefers-reduced-motion. */
+.demo-root {
+  --ds-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-dur-quick: 120ms;
+  --ds-dur-base: 180ms;
+  --ds-dur-slow: 260ms;
+}
+
+/* Page: a route eases in — title first, then the rest (texts reveal). */
+@keyframes ds-page-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.demo-root .ds-page-in > * > * { animation: ds-page-in var(--ds-dur-slow) var(--ds-ease-out) both; }
+.demo-root .ds-page-in > * > *:nth-child(1) { animation-delay: 0ms; }
+.demo-root .ds-page-in > * > *:nth-child(2) { animation-delay: 30ms; }
+.demo-root .ds-page-in > * > *:nth-child(3) { animation-delay: 60ms; }
+.demo-root .ds-page-in > * > *:nth-child(4) { animation-delay: 90ms; }
+.demo-root .ds-page-in > * > *:nth-child(n + 5) { animation-delay: 120ms; }
+
+/* Numbers: headline figures pop in from a soft blur, staggered across a strip. */
+@keyframes ds-num-in { from { opacity: 0; transform: translateY(4px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+.demo-root .ds-num-in { display: inline-block; animation: ds-num-in var(--ds-dur-slow) var(--ds-ease-out) both; animation-delay: 80ms; }
+.demo-root :is(.grid, dl) > :nth-child(2) .ds-num-in { animation-delay: 120ms; }
+.demo-root :is(.grid, dl) > :nth-child(3) .ds-num-in { animation-delay: 160ms; }
+.demo-root :is(.grid, dl) > :nth-child(4) .ds-num-in { animation-delay: 200ms; }
+.demo-root :is(.grid, dl) > :nth-child(n + 5) .ds-num-in { animation-delay: 240ms; }
+
+/* Live values replacing a skeleton fade in rather than snap. */
+@keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.demo-root .ds-fade-in { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
+
+/* Overlays leave faster than they arrive. `data-state="closing"` is set by
+   usePresence for the length of the exit. */
+@keyframes ds-pop-out { to { opacity: 0; transform: translateY(-2px) scale(0.98); } }
+@keyframes ds-slide-out { to { opacity: 0; transform: translateX(16px); } }
+@keyframes ds-fade-out { to { opacity: 0; } }
+.demo-root .ds-pop { animation: ds-pop var(--ds-dur-base) var(--ds-ease-out) both; }
+.demo-root .ds-pop[data-state='closing'] { animation: ds-pop-out var(--ds-dur-quick) var(--ds-ease-in) both; }
+.demo-root .ds-sheet { animation: ds-slide var(--ds-dur-slow) var(--ds-ease-out) both; }
+.demo-root .ds-sheet[data-state='closing'] { animation: ds-slide-out var(--ds-dur-base) var(--ds-ease-in) both; }
+.demo-root .ds-scrim { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
+.demo-root .ds-scrim[data-state='closing'] { animation: ds-fade-out var(--ds-dur-base) var(--ds-ease-in) both; }
+/* Menus grow from the corner nearest their trigger (origin-aware). */
+.demo-root .ds-origin-tr { transform-origin: top right; }
+.demo-root .ds-origin-tl { transform-origin: top left; }
+
+/* Toasts: in with a soft blur and scale; out with a fade and a little drop. */
+@keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes ds-toast-out { to { opacity: 0; transform: translateY(6px) scale(0.98); } }
+.demo-root .ds-toast { animation: ds-toast-in var(--ds-dur-slow) var(--ds-ease-out) both; }
+.demo-root .ds-toast[data-state='closing'] { animation: ds-toast-out var(--ds-dur-base) var(--ds-ease-in) both; }
+/* The success check draws its stroke on. */
+@keyframes ds-draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+.demo-root .ds-check-draw { stroke-dasharray: 24; animation: ds-draw 360ms var(--ds-ease-out) 120ms both; }
+
+/* Notification badge pops in. */
+@keyframes ds-badge { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.demo-root .ds-badge { animation: ds-badge var(--ds-dur-slow) var(--ds-ease-spring) both; animation-delay: 200ms; }
+
+/* Sliding tab indicator: the pill follows the active tab. */
+.demo-root .ds-tab-pill {
+  transition-property: transform, width, opacity;
+  transition-duration: var(--ds-dur-slow);
+  transition-timing-function: var(--ds-ease-out);
+}
+
+/* Accordion: a height change without measuring — grid rows 0fr → 1fr. */
+.demo-root .ds-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--ds-dur-slow) var(--ds-ease-out), opacity var(--ds-dur-base) var(--ds-ease-out);
+  opacity: 0;
+}
+.demo-root .ds-collapse[data-open='true'] { grid-template-rows: 1fr; opacity: 1; }
+.demo-root .ds-collapse > * { overflow: hidden; min-height: 0; }
+
+/* Icon swap: the outgoing glyph rotates out, the incoming one in. */
+@keyframes ds-icon-in { from { opacity: 0; transform: rotate(-45deg) scale(0.7); } to { opacity: 1; transform: none; } }
+.demo-root .ds-icon-in { animation: ds-icon-in var(--ds-dur-base) var(--ds-ease-out) both; transform-origin: center; transform-box: fill-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-root .ds-page-in > * > *, .demo-root .ds-num-in, .demo-root .ds-fade-in, .demo-root .ds-pop, .demo-root .ds-sheet,
+  .demo-root .ds-scrim, .demo-root .ds-toast, .demo-root .ds-check-draw, .demo-root .ds-badge, .demo-root .ds-icon-in {
+    animation: none !important;
+  }
+  .demo-root .ds-tab-pill, .demo-root .ds-collapse { transition: none !important; }
+}

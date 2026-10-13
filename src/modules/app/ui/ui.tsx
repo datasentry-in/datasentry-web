@@ -148,7 +148,7 @@ export function Stat({
           String(value).length > 6 ? 'text-[19px] sm:text-[21px]' : 'text-[24px] sm:text-[26px]'
         }`}
       >
-        {value}
+        <span className="ds-num-in">{value}</span>
       </p>
       {note && <p className="mt-1.5 text-[12px] leading-snug text-[var(--ds-text-3)]">{note}</p>}
     </div>
@@ -180,7 +180,7 @@ export function Fact({
       <dt className="text-[var(--ds-text-3)]">{label}</dt>
       <dd className="flex items-center gap-1.5 font-medium text-[var(--ds-text)]">
         {dot && <span aria-hidden className="h-1.5 w-1.5 self-center rounded-full" style={{ background: dot }} />}
-        <span className="tnum">{value}</span>
+        <span className="tnum ds-num-in">{value}</span>
       </dd>
     </div>
   );
@@ -201,7 +201,7 @@ export function ScoreBlock({
       <div className="shrink-0 sm:w-36">
         <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
         <p className="mt-1.5 flex items-baseline gap-1 leading-none">
-          <span className="ds-figure text-[24px] tracking-[-0.03em] text-[var(--ds-text)] sm:text-[26px]">{score}</span>
+          <span className="ds-figure ds-num-in text-[24px] tracking-[-0.03em] text-[var(--ds-text)] sm:text-[26px]">{score}</span>
           <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
         </p>
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
@@ -476,30 +476,7 @@ export function Change({ field, from, to }: { field: string; from: string; to: s
   );
 }
 
-/** Tabs for saved views over a list, each with its count. */
-export function ViewTabs({
-  views, active, counts, onChange,
-}: { views: { id: string; label: string }[]; active: string; counts: Record<string, number>; onChange: (id: string) => void }) {
-  return (
-    <div role="tablist" className="flex flex-wrap gap-1">
-      {views.map((v) => (
-        <button
-          key={v.id}
-          type="button"
-          role="tab"
-          aria-selected={active === v.id}
-          onClick={() => onChange(v.id)}
-          className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
-            active === v.id ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
-          }`}
-        >
-          {v.label}
-          <span className="ds-figure text-[11px] text-[var(--ds-text-3)]">{counts[v.id] ?? 0}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
+export { default as ViewTabs } from './ViewTabs';
 
 /** A column head that sorts its list; shows the direction when active. */
 export function SortHead({

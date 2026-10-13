@@ -34,7 +34,7 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
   return (
     <nav
       aria-label="Client modules"
-      className={`${open ? 'flex' : 'hidden'} shrink-0 flex-col border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:border-b-0 lg:border-r ${rail}`}
+      className={`${open ? 'flex' : 'hidden'} shrink-0 flex-col border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:border-b-0 lg:border-r lg:transition-[width] lg:duration-200 lg:ease-out motion-reduce:transition-none ${rail}`}
     >
       <div className="flex-1 overflow-y-auto py-4 lg:pt-3">
         {NAV.map((group, gi) => (

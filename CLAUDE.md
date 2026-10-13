@@ -116,6 +116,12 @@ src/modules/app/dpdp/    the DPDP product
   carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
   personal data" class, so never label anything sensitive.
+- **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
+  ease-out in and faster out, all off under reduced motion. Pages ease in (`ds-page-in`), headline
+  numbers pop in (`ds-num-in`), live values fade in over their skeleton (`ds-fade-in`), overlays and menus
+  exit before unmounting (`data-state="closing"`; `useClosable` for menus, Dialog/Sheet handle their own),
+  menus grow from their corner (`ds-origin-tr/tl`), `ViewTabs` slides one pill, accordions use
+  `ds-collapse`. Never `transition: all`.
 - **The audit trail** (`AUDIT` in mock data) records field changes as old → new, never "record updated".
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the

@@ -34,7 +34,7 @@ export default function Countdown({ deadlineIso, windowHours = 72 }: { deadlineI
   const urgent = overdue || ms < 12 * 3_600_000;
 
   return (
-    <span className="flex flex-col gap-3">
+    <span className="ds-fade-in flex flex-col gap-3">
       <span className="flex flex-wrap items-baseline gap-2">
         <span className={digits} style={{ color: overdue ? 'var(--ds-danger)' : 'var(--ds-text)' }}>
           {overdue ? '+' : ''}

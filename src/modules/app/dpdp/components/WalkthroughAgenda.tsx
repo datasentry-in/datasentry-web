@@ -120,7 +120,9 @@ export default function WalkthroughAgenda({ org }: { org: string }) {
                 </div>
               )}
 
-              {isOpen && (
+              {/* Expands by height (accordion); kept mounted so it can animate shut. */}
+              <div className="ds-collapse" data-open={isOpen} aria-hidden={!isOpen} inert={!isOpen}>
+                <div>
                 <div className="space-y-3 px-4 pb-4 sm:px-5 lg:pl-[calc(1.6rem+2.75rem)]">
                   <label className="block">
                     <span className="mb-1 block text-[12px] font-medium">What the client shows you</span>
@@ -163,7 +165,8 @@ export default function WalkthroughAgenda({ org }: { org: string }) {
                     </span>
                   </div>
                 </div>
-              )}
+                </div>
+              </div>
             </li>
           );
         })}

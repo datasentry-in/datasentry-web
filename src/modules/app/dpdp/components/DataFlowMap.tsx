@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { clientData } from '@/modules/app/dpdp/mock/clients';
 import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
-import { CiteLink, Person, SeverityTag, Tag } from '@/modules/app/ui/ui';
+import { CiteLink, Person, SeverityTag, Tag, ViewTabs } from '@/modules/app/ui/ui';
 import Discussion from './Discussion';
 import RemindButton from './RemindButton';
 
@@ -179,22 +179,14 @@ export default function DataFlowMap({ org }: { org: string }) {
 
   return (
     <>
-      <div className="flex flex-wrap gap-1 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5" role="tablist" aria-label="Filter flows">
-        {FILTERS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            role="tab"
-            aria-selected={filter === f.id}
-            onClick={() => setFilter(f.id)}
-            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] transition-colors ${
-              filter === f.id ? 'bg-[var(--ds-subtle-2)] font-medium text-[var(--ds-text)]' : 'text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)]'
-            }`}
-          >
-            {f.label}
-            <span className="ds-figure text-[11px] text-[var(--ds-text-3)]">{count(f.id)}</span>
-          </button>
-        ))}
+      <div className="border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
+        <ViewTabs
+          label="Filter flows"
+          views={FILTERS}
+          active={filter}
+          counts={Object.fromEntries(FILTERS.map((f) => [f.id, count(f.id)]))}
+          onChange={(id) => setFilter(id as Filter)}
+        />
       </div>
 
       <div className="overflow-x-auto">

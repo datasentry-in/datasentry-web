@@ -1,7 +1,8 @@
 'use client';
 
+import { useClosable } from '@/modules/app/ui/useClosable';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ORGS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import type { Org } from '@/modules/app/dpdp/types';
@@ -26,20 +27,21 @@ function Chevron() {
 }
 
 export default function ClientSwitcher({ org }: { org: Org | null }) {
-  const [open, setOpen] = useState(false);
+  const menu = useClosable();
+  const { open, close } = menu;
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [open, close]);
 
   return (
     <div className="relative min-w-0">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={menu.toggle}
         aria-expanded={open}
         aria-haspopup="menu"
         className="flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--ds-subtle)]"
@@ -52,8 +54,8 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
 
       {open && (
         <>
-          <div aria-hidden className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div role="menu" className="ds-pop fixed inset-x-4 top-14 z-50 sm:absolute sm:inset-x-auto sm:left-0 sm:top-auto sm:mt-1.5 sm:w-[20rem] overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow-md)]">
+          <div aria-hidden className="fixed inset-0 z-40" onClick={close} />
+          <div role="menu" data-state={menu.state} className="ds-pop ds-origin-tl fixed inset-x-4 top-14 z-50 sm:absolute sm:inset-x-auto sm:left-0 sm:top-auto sm:mt-1.5 sm:w-[20rem] overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow-md)]">
             {org && (
               <div className="border-b border-[var(--ds-border)] px-3.5 py-3">
                 <p className="flex items-center gap-2 text-[13px] font-semibold tracking-[-0.01em]">
@@ -74,7 +76,7 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
                   <Link
                     href={demoPath(o.slug)}
                     role="menuitem"
-                    onClick={() => setOpen(false)}
+                    onClick={close}
                     className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-[var(--ds-subtle)]"
                   >
                     <ClientMark slug={o.slug} size={24} />
@@ -90,7 +92,7 @@ export default function ClientSwitcher({ org }: { org: Org | null }) {
             <Link
               href={demoPath()}
               role="menuitem"
-              onClick={() => setOpen(false)}
+              onClick={close}
               className="block border-t border-[var(--ds-border)] px-3.5 py-2.5 text-[13px] font-medium text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
             >
               All clients

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -11,9 +11,26 @@ import { createPortal } from 'react-dom';
 export default function Sheet({
   open, onClose, title, meta, children, footer,
 }: { open: boolean; onClose: () => void; title: ReactNode; meta?: ReactNode; children: ReactNode; footer?: ReactNode }) {
+  // Slide out, then tell the parent — the record stays visible while it goes.
+  const [leaving, setLeaving] = useState(false);
+  const close = () => {
+    setLeaving(true);
+    window.setTimeout(() => {
+      setLeaving(false);
+      onClose();
+    }, 180);
+  };
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setLeaving(true);
+      window.setTimeout(() => {
+        setLeaving(false);
+        onClose();
+      }, 180);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
@@ -21,10 +38,11 @@ export default function Sheet({
   if (!open) return null;
   return createPortal(
     <div className="fixed inset-0 z-[60]">
-      <div aria-hidden className="absolute inset-0 bg-[rgba(14,15,17,0.16)]" onClick={onClose} />
+      <div aria-hidden data-state={leaving ? 'closing' : 'open'} className="ds-scrim absolute inset-0 bg-[rgba(14,15,17,0.16)]" onClick={close} />
       <aside
         role="dialog"
         aria-modal="true"
+        data-state={leaving ? 'closing' : 'open'}
         className="ds-sheet absolute inset-y-0 right-0 flex w-full max-w-[34rem] flex-col border-l border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[0_0_48px_rgba(14,15,17,0.14)]"
       >
         <header className="flex items-start justify-between gap-4 border-b border-[var(--ds-border)] px-5 py-4">
@@ -34,7 +52,7 @@ export default function Sheet({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={close}
             aria-label="Close"
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--ds-text-3)] hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
           >

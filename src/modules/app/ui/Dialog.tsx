@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -12,10 +12,26 @@ import { createPortal } from 'react-dom';
 export default function Dialog({
   open, onClose, label, children, width = 'max-w-xl',
 }: { open: boolean; onClose: () => void; label: string; children: ReactNode; width?: string }) {
+  // Play the exit, then tell the parent; the content stays while it fades.
+  const [leaving, setLeaving] = useState(false);
+  const close = () => {
+    setLeaving(true);
+    window.setTimeout(() => {
+      setLeaving(false);
+      onClose();
+    }, 120);
+  };
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        setLeaving(true);
+        window.setTimeout(() => {
+          setLeaving(false);
+          onClose();
+        }, 120);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -25,11 +41,12 @@ export default function Dialog({
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]">
       {/* A div, not a button: the marketing reset strips button backgrounds. */}
-      <div aria-hidden className="absolute inset-0 bg-[rgba(14,15,17,0.24)]" onClick={onClose} />
+      <div aria-hidden data-state={leaving ? 'closing' : 'open'} className="ds-scrim absolute inset-0 bg-[rgba(14,15,17,0.24)]" onClick={close} />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={label}
+        data-state={leaving ? 'closing' : 'open'}
         className={`ds-pop relative w-full ${width} overflow-hidden rounded-xl border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[0_16px_48px_rgba(14,15,17,0.16)]`}
       >
         {children}
