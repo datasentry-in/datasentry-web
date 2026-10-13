@@ -101,7 +101,7 @@ src/modules/app/dpdp/    the DPDP product
   merge, hide or rename them into generic product terms. Cross-cutting views (Inbox, My work) sit in their
   own section above "Modules" and name every item in the same vocabulary.
 - **Your work comes first.** Inbox (`g i`) and My work (`g m`) sit at the console root, above the
-  modules in the sidebar, which is on every page. Inbox = what *others* changed or said (audit trail +
+  modules in the sidebar, which is on every page and never drops the modules. Inbox = what *others* changed or said (audit trail +
   comments); running clocks stay in the bell. My work = the consultant's side; owners' work is Tasks.
   The sidebar counts unread inbox items and late work only. Read state is per viewer (`ui/storedSet.ts`).
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
@@ -185,8 +185,10 @@ src/modules/app/dpdp/    the DPDP product
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
   sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,
-  details and the other clients) + search, alerts, account. `Sidebar` is the left rail on every page:
-  "Your work", then the client's modules and intake pages when inside one; collapsible to icons (`[`,
+  details and the other clients) + search, alerts, account. `Sidebar` is the left rail on every page,
+  always the same shape: "Your work", then a client's modules and intake pages — the client in view, or
+  outside one (portfolio, Inbox, My work) the last client opened (`LAST_CLIENT`), named in the "Modules"
+  heading; collapsible to icons (`[`,
   state in localStorage via `ui/prefs.ts`), "Powered by DataSentry" at its foot.
 - **Overview order**: next step → "What needs doing" (one worklist) → "Where things stand" (score,
   headline figures, module cards) → context (role determination, recent activity). Action before status.
