@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { ALL_CLIENTS_KEY, NAV } from '@/modules/app/dpdp/nav';
+import { ALL_CLIENTS_KEY, NAV, WORK } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import Dialog from '@/modules/app/ui/Dialog';
 import { SIDEBAR_COLLAPSED, togglePref } from '@/modules/app/ui/prefs';
@@ -33,25 +33,26 @@ export default function Shortcuts({ org }: { org: string | null }) {
         // so a list on the page does not also act on it ("g s" is not "s").
         e.preventDefault();
         if (k === ALL_CLIENTS_KEY) {
-          e.preventDefault();
           router.push(demoPath());
           return;
         }
-        const item = NAV.flatMap((g) => g.items).find((m) => m.key === k);
-        if (item && org) {
-          e.preventDefault();
-          router.push(demoPath(org, item.seg));
+        // Inbox and My work are across clients: they work from any page.
+        const work = WORK.find((m) => m.key === k);
+        if (work) {
+          router.push(demoPath(work.seg));
+          return;
         }
+        const item = NAV.flatMap((g) => g.items).find((m) => m.key === k);
+        if (item && org) router.push(demoPath(org, item.seg));
         return;
       }
-      if (e.key === '[' && org) {
+      if (e.key === '[') {
         e.preventDefault();
         togglePref(SIDEBAR_COLLAPSED, false);
       } else if (k === 'g') {
         e.preventDefault();
         pending.current = window.setTimeout(() => (pending.current = null), 1200);
-      }
-      else if (e.key === '?') setHelp((h) => !h);
+      } else if (e.key === '?') setHelp((h) => !h);
     };
     // Capture phase: shortcuts see a key before any list does (useListKeys), so
     // a claimed key arrives there already defaultPrevented.
@@ -63,6 +64,7 @@ export default function Shortcuts({ org }: { org: string | null }) {
     ['⌘ K', 'Search or jump to'],
     ['[', 'Collapse or expand the sidebar'],
     [`G ${ALL_CLIENTS_KEY.toUpperCase()}`, 'All clients'],
+    ...WORK.map((m) => [`G ${m.key.toUpperCase()}`, m.label] as [string, string]),
     ...NAV.flatMap((g) => g.items.map((m) => [`G ${m.key.toUpperCase()}`, m.label] as [string, string])),
     ['J', 'Next row in a list'],
     ['K', 'Previous row in a list'],

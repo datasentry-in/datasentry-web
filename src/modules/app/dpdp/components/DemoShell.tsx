@@ -4,7 +4,7 @@ import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
-import { BrandLink, ProductLockup } from '@/modules/app/ui/Brand';
+import { ProductLockup } from '@/modules/app/ui/Brand';
 import { ToastProvider } from '@/modules/app/ui/Toast';
 import { useSettled } from '@/modules/app/ui/useSettled';
 import { lateRequests } from '@/modules/app/dpdp/sla';
@@ -17,6 +17,8 @@ import Sidebar from './Sidebar';
 import { SIDEBAR_COLLAPSED, usePref } from '@/modules/app/ui/prefs';
 import HeaderAlerts from './HeaderAlerts';
 import SignIn from './SignIn';
+import { useUnreadInbox } from '@/modules/app/dpdp/inbox';
+import { myWorkAt } from '@/modules/app/dpdp/myWork';
 
 /**
  * The demo starts at sign-in once per browser session, so a walkthrough opens
@@ -83,6 +85,8 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
   const signedIn = useSyncExternalStore(subscribe, readSession, serverSnapshot);
   const collapsed = usePref(SIDEBAR_COLLAPSED, false);
   const now = useNow(60_000);
+  const unread = useUnreadInbox().length;
+  const late = myWorkAt(now).filter((w) => w.status === 'overdue').length;
 
   const signIn = () => {
     writeSession(true);
@@ -113,7 +117,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
               sits on the sidebar's border line. Collapsed, it keeps its natural
               width — "DPDP Console" does not fit the icon rail. */}
           <div
-            className={`relative flex h-full shrink-0 items-center px-4 lg:px-5 ${org && !collapsed ? 'lg:w-60' : ''}`}
+            className={`relative flex h-full shrink-0 items-center px-4 lg:px-5 ${!collapsed ? 'lg:w-60' : ''}`}
           >
             <ProductLockup href={demoPath()} byline={false} />
             <span className="absolute right-0 top-1/2 h-5 w-px -translate-y-1/2 bg-[var(--ds-border)]" aria-hidden />
@@ -127,41 +131,43 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
             <HeaderAlerts />
             <span className="mx-1 hidden h-5 w-px bg-[var(--ds-border)] sm:block" aria-hidden />
             <AccountMenu onSignOut={signOut} />
-            {org && (
-              <button
-                type="button"
-                onClick={() => setNavOpen(!navOpen)}
-                aria-expanded={navOpen}
-                aria-label={navOpen ? 'Close modules menu' : 'Open modules menu'}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] lg:hidden"
-              >
-                <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
-                  {navOpen ? <path key="x" className="ds-icon-in" d="m4 4 8 8M12 4l-8 8" /> : <path key="menu" className="ds-icon-in" d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
-                </svg>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setNavOpen(!navOpen)}
+              aria-expanded={navOpen}
+              aria-label={navOpen ? 'Close the menu' : 'Open the menu'}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--ds-text-2)] hover:bg-[var(--ds-subtle)] lg:hidden"
+            >
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+                {navOpen ? <path key="x" className="ds-icon-in" d="m4 4 8 8M12 4l-8 8" /> : <path key="menu" className="ds-icon-in" d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
+              </svg>
+            </button>
           </div>
         </div>
       </header>
 
       <div className="flex w-full flex-1 flex-col lg:flex-row">
-        {org && (
-          <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug, now)} open={navOpen} onNavigate={() => setNavOpen(false)} />
-        )}
+        {/* On every page: "Your work" across clients, then the client's modules when inside one. */}
+        <Sidebar
+          org={org?.slug ?? null}
+          activeSeg={org ? activeSeg : parts[0] ?? ''}
+          counts={{
+            ...(org ? countsFor(org.slug, now) : {}),
+            ...(unread ? { inbox: String(unread) } : {}),
+            // My work is a list, not a backlog to count: only what is late is called out.
+            ...(late ? { 'my-work': `${late} late` } : {}),
+          }}
+          open={navOpen}
+          onNavigate={() => setNavOpen(false)}
+        />
         <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
           <Page path={pathname}>{children}</Page>
         </main>
       </div>
 
       <footer className="border-t border-[var(--ds-border)] py-6">
-        <div className="space-y-3 px-4 lg:px-5">
-          {/* Inside a client, the sidebar's foot carries this. */}
-          {!org && (
-            <p className="flex items-center gap-1.5">
-              <span className="text-[12px] font-medium text-[var(--ds-text-3)]">Powered by</span>
-              <BrandLink />
-            </p>
-          )}
+        <div className="px-4 lg:px-5">
+          {/* "Powered by" lives at the sidebar's foot, which is on every page. */}
           <p className="max-w-4xl text-[12px] leading-relaxed text-[var(--ds-text-3)]">
             DataSentry DPDP Console — interactive prototype for review; not a working product, and all data is
             illustrative. Statutory references are drawn from

@@ -115,15 +115,17 @@ const MAIN = 'ds-row-link min-w-0 truncate text-left text-[13px] font-medium tex
 
 export function WorkRow({
   priority, id, status, title, href, onOpen, meta, actions, due, owner, current = false,
-  rowId = id, selected, onSelect, onContextMenu,
+  rowId = id, selected, onSelect, onContextMenu, muted = false,
 }: {
   priority?: ReactNode;
   id?: string;
   status?: ReactNode;
   title: string;
-  /** Where the row goes — or `onOpen` to open it beside the list. */
+  /** Where the row goes — or `onOpen` to open it beside the list. With both, `onOpen` runs as the link is followed. */
   href?: string;
   onOpen?: () => void;
+  /** Already seen (a read inbox item): the title drops to regular weight and grey. */
+  muted?: boolean;
   /** Labels after the title: a citation, the system, the activity. Shown when the list is wide enough. */
   meta?: ReactNode;
   /** Float in over the end of the labels on hover (always on touch); left out on narrow lists, where the opened record carries them. */
@@ -174,9 +176,9 @@ export function WorkRow({
       {/* On a narrow list the due date moves under the title, so the title keeps the row's width. */}
       <span className={`flex min-w-0 flex-col ${grow}`}>
         {href ? (
-          <Link href={href} title={title} className={MAIN}>{title}</Link>
+          <Link href={href} onClick={onOpen} title={title} className={`${MAIN} ${muted ? 'ds-row-muted' : ''}`}>{title}</Link>
         ) : (
-          <button type="button" onClick={onOpen} title={title} className={MAIN}>{title}</button>
+          <button type="button" onClick={onOpen} title={title} className={`${MAIN} ${muted ? 'ds-row-muted' : ''}`}>{title}</button>
         )}
         {due !== undefined && due !== null && <span className="truncate text-[12px] text-[var(--ds-text-2)] @md:hidden">{due}</span>}
       </span>

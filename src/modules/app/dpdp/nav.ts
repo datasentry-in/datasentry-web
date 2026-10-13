@@ -23,10 +23,20 @@ export const MODULES: NavItem[] = [
 
 /** How information reaches the register without integrations or file imports. */
 export const INTAKE: NavItem[] = [
-  { seg: 'intake', label: 'Intake channels', icon: 'intake', key: 'i', keywords: 'privacy centre inbox' },
+  { seg: 'intake', label: 'Intake channels', icon: 'intake', key: 'n', keywords: 'privacy centre request inbox email' },
   { seg: 'walkthrough', label: 'Walkthroughs', icon: 'walkthrough', key: 'w', keywords: 'screen-share observed' },
   { seg: 'tasks', label: 'Tasks & attestations', icon: 'tasks', key: 't', keywords: 'fulfilment owners attest' },
   { seg: 'check-in', label: 'Quarterly check-in', icon: 'checkIn', key: 'q', keywords: 're-attestation questions' },
+];
+
+/**
+ * Work across every client, above the modules: what changed and needs you, and
+ * what is yours to do. These live at the console root (`demoPath(seg)`), not
+ * under a client, and are views over the modules — never a replacement for them.
+ */
+export const WORK: NavItem[] = [
+  { seg: 'inbox', label: 'Inbox', icon: 'inbox', key: 'i', keywords: 'notifications changes comments mentions' },
+  { seg: 'my-work', label: 'My work', icon: 'myWork', key: 'm', keywords: 'assigned to me responses reviews' },
 ];
 
 export const NAV: NavGroup[] = [

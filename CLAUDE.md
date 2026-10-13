@@ -25,7 +25,7 @@ src/app/                 routes only — keep page files thin
   (web)/                 datasentry.in/*      route group, no URL segment; cookie banner
   app/                   datasentry.in/app/*  product layout: console.css, noindex
     dpdp-demo/           the clickable DPDP mock
-      (console)/         consultant console — sign-in gate + DemoShell; [org]/<module>
+      (console)/         consultant console — sign-in gate + DemoShell; inbox, my-work, [org]/<module>
       (public)/p/[org]/  client-branded public pages: privacy centre, request, incident report
 src/modules/web/         marketing components
 src/modules/app/ui/      console design system: ui.tsx, Brand.tsx, Icons.tsx, console.css
@@ -39,6 +39,8 @@ src/modules/app/dpdp/    the DPDP product
   nav.ts                 modules and intake pages — the sidebar, ⌘K palette and shortcuts all read it
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   workStatus.ts          finding/task/request statuses and severities → WorkRow glyphs (with hover labels)
+  inbox.ts               the inbox: others' changes and comments across clients; unread state per viewer
+  myWork.ts              the consultant's work across clients (requests, intimations, reviews, check-ins…)
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock (shared per tick rate), null while hydrating
@@ -98,6 +100,10 @@ src/modules/app/dpdp/    the DPDP product
   vocabulary (RoPA, notice & consent, data principal requests, breach register, evidence pack…). Never
   merge, hide or rename them into generic product terms. Cross-cutting views (Inbox, My work) sit in their
   own section above "Modules" and name every item in the same vocabulary.
+- **Your work comes first.** Inbox (`g i`) and My work (`g m`) sit at the console root, above the
+  modules in the sidebar, which is on every page. Inbox = what *others* changed or said (audit trail +
+  comments); running clocks stay in the bell. My work = the consultant's side; owners' work is Tasks.
+  The sidebar counts unread inbox items and late work only. Read state is per viewer (`ui/storedSet.ts`).
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
 - **Overlays** use `Dialog` / `Sheet`, both on `useOverlay`: portal into `.demo-root` (the header's
@@ -179,9 +185,9 @@ src/modules/app/dpdp/    the DPDP product
 - **The DataSentry wordmark links to datasentry.in** (`BrandLink`); "DPDP Console" links home.
 - **Shell layout**: header = "DPDP Console" (a cell as wide as the sidebar; the pipe after it sits on the
   sidebar's border line) + `ClientSwitcher` (`ClientMark`, client name, phase,
-  details and the other clients) + search, alerts, account. Inside a client, `Sidebar` is the left
-  rail: collapsible to icons (`[`, state in localStorage via `ui/prefs.ts`), "Powered by
-  DataSentry" at its foot. Pages without a sidebar carry "Powered by" in the footer.
+  details and the other clients) + search, alerts, account. `Sidebar` is the left rail on every page:
+  "Your work", then the client's modules and intake pages when inside one; collapsible to icons (`[`,
+  state in localStorage via `ui/prefs.ts`), "Powered by DataSentry" at its foot.
 - **Overview order**: next step → "What needs doing" (one worklist) → "Where things stand" (score,
   headline figures, module cards) → context (role determination, recent activity). Action before status.
 - **Colour carries meaning only, and stays calm**: red = overdue/unlawful, amber = needs attention,

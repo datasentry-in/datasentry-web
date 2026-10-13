@@ -1,22 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { NAV } from '@/modules/app/dpdp/nav';
+import { NAV, WORK, type NavItem } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
 import { ICONS } from '@/modules/app/ui/Icons';
 import { SIDEBAR_COLLAPSED, togglePref, usePref } from '@/modules/app/ui/prefs';
 
 /**
- * A client's modules, flush to the left edge and full height below the header.
- * Collapses to an icon rail (`[` or the button at the top); labels then show
- * as tooltips and counts shrink to a dot. "Powered by DataSentry" sits at the
- * foot when expanded. On phones it is a drawer opened from the header, always
- * expanded.
+ * The left rail, on every console page: "Your work" (Inbox, My work — across
+ * clients) at the top, then, inside a client, its modules and intake pages
+ * exactly as the statute names them. Collapses to an icon rail (`[` or the
+ * button at the top); labels then show as tooltips and counts shrink to a dot.
+ * "Powered by DataSentry" sits at the foot when expanded. On phones it is a
+ * drawer opened from the header, always expanded.
  */
 
 type Props = {
-  org: string;
+  /** The client in view; outside a client only "Your work" shows. */
+  org: string | null;
+  /** The client page in view ('' is its overview), or the work page ('inbox', 'my-work') outside a client. */
   activeSeg: string;
   counts: Record<string, string>;
   /** Phone drawer state, owned by the shell's menu button. */
@@ -32,11 +35,11 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
 
   return (
     <nav
-      aria-label="Client modules"
+      aria-label="Console"
       className={`${open ? 'flex' : 'hidden'} shrink-0 flex-col border-b border-[var(--ds-border)] bg-[var(--ds-panel)] px-3 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:border-b-0 lg:border-r lg:transition-[width] lg:duration-200 lg:ease-out motion-reduce:transition-none ${rail}`}
     >
       <div className="flex-1 overflow-y-auto py-4 lg:pt-3">
-        {NAV.map((group, gi) => (
+        {[{ title: 'Your work', items: WORK, root: true }, ...(org ? NAV.map((g) => ({ ...g, root: false })) : [])].map((group, gi) => (
           <div key={group.title} className={gi > 0 ? 'mt-5' : ''}>
             {/* The first heading carries the collapse control (desktop only). */}
             <div className={`flex items-center pb-1.5 ${collapsed ? 'lg:justify-center' : 'justify-between'}`}>
@@ -55,13 +58,14 @@ export default function Sidebar({ org, activeSeg, counts, open, onNavigate }: Pr
             </div>
             {collapsed && gi > 0 && <div className="mx-2 mb-3 hidden h-px bg-[var(--ds-border)] lg:block" aria-hidden />}
             <ul className="space-y-px">
-              {group.items.map((m) => {
-                const active = activeSeg === m.seg;
+              {group.items.map((m: NavItem) => {
+                // Work pages sit at the console root; module pages under the client.
+                const active = group.root ? !org && activeSeg === m.seg : activeSeg === m.seg;
                 const count = counts[m.seg];
                 return (
                   <li key={m.label}>
                     <Link
-                      href={demoPath(org, m.seg)}
+                      href={group.root || !org ? demoPath(m.seg) : demoPath(org, m.seg)}
                       onClick={onNavigate}
                       aria-current={active ? 'page' : undefined}
                       aria-label={collapsed ? m.label : undefined}

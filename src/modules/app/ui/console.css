@@ -248,6 +248,7 @@ body:has(.demo-root) {
 .demo-root .ds-work-row[aria-current='true'] { --row-bg: var(--ds-subtle); }
 .demo-root .ds-row-float { position: absolute; padding-left: 2rem; background: linear-gradient(to right, transparent, var(--row-bg) 1.5rem); }
 .demo-root .ds-work-row:focus-within { --row-bg: var(--ds-subtle); }
+.demo-root .ds-row-muted { font-weight: 400; color: var(--ds-text-2); }
 .demo-root .ds-work-row[data-selected] { --row-bg: var(--ds-accent-weak); }
 /* The selection checkbox sits in the row's gutter: shown on hover, on the
    keyboard's row, once anything is selected, or when checked. */
