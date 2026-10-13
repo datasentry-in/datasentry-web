@@ -52,9 +52,17 @@ export function ProductLockup({
     <span
       className={`${lg ? 'text-[18px]' : 'text-[14.5px]'} whitespace-nowrap font-bold leading-none tracking-[-0.025em]`}
     >
-      {/* The wordmark's two colours: brand blue as in DATA, ink as in SENTRY.
-          A logotype, so the blue is the brand's own, not the darker UI accent. */}
-      <span className="text-[var(--ds-brand)]">DPDP</span> <span className="text-[var(--ds-brand-ink)]">Console</span>
+      {/* DataSentry's two colours: blue #009FE3 and yellow #FFED00. Yellow text
+          would vanish on white, so — as in the logo's frame — it is a highlight:
+          a marker stroke under "Console". A logotype, so the blue is the
+          brand's own, not the darker UI accent. */}
+      <span className="text-[var(--ds-brand)]">DPDP</span>{' '}
+      <span
+        className="text-[var(--ds-brand-ink)]"
+        style={{ backgroundImage: 'linear-gradient(transparent 58%, var(--ds-brand-yellow) 58%, var(--ds-brand-yellow) 92%, transparent 92%)', padding: '0 2px' }}
+      >
+        Console
+      </span>
     </span>
   );
   // The product name and the maker are separate links: the name goes home

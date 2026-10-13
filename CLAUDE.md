@@ -90,6 +90,8 @@ src/modules/app/dpdp/    the DPDP product
 - **Radius**: the marketing `globals.css` forces `border-radius: 0 !important` on every
   element. `console.css` restores the Tailwind `rounded-*` scale inside `.demo-root`; add
   any new radius class there or it renders square.
+- **Brand colours** are blue `#009FE3` and yellow `#FFED00`. Yellow is never text (it vanishes on
+  white): it is a highlight — the marker under "Console", the design-note bar.
 - **Brand**: `Wordmark` (the DATA|SENTRY logo) and `ProductLockup` ("DPDP Console", "Powered by
   [wordmark]") in `Brand.tsx`. There is no square "DS" mark — it was removed on purpose.
 
