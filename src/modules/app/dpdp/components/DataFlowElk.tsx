@@ -16,7 +16,8 @@ import {
 } from './DataFlowMap';
 
 /**
- * The data flow map laid out automatically — the standard (see CLAUDE.md): the
+ * The data flow map (the `flows` page), laid out automatically — the standard
+ * (see CLAUDE.md): the
  * same graph the register produces (graphFor). ELK places the systems — one
  * column per trust zone (own systems → India → outside India), each column
  * ordered to cross as few flows as possible and lined up with what it connects

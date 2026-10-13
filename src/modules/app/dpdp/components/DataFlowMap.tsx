@@ -15,6 +15,11 @@ import RemindButton from './RemindButton';
 import When from './When';
 
 /**
+ * HIDDEN (shown only at `flows/hand-placed`): the earlier hand-placed map —
+ * superseded by the auto-laid-out DataFlowElk. Its colours, icons, legend,
+ * graphFor and FlowSheet are shared with DataFlowElk and stay when the
+ * drawing is removed.
+ *
  * The data-flow map as a privacy reviewer reads one: three trust boundaries
  * (the client's own systems, third parties in India, outside India) with the
  * India border drawn; every system typed, located and shown with the contract

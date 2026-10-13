@@ -169,7 +169,7 @@ src/modules/app/dpdp/    the DPDP product
 - **Plain language first, citation second**: say what is wrong in words, then the provision —
   "no one named to handle complaints (s.13)", never "s.13 breach". `CiteLink` is quiet grey text on a
   hairline underline, blue only on hover: blue belongs to the primary action.
-- **The data flow map** (`DataFlowMap.tsx`, data in `FLOW_NODES`/`FLOW_EDGES`) draws three trust
+- **The data flow map** (`DataFlowElk.tsx`, data in `FLOW_NODES`/`FLOW_EDGES`) draws three trust
   boundaries (own systems · third parties in India · outside India) with the India border; every node
   carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
@@ -179,7 +179,7 @@ src/modules/app/dpdp/    the DPDP product
   with React Flow — never hand-placed, never authored as diagram text. Edits by prompt are typed operations on
   the register (add/update/remove a system or flow), previewed with the rule engine's consequences, audited
   old → new; the map re-lays itself out. Mermaid/D2 only ever come *out* of the graph as generated exports
-  (post-MVP). Today: `[org]/flows/elk` (`DataFlowElk.tsx`). Division of labour, after several failed
+  (post-MVP). It is the `[org]/flows` page (`DataFlowElk.tsx`). Division of labour, after several failed
   routes: **ELK places the systems, we draw the flows.** ELK (`elkjs`, layered, flat graph, no labels) only
   orders each column and sets each system's height: own systems are pinned `FIRST`, outside-India `LAST`, and a
   chain of invisible anchors (one per gap, hidden links to every system of the next zone) forces each zone
@@ -189,8 +189,9 @@ src/modules/app/dpdp/    the DPDP product
   labels apart. Don't hand ELK the labels (it routes every flow through a label slot: jogs and spikes), nest
   the zones (they become obstacles flows route around), or use its splines (wiggles). React Flow renders
   (`@xyflow/react`); zoom is on the + / − buttons only. `FlowSections.tsx` holds the facts row and the flagged
-  / cross-border sections both map pages share. `[org]/flows` still shows the hand-placed `DataFlowMap.tsx`,
-  which this is to replace. Gaps: `flowNodes`/`flowEdges` in the mock are still written by hand beside the
+  / cross-border sections both map pages share. The earlier hand-placed map (`DataFlowMap.tsx`) is hidden at
+  `[org]/flows/hand-placed` — unlinked, kept for reference, to be deleted later (its colours, icons, legend,
+  `graphFor` and `FlowSheet` are shared and stay); `[org]/flows/elk` redirects to `flows`. Gaps: `flowNodes`/`flowEdges` in the mock are still written by hand beside the
   RoPA rather than derived from it; ELK should run in a web worker; elkjs is EPL-2.0 — check before shipping.
 - **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
   ease-out in and faster out, all off under reduced motion. Every page eases in (`ds-page-in`: title,
