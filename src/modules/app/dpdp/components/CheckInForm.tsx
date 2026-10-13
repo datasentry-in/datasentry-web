@@ -1,10 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { getOrg } from '@/modules/app/dpdp/mock/data';
+import { clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
+import { useEffect, useRef, useState } from 'react';
 import { formatIst } from '@/modules/app/dpdp/time';
-import { BasisTag, Box, Panel, ProvenanceTag, Tag } from '@/modules/app/ui/ui';
+import { BasisTag, ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
+import {
+  Panel, Tag,
+} from '@/modules/app/ui/ui';
 
 /**
  * The quarterly re-attestation, as the client's owner sees it. Six questions,
@@ -52,6 +54,7 @@ export default function CheckInForm({ org }: { org: string }) {
   const [shown, setShown] = useState(0);
   const [at, setAt] = useState('');
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const results = useRef<HTMLDivElement>(null);
 
   const set = (id: string, patch: Partial<Answer>) =>
@@ -79,7 +82,7 @@ export default function CheckInForm({ org }: { org: string }) {
   };
 
   const changes = phase === 'done' ? compare(answers, headcount, o.headcount) : [];
-  const owner = OWNERS[CHECK_IN.sentTo] ?? CHECK_IN.sentTo;
+  const owner = personFor(OWNERS, CHECK_IN.sentTo).name;
 
   return (
     <div className="space-y-5">
@@ -171,7 +174,6 @@ export default function CheckInForm({ org }: { org: string }) {
       </Panel>
 
       {phase !== 'form' && (
-        <Box>
         <div ref={results} className="ds-bar ds-bar-accent scroll-mt-24">
           <p className="text-[12px] font-medium text-[var(--ds-accent-hover)]">
             {phase === 'checking' ? 'Comparing with the register…' : 'Compared with the register'}
@@ -185,7 +187,6 @@ export default function CheckInForm({ org }: { org: string }) {
             ))}
           </ul>
         </div>
-        </Box>
       )}
 
       {phase === 'done' && (

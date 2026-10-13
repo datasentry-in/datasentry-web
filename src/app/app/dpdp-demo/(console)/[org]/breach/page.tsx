@@ -1,19 +1,15 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, NextStep, PageHeader, Panel, Tag,
+  Button, Card, CiteLink, DemoNote, EmptyState, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
+import PresenterOnly from '@/modules/app/ui/PresenterOnly';
+import MockButton from '@/modules/app/ui/MockButton';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function Breach({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
+  const { org, d } = await loadClient(params);
   const INCIDENTS = d.incidents;
   const open = INCIDENTS.find((i) => i.status === 'Open');
   const sop = d.evidence.find((e) => e.name === 'Breach response SOP');
@@ -35,16 +31,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
       </Facts>
 
       {open ? (<>
-      <NextStep
-        title={`Send the Board intimation for ${open.id}`}
-        action={<Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>}
-      >
-        The initial description is due without delay and full particulars within 72 hours of awareness. The draft is
-        prepared from the incident record; the CISO signs it off.
-      </NextStep>
-
       {/* The clock is the module. */}
-      <div className="rounded-lg border border-[var(--ds-border)] p-4 sm:p-5">
       <div className="ds-bar ds-bar-danger flex flex-wrap items-center justify-between gap-5">
         <div>
           <p className="text-[12px] font-medium text-[var(--ds-danger)]">
@@ -56,6 +43,10 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           <p className="ds-figure mt-1.5 text-[12px] text-[var(--ds-text-2)]">
             Awareness {open.awareness} · deadline {open.deadline}
           </p>
+          {/* The clock's own action — the page's next step lives on the overview. */}
+          <div className="mt-3">
+            <Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>
+          </div>
         </div>
         <div className="sm:text-right">
           <p className="ds-meta text-[var(--ds-text-3)]">
@@ -64,7 +55,6 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           <p className="ds-figure mt-1 text-[26px] leading-none tracking-[-0.03em]">{open.affected}</p>
           <p className="mt-1 text-[12px] text-[var(--ds-text-2)]">to be intimated without delay</p>
         </div>
-      </div>
       </div>
 
       <Panel title={open.id} sub={open.title}>
@@ -128,7 +118,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button as="link" href={demoPath(org.slug, 'breach', 'intimation')}>Open as a document to edit and sign off</Button>
-              <Button variant="ghost">Notify 240 principals</Button>
+              <MockButton variant="ghost" what="Notify the affected principals">Notify {open.affected} principals</MockButton>
             </div>
           </Card>
 
@@ -168,6 +158,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
         </ul>
       </Panel>
 
+      <PresenterOnly>
       <Panel title="Why this module is in the MVP">
         <DemoNote>
           It was not in the original three-module sketch. Rule 7 carries no severity threshold, the s.8(6) penalty
@@ -176,6 +167,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
           product, and the thing most likely to be needed in anger.
         </DemoNote>
       </Panel>
+      </PresenterOnly>
     </div>
   );
 }

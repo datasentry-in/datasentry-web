@@ -1,11 +1,11 @@
 // Mock data for the DataSentry DPDP platform demo.
 // Figures are illustrative and shaped to look like a real 240-seat ITES firm.
-// The live app replaces this module with a real data layer; the types stay.
+// The live app replaces this module with a real data layer; the types live in ../types.ts.
 
 import type {
-  FlowEdge, FlowNode, Activity, Dsr, FulfilmentTask, Gap, Incident, Org, Provenance, Walkthrough } from '../types';
-
-export * from '../types';
+  Activity, AgendaItem, AuditEntry, CheckIn, ComplianceDoc, ConsentRow, ConsentSummary, Dsr, EvidenceItem, FlowEdge,
+  FlowNode, FulfilmentTask, Gap, Incident, OrgProfile, PrivacyCentre, Questionnaire, RecordComment, Walkthrough,
+} from '../types';
 
 export const CONSULTANT = {
   name: 'Dharita Gada',
@@ -32,7 +32,8 @@ export function lastSignIn() {
   return `${date}, 09:12 IST · Mumbai`;
 }
 
-export const ORGS: Org[] = [
+/** Client profiles. Counts are computed from each client's data (mock/clients.ts). */
+export const PROFILES: OrgProfile[] = [
   {
     slug: 'northstar',
     name: 'Northstar BPO Services Pvt Ltd',
@@ -41,12 +42,6 @@ export const ORGS: Org[] = [
     locations: 'Pune, Bengaluru',
     score: 42,
     trend: '+11 since Aug',
-    openGaps: { high: 4, medium: 6, low: 4 },
-    activities: 19,
-    exemptActivities: 2,
-    dsrOpen: 3,
-    dsrBreaching: 0,
-    incidentOpen: 1,
     engagement: 'Readiness assessment — Phase 2 of 3',
     lastReview: '08 Oct 2026',
   },
@@ -58,12 +53,6 @@ export const ORGS: Org[] = [
     locations: 'Hyderabad',
     score: 67,
     trend: '+24 since Jul',
-    openGaps: { high: 1, medium: 4, low: 5 },
-    activities: 14,
-    exemptActivities: 3,
-    dsrOpen: 1,
-    dsrBreaching: 0,
-    incidentOpen: 0,
     engagement: 'Readiness assessment — Phase 3 of 3',
     lastReview: '02 Oct 2026',
   },
@@ -75,19 +64,11 @@ export const ORGS: Org[] = [
     locations: 'Chennai, Coimbatore',
     score: 19,
     trend: 'baseline',
-    // In discovery: no register yet, so no activities and no findings.
-    openGaps: { high: 0, medium: 0, low: 0 },
-    activities: 0,
-    exemptActivities: 0,
-    dsrOpen: 5,
-    dsrBreaching: 2,
-    incidentOpen: 0,
     engagement: 'Discovery — Phase 1 of 3',
     lastReview: '09 Oct 2026',
   },
 ];
 
-export const getOrg = (slug: string) => ORGS.find((o) => o.slug === slug) ?? ORGS[0];
 
 export const ACTIVITIES: Activity[] = [
   {
@@ -254,7 +235,7 @@ export const GAPS: Gap[] = [
     basis: 'observed',
   },
   {
-    id: 'G-04', severity: 'High',
+    id: 'G-04', status: 'In progress', severity: 'High',
     title: 'No breach response procedure and no incident register',
     detail: 'There is no documented procedure for identifying, escalating or notifying a personal data breach, and no register of past incidents. Rule 7 requires intimation to the Board within 72 hours of becoming aware, with no severity threshold, and intimation to affected principals without delay.',
     provision: 'Rule 7 read with s.8(6)', activity: 'All activities',
@@ -289,7 +270,7 @@ export const GAPS: Gap[] = [
     basis: 'observed',
   },
   {
-    id: 'G-08', severity: 'Medium',
+    id: 'G-08', status: 'In progress', severity: 'Medium',
     title: 'Payroll folder on Google Drive is shared with anyone holding the link',
     detail: 'The folder HR/Payroll/FY26 is set to "Anyone with the link — Viewer". It contains 12 monthly registers covering 240 employees with salary, PAN, bank account and PF number.',
     provision: 's.8(4) reasonable security safeguards', activity: 'PA-04 Payroll processing',
@@ -352,8 +333,7 @@ export const GAPS: Gap[] = [
 export const DSRS: Dsr[] = [
   {
     id: 'DSR-2026-0041', type: 'Erasure', principal: 'Priya Raghunathan',
-    relationship: 'Ex-employee — exited 22 Mar 2024', received: '08 Oct 2026', channel: 'Privacy centre',
-    daysLeft: 27, status: 'In progress',
+    relationship: 'Ex-employee — exited 22 Mar 2024', received: '08 Oct 2026', channel: 'Privacy centre', status: 'In progress',
     conflicts: [
       { record: 'Provident Fund member records', statute: 'EPF & MP Act, 1952', until: 'Statutory — not erasable' },
       { record: 'Form 16 / TDS records', statute: 'Income Tax Act, 1961 r/w Rule 31', until: '31 Mar 2031' },
@@ -363,31 +343,26 @@ export const DSRS: Dsr[] = [
   },
   {
     id: 'DSR-2026-0040', type: 'Access', principal: 'Arun Kelkar',
-    relationship: 'Ex-employee — exited 11 Jan 2026', received: '30 Sep 2026', channel: 'Email',
-    daysLeft: 19, status: 'In progress',
+    relationship: 'Ex-employee — exited 11 Jan 2026', received: '30 Sep 2026', channel: 'Email', status: 'In progress',
   },
   {
     id: 'DSR-2026-0039', type: 'Grievance', principal: 'Sneha Dutta',
-    relationship: 'Current employee', received: '23 Sep 2026', channel: 'Privacy centre',
-    daysLeft: 12, status: 'Awaiting client',
+    relationship: 'Current employee', received: '23 Sep 2026', channel: 'Privacy centre', status: 'Awaiting client',
     outcome: 'Objects to fingerprint capture for attendance; asks for a card-based alternative',
   },
   {
     id: 'DSR-2026-0038', type: 'Correction', principal: 'Mohammed Irfan',
-    relationship: 'Candidate — applied 02 Sep 2026', received: '14 Sep 2026',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Candidate — applied 02 Sep 2026', received: '14 Sep 2026', status: 'Closed',
     outcome: 'Corrected — total experience amended from 4y to 6y 3m. Closed in 6 days.',
   },
   {
     id: 'DSR-2026-0037', type: 'Erasure', principal: 'Kavya Nair',
-    relationship: 'Candidate — not selected', received: '09 Sep 2026',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Candidate — not selected', received: '09 Sep 2026', status: 'Closed',
     outcome: 'Fully honoured — ATS record and BGV file erased, vendor instructed. Closed in 2 days.',
   },
   {
     id: 'DSR-2026-0036', type: 'Nomination', principal: 'Rajesh Pillai',
-    relationship: 'Current employee', received: '28 Aug 2026',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Current employee', received: '28 Aug 2026', status: 'Closed',
     outcome: 'Nominee recorded — spouse, with identity verified.',
   },
 ];
@@ -429,7 +404,7 @@ export const INCIDENTS: Incident[] = [
   },
 ];
 
-export const CONSENT_SUMMARY = {
+export const CONSENT_SUMMARY: ConsentSummary = {
   activeCandidate: 1284,
   withdrawn: 96,
   expiredClock: 212,
@@ -439,7 +414,7 @@ export const CONSENT_SUMMARY = {
   languages: ['English', 'Hindi', 'Marathi', 'Kannada'],
 };
 
-export const CONSENT_LEDGER = [
+export const CONSENT_LEDGER: ConsentRow[] = [
   { ts: '10 Oct 2026, 11:42', principal: 'Nikhil Barve', type: 'Candidate', purposes: 'Screening, BGV, Talent pool 180d', notice: 'v3', lang: 'English', action: 'Granted' },
   { ts: '10 Oct 2026, 10:18', principal: 'Shalini Menon', type: 'Candidate', purposes: 'Screening, BGV', notice: 'v3', lang: 'Marathi', action: 'Granted' },
   { ts: '09 Oct 2026, 17:55', principal: 'Deepa Krishnan', type: 'Candidate', purposes: 'Talent pool 180d', notice: 'v2', lang: 'English', action: 'Withdrawn' },
@@ -449,7 +424,7 @@ export const CONSENT_LEDGER = [
   { ts: '08 Oct 2026, 12:47', principal: 'Farah Qureshi', type: 'Candidate', purposes: 'Talent pool 180d', notice: 'v2', lang: 'English', action: 'Clock expired' },
 ];
 
-export const EVIDENCE_PACK = [
+export const EVIDENCE_PACK: EvidenceItem[] = [
   { name: 'Record of Processing Activities', status: 'Generated', detail: '19 activities, RoPA v4', ts: '08 Oct 2026' },
   { name: 'Role determination memo', status: 'Generated', detail: '17 Fiduciary, 2 exempt under s.17(1)(d)', ts: '08 Oct 2026' },
   { name: 'Data flow map', status: 'Generated', detail: '11 systems, 4 cross-border destinations', ts: '08 Oct 2026' },
@@ -465,7 +440,7 @@ export const EVIDENCE_PACK = [
   { name: 's.17(1)(d) applicability memo', status: 'Review pending', detail: 'Blocked on G-11 contract clause mapping', ts: '—' },
 ];
 
-export const QUESTIONNAIRE = {
+export const QUESTIONNAIRE: Questionnaire = {
   section: 4,
   sections: 7,
   sectionName: 'Exit & post-employment',
@@ -481,9 +456,9 @@ export const QUESTIONNAIRE = {
     'Are personnel files purged on a schedule, or only when storage is reclaimed?',
   ],
   derived: [
-    { field: 'Retention — PA-11 Exit & FnF', value: '8 years post-exit', provenance: 'ai_suggested' as Provenance },
-    { field: 'Role — PA-11', value: 'Fiduciary', provenance: 'consultant_reviewed' as Provenance },
-    { field: 'Basis — PA-11', value: 's.7(i) employment + legal obligation', provenance: 'consultant_reviewed' as Provenance },
+    { field: 'Retention — PA-11 Exit & FnF', value: '8 years post-exit', provenance: 'ai_suggested' },
+    { field: 'Role — PA-11', value: 'Fiduciary', provenance: 'consultant_reviewed' },
+    { field: 'Basis — PA-11', value: 's.7(i) employment + legal obligation', provenance: 'consultant_reviewed' },
   ],
 };
 
@@ -526,13 +501,13 @@ export const FLOW_EDGES: FlowEdge[] = [
    ------------------------------------------------------------------------- */
 
 /** The client's public privacy centre and request inbox — run by the platform. */
-export const PRIVACY_CENTRE = {
+export const PRIVACY_CENTRE: PrivacyCentre = {
   url: 'privacy.northstarbpo.in',
   contactEmail: 'privacy@northstarbpo.in',
   /** Forwarding address: requests that arrive by email land in the DSR desk. */
   inbox: 'requests.northstar@in.datasentry.in',
   /** Not designated yet — finding G-09. Shown as a gap on the public page. */
-  grievanceOfficer: null as string | null,
+  grievanceOfficer: null,
   responseDays: 30,
   languages: ['English', 'हिन्दी', 'मराठी', 'ಕನ್ನಡ'],
   consentSnippet: '<script src="https://datasentry.in/c/northstar.js" async></script>',
@@ -585,19 +560,19 @@ export const TASKS: FulfilmentTask[] = [
 ];
 
 /** The quarterly re-attestation that keeps the register current. */
-export const CHECK_IN = {
+export const CHECK_IN: CheckIn = {
   label: 'Q3 2026 check-in',
   due: '15 Oct 2026',
   sentTo: 'HR Operations Manager',
   sentOn: '01 Oct 2026',
   last: { on: '10 Jul 2026', changes: 2 },
   questions: [
-    { id: 'tools', kind: 'yesno' as const, text: 'Have you started using any new tool or vendor that holds employee, candidate or customer data?', register: 'The register lists 11 systems and 10 processors.', placeholder: 'e.g. Moved payroll to RazorpayX in September' },
-    { id: 'retired', kind: 'yesno' as const, text: 'Has any tool been replaced or switched off?', register: 'Payroll runs on Zoho Payroll; attendance on Matrix COSEC.', placeholder: 'e.g. Stopped using Mailchimp in August' },
-    { id: 'headcount', kind: 'number' as const, text: 'Roughly how many people are on the payroll today?', register: '240 at the last check-in.', placeholder: '240' },
-    { id: 'purposes', kind: 'yesno' as const, text: 'Are you using existing data for anything new — monitoring, marketing, analytics?', register: '19 activities, each with one stated purpose.', placeholder: 'e.g. Started productivity reports from the DLP agent' },
-    { id: 'clients', kind: 'yesno' as const, text: 'Any new client, or a change in where client work is contracted?', register: 'Two offshore clients, both contracted outside India.', placeholder: 'e.g. New Indian telco client from November' },
-    { id: 'offplatform', kind: 'yesno' as const, text: 'Did any privacy request, complaint or incident reach you outside this platform?', register: 'Requests come in through the privacy centre or the request inbox.', placeholder: 'e.g. An ex-employee asked HR by phone for their records' },
+    { id: 'tools', kind: 'yesno', text: 'Have you started using any new tool or vendor that holds employee, candidate or customer data?', register: 'The register lists 11 systems and 10 processors.', placeholder: 'e.g. Moved payroll to RazorpayX in September' },
+    { id: 'retired', kind: 'yesno', text: 'Has any tool been replaced or switched off?', register: 'Payroll runs on Zoho Payroll; attendance on Matrix COSEC.', placeholder: 'e.g. Stopped using Mailchimp in August' },
+    { id: 'headcount', kind: 'number', text: 'Roughly how many people are on the payroll today?', register: '240 at the last check-in.', placeholder: '240' },
+    { id: 'purposes', kind: 'yesno', text: 'Are you using existing data for anything new — monitoring, marketing, analytics?', register: '19 activities, each with one stated purpose.', placeholder: 'e.g. Started productivity reports from the DLP agent' },
+    { id: 'clients', kind: 'yesno', text: 'Any new client, or a change in where client work is contracted?', register: 'Two offshore clients, both contracted outside India.', placeholder: 'e.g. New Indian telco client from November' },
+    { id: 'offplatform', kind: 'yesno', text: 'Did any privacy request, complaint or incident reach you outside this platform?', register: 'Requests come in through the privacy centre or the request inbox.', placeholder: 'e.g. An ex-employee asked HR by phone for their records' },
   ],
 };
 
@@ -615,7 +590,7 @@ export const OWNERS: Record<string, string> = {
  * what to look at and what the register currently says. Open findings and
  * attested fixes both land here, so a fix is looked at, not just taken on trust.
  */
-export const WALKTHROUGH_AGENDA = [
+export const WALKTHROUGH_AGENDA: AgendaItem[] = [
   { id: 'A1', system: 'Zoho Recruit', looked: 'Records older than 180 days', register: '4,812 on 09 Oct; purge task T-091 overdue', why: 'Confirms the purge happened', finding: 'G-01' },
   { id: 'A2', system: 'Google Workspace', looked: 'Accounts of people who have left', register: '23 enabled on 09 Oct', why: 'Open finding', finding: 'G-07' },
   { id: 'A3', system: 'Google Drive', looked: 'Sharing on HR/Payroll/FY26', register: 'Restricted to HR — attested 10 Oct (T-087)', why: 'Looks at an attested fix', finding: 'G-08' },
@@ -635,31 +610,11 @@ export const CLIENT_THEME: Record<string, { accent: string; hover: string; weak:
 };
 
 /** Readiness score at each review, oldest first — for the trend line. */
-export const SCORE_HISTORY: Record<string, { on: string; score: number }[]> = {
-  northstar: [
-    { on: '12 Aug 2026', score: 31 }, { on: '29 Aug 2026', score: 34 }, { on: '12 Sep 2026', score: 36 },
-    { on: '26 Sep 2026', score: 39 }, { on: '08 Oct 2026', score: 42 },
-  ],
-  quadrant: [
-    { on: '18 Jul 2026', score: 43 }, { on: '08 Aug 2026', score: 51 }, { on: '29 Aug 2026', score: 58 },
-    { on: '19 Sep 2026', score: 63 }, { on: '06 Oct 2026', score: 67 },
-  ],
-  meridian: [{ on: '09 Oct 2026', score: 19 }],
-};
+export const SCORE_HISTORY = [
+  { on: '12 Aug 2026', score: 31 }, { on: '29 Aug 2026', score: 34 }, { on: '12 Sep 2026', score: 36 },
+  { on: '26 Sep 2026', score: 39 }, { on: '08 Oct 2026', score: 42 },
+];
 
-/**
- * The append-only audit trail, newest first. A field change records the old
- * and the new value, so the history says exactly what changed, not
- * "record updated". `ref` ties an entry to a record (an activity, finding,
- * request or incident).
- */
-export type AuditEntry = {
-  at: string;
-  who: string;
-  ref: string;
-  what: string;
-  change?: { field: string; from: string; to: string };
-};
 
 export const AUDIT: AuditEntry[] = [
   { at: '10 Oct 2026, 16:05', who: 'Meera Joshi', ref: 'DSR-2026-0041', what: 'Erasure attested — Keka HR personnel file' },
@@ -675,7 +630,6 @@ export const AUDIT: AuditEntry[] = [
   { at: '03 Oct 2026, 18:02', who: 'Dharita Gada', ref: 'PA-06', what: 'Retention reviewed', change: { field: 'Retention', from: '7 years', to: 'Not stated' } },
 ];
 
-export const auditFor = (ref: string) => AUDIT.filter((e) => e.ref === ref || e.what.includes(ref));
 
 /** Everyone who can be @mentioned: the consultant team and the client's owners. */
 export const PEOPLE: { name: string; role: string; side: 'DataSentry' | 'Client' }[] = [
@@ -689,18 +643,6 @@ export const PEOPLE: { name: string; role: string; side: 'DataSentry' | 'Client'
   { name: 'Vikram Iyer', role: 'Chief Information Security Officer', side: 'Client' },
 ];
 
-/**
- * Comments on a record. `visibility` decides who sees it: an internal note stays
- * with the DataSentry team; a shared comment is visible to the client's owners.
- */
-export type RecordComment = {
-  id: string;
-  ref: string;
-  who: string;
-  at: string;
-  text: string;
-  visibility: 'internal' | 'shared';
-};
 
 export const COMMENTS: RecordComment[] = [
   { id: 'c1', ref: 'G-01', who: 'Ritu Sharma', at: '10 Oct 2026, 11:05', visibility: 'shared', text: 'Zoho support says the purge rule can run monthly. Can we keep campus hires for 12 months instead of 180 days?' },
@@ -713,25 +655,6 @@ export const COMMENTS: RecordComment[] = [
   { id: 'c8', ref: 'INC-2026-003', who: 'Dharita Gada', at: '13 Oct 2026, 10:40', visibility: 'shared', text: '@Vikram Iyer done — section 3 updated. Ready for your sign-off.' },
 ];
 
-/**
- * A generated compliance document, opened as a page. Sections carry their own
- * provenance: AI-drafted from the record, or reviewed by the consultant.
- * Editing a drafted section marks it reviewed.
- */
-export type DocSection = { heading: string; text: string; provenance: Provenance; source?: string };
-export type ComplianceDoc = {
-  id: string;
-  ref: string;
-  title: string;
-  kind: string;
-  provision: string;
-  owner: string;
-  approver: string;
-  due: string;
-  version: number;
-  sections: DocSection[];
-  versions: { v: number; at: string; who: string; note: string }[];
-};
 
 export const BOARD_INTIMATION: ComplianceDoc = {
   id: 'board-intimation',

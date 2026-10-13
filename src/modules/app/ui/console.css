@@ -31,6 +31,12 @@
   --ds-accent-hover: #00618f;
   --ds-accent-weak: #e8f4fb;
   --ds-accent-border: #bfe0f2;
+  --ds-accent-weak-2: #dcedf9;
+  /* Model-drafted text (provenance: AI suggested). */
+  --ds-ai-rule: #d9d5f3;
+  /* Accent-bar tones: brighter than the text tones, so a 2px bar still reads. */
+  --ds-warn-bar: #f5a524;
+  --ds-ok-bar: #3fb37f;
   --ds-danger: #b42318;
   --ds-danger-weak: #fef3f2;
   --ds-danger-border: #fcd9d4;
@@ -104,7 +110,7 @@ html:has(.demo-root) ::-webkit-scrollbar-thumb {
 
 /* ---- Console motion and mono ----------------------------------------------
    The sign-in entrance. The register visual animates on a canvas (see
-   RegisterField.tsx). Off for viewers who ask for reduced motion. */
+   DataMapScan.tsx). Off for viewers who ask for reduced motion. */
 @keyframes ds-rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
@@ -123,10 +129,12 @@ html:has(.demo-root) ::-webkit-scrollbar-thumb {
 }
 
 /* ---- Console type roles ------------------------------------------------------
-   Three roles, taken from the sign-in screen, used on every console page:
+   Roles used on every console page:
      ds-display  tight Inter headlines (size set where used)
-     ds-label    DM Mono uppercase for technical labels, column heads, meta
-     ds-figure   DM Mono tabular numerals for every headline number
+     ds-figure   Inter with tabular numerals for every headline number
+     ds-id       DM Mono for record IDs (PA-01, G-06) — nothing else
+     ds-label    DM Mono uppercase on the sign-in screen; sentence-case Inter in table heads
+     ds-meta     sentence-case labels inside a page body
    Colour and size stay with utilities; these set only the voice. */
 .demo-root .ds-display {
   font-weight: 600;
@@ -181,17 +189,31 @@ body:has(.demo-root) {
 }
 
 /* ---- Accent bar --------------------------------------------------------------
-   The one way the console marks something: a 2px bar on the left, no box, no
-   tint. `--bar` carries the meaning (red overdue, amber due, green settled,
+   The one way the console marks something: a plain hairline card (the same frame
+   as a plain `Card`) with a 2px bar inset on the left — no tint, no coloured
+   border. `--bar` carries the meaning (red overdue, amber due, green settled,
    blue the model or the primary path, yellow a design note). Plain CSS so the
-   padding outranks any utility passed alongside it. */
+   frame and padding outrank any utility passed alongside it. */
 .demo-root .ds-bar {
-  border-left: 2px solid var(--bar, var(--ds-border-strong));
-  padding: 2px 0 2px 12px;
+  position: relative;
+  border: 1px solid var(--ds-border);
+  border-radius: 6px !important;
+  background: var(--ds-panel);
+  padding: 12px 12px 12px 26px;
+}
+.demo-root .ds-bar::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 12px;
+  width: 2px;
+  border-radius: 1px !important;
+  background: var(--bar, var(--ds-border-strong));
 }
 .demo-root .ds-bar-danger { --bar: var(--ds-danger); }
-.demo-root .ds-bar-warn { --bar: #f5a524; }
-.demo-root .ds-bar-ok { --bar: #3fb37f; }
+.demo-root .ds-bar-warn { --bar: var(--ds-warn-bar); }
+.demo-root .ds-bar-ok { --bar: var(--ds-ok-bar); }
 .demo-root .ds-bar-accent { --bar: var(--ds-brand); }
 .demo-root .ds-bar-note { --bar: var(--ds-brand-yellow); }
 .demo-root .ds-bar-plain { --bar: var(--ds-border-strong); }
@@ -202,7 +224,6 @@ body:has(.demo-root) {
   from { opacity: 0; transform: translateY(-4px) scale(0.99); }
   to { opacity: 1; transform: none; }
 }
-.demo-root .ds-pop { animation: ds-pop 0.14s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .demo-root .ds-pop { animation: none !important; }
 }
@@ -220,6 +241,51 @@ body:has(.demo-root) {
 @media (hover: none) {
   .demo-root .ds-row-actions { opacity: 1; }
 }
+/* Work rows (ui/WorkRow.tsx) carry their background in a variable, so actions
+   floating in over the labels fade from the same colour, hovered or not. */
+.demo-root .ds-work-row { --row-bg: var(--ds-panel); background: var(--row-bg); }
+.demo-root .ds-work-row:hover,
+.demo-root .ds-work-row[aria-current='true'] { --row-bg: var(--ds-subtle); }
+/* Anchored to a zero-width point, so it takes its own width (max-content) —
+   otherwise a two-word button ("Mark read") wraps. */
+.demo-root .ds-row-float { position: absolute; width: max-content; white-space: nowrap; padding-left: 2rem; background: linear-gradient(to right, transparent, var(--row-bg) 1.5rem); }
+.demo-root .ds-work-row:focus-within { --row-bg: var(--ds-subtle); }
+.demo-root .ds-row-muted { font-weight: 400; color: var(--ds-text-2); }
+.demo-root .ds-work-row[data-selected] { --row-bg: var(--ds-accent-weak); }
+/* The selection checkbox sits in the row's gutter: shown on hover, on the
+   keyboard's row, once anything is selected, or when checked. */
+.demo-root .ds-row-check { opacity: 0; border-radius: 3px !important; transition: opacity var(--ds-dur-quick) var(--ds-ease-out); }
+.demo-root .ds-row-check[aria-checked='true'] { opacity: 1; background: var(--ds-accent); border-color: var(--ds-accent); }
+.demo-root .ds-work-row:hover .ds-row-check,
+.demo-root .ds-work-row:focus-within .ds-row-check,
+.demo-root [data-selecting] .ds-row-check { opacity: 1; }
+
+/* The row's main link takes keyboard focus for the whole row. */
+.demo-root .ds-row-link:focus-visible::after { outline: 2px solid var(--ds-accent); outline-offset: -2px; }
+
+/* ---- Tooltip -----------------------------------------------------------------
+   `data-tip` on a `ds-tip` element: a dark label after a short hover. It opens
+   to the left, inside the row, because framed lists clip what overflows them. */
+.demo-root .ds-tip { position: relative; z-index: 1; display: inline-flex; }
+.demo-root .ds-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translate(3px, -50%);
+  padding: 3px 7px;
+  border-radius: 5px !important;
+  background: var(--ds-text);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ds-dur-quick) var(--ds-ease-out), transform var(--ds-dur-quick) var(--ds-ease-out);
+}
+.demo-root .ds-tip:hover::after { opacity: 1; transform: translate(0, -50%); transition-delay: 250ms; }
 
 /* Keyboard keys in help text and hints. */
 .demo-root kbd.ds-kbd {
@@ -254,7 +320,6 @@ body:has(.demo-root) {
   vertical-align: middle;
 }
 @keyframes ds-slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-.demo-root .ds-sheet { animation: ds-slide 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) {
   .demo-root .ds-skeleton, .demo-root .ds-sheet { animation: none !important; }
 }
@@ -271,5 +336,102 @@ body:has(.demo-root) {
   text-transform: none;
 }
 .demo-root p.leading-relaxed,
-.demo-root .ds-bar > p,
-.demo-root .ds-prose { max-width: 46rem; }
+.demo-root .ds-bar > p { max-width: 46rem; }
+
+/* ---- Motion ------------------------------------------------------------------
+   Subtle, quick, and only on transform / opacity (plus a small blur on numbers
+   and toasts). Things enter on an ease-out and leave faster than they came.
+   Every animation here is switched off under prefers-reduced-motion. */
+.demo-root {
+  --ds-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-dur-quick: 120ms;
+  --ds-dur-base: 180ms;
+  --ds-dur-slow: 260ms;
+  --ds-dur-page: 200ms;
+}
+
+/* Page: every route eases in — the title, then the body 40ms behind it, a 4px
+   rise over 200ms. Short enough to finish before the eye settles, so it reads
+   as craft on the fiftieth page as on the first. */
+@keyframes ds-page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.demo-root .ds-page-in > * > * { animation: ds-page-in var(--ds-dur-page) var(--ds-ease-out) both; }
+.demo-root .ds-page-in > * > *:nth-child(n + 2) { animation-delay: 40ms; }
+
+/* Numbers: headline figures pop in from a soft blur, staggered across a strip. */
+@keyframes ds-num-in { from { opacity: 0; transform: translateY(4px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+.demo-root .ds-num-in { display: inline-block; animation: ds-num-in var(--ds-dur-slow) var(--ds-ease-out) both; animation-delay: 80ms; }
+.demo-root :is(.grid, dl) > :nth-child(2) .ds-num-in { animation-delay: 120ms; }
+.demo-root :is(.grid, dl) > :nth-child(3) .ds-num-in { animation-delay: 160ms; }
+.demo-root :is(.grid, dl) > :nth-child(4) .ds-num-in { animation-delay: 200ms; }
+.demo-root :is(.grid, dl) > :nth-child(n + 5) .ds-num-in { animation-delay: 240ms; }
+
+/* Live values replacing a skeleton fade in rather than snap. */
+@keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.demo-root .ds-fade-in { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
+
+/* The page entrance plays on every navigation; the figure pop-in and the
+   live-value fades on the first page of a visit only. After that the shell
+   marks the page `ds-settled` (useSettled) and figures and values arrive
+   settled — numbers are what you came to read. Motion that answers an action
+   is unaffected. */
+.demo-root .ds-settled .ds-num-in, .demo-root .ds-settled .ds-fade-in { animation: none; }
+
+/* Overlays leave faster than they arrive. `data-state="closing"` is set for the
+   length of the exit by useClosable (menus) and useOverlay (Dialog, Sheet). */
+@keyframes ds-pop-out { to { opacity: 0; transform: translateY(-2px) scale(0.98); } }
+@keyframes ds-slide-out { to { opacity: 0; transform: translateX(16px); } }
+@keyframes ds-fade-out { to { opacity: 0; } }
+.demo-root .ds-pop { animation: ds-pop var(--ds-dur-base) var(--ds-ease-out) both; }
+.demo-root .ds-pop[data-state='closing'] { animation: ds-pop-out var(--ds-dur-quick) var(--ds-ease-in) both; }
+.demo-root .ds-sheet { animation: ds-slide var(--ds-dur-slow) var(--ds-ease-out) both; }
+.demo-root .ds-sheet[data-state='closing'] { animation: ds-slide-out var(--ds-dur-base) var(--ds-ease-in) both; }
+.demo-root .ds-scrim { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
+.demo-root .ds-scrim[data-state='closing'] { animation: ds-fade-out var(--ds-dur-base) var(--ds-ease-in) both; }
+/* Menus grow from the corner nearest their trigger (origin-aware). */
+.demo-root .ds-origin-tr { transform-origin: top right; }
+.demo-root .ds-origin-tl { transform-origin: top left; }
+
+/* Toasts: in with a soft blur and scale; out with a fade and a little drop. */
+@keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes ds-toast-out { to { opacity: 0; transform: translateY(6px) scale(0.98); } }
+.demo-root .ds-toast { animation: ds-toast-in var(--ds-dur-slow) var(--ds-ease-out) both; }
+.demo-root .ds-toast[data-state='closing'] { animation: ds-toast-out var(--ds-dur-base) var(--ds-ease-in) both; }
+/* The success check draws its stroke on. */
+@keyframes ds-draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+.demo-root .ds-check-draw { stroke-dasharray: 24; animation: ds-draw 360ms var(--ds-ease-out) 120ms both; }
+
+/* Notification badge pops in. */
+@keyframes ds-badge { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.demo-root .ds-badge { animation: ds-badge var(--ds-dur-slow) var(--ds-ease-spring) both; animation-delay: 200ms; }
+
+/* Sliding tab indicator: the pill follows the active tab. */
+.demo-root .ds-tab-pill {
+  transition-property: transform, width, opacity;
+  transition-duration: var(--ds-dur-slow);
+  transition-timing-function: var(--ds-ease-out);
+}
+
+/* Accordion: a height change without measuring — grid rows 0fr → 1fr. */
+.demo-root .ds-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--ds-dur-slow) var(--ds-ease-out), opacity var(--ds-dur-base) var(--ds-ease-out);
+  opacity: 0;
+}
+.demo-root .ds-collapse[data-open='true'] { grid-template-rows: 1fr; opacity: 1; }
+.demo-root .ds-collapse > * { overflow: hidden; min-height: 0; }
+
+/* Icon swap: the outgoing glyph rotates out, the incoming one in. */
+@keyframes ds-icon-in { from { opacity: 0; transform: rotate(-45deg) scale(0.7); } to { opacity: 1; transform: none; } }
+.demo-root .ds-icon-in { animation: ds-icon-in var(--ds-dur-base) var(--ds-ease-out) both; transform-origin: center; transform-box: fill-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-root .ds-page-in > * > *, .demo-root .ds-num-in, .demo-root .ds-fade-in, .demo-root .ds-pop, .demo-root .ds-sheet,
+  .demo-root .ds-scrim, .demo-root .ds-toast, .demo-root .ds-check-draw, .demo-root .ds-badge, .demo-root .ds-icon-in {
+    animation: none !important;
+  }
+  .demo-root .ds-tip::after { transition: none !important; }
+  .demo-root .ds-tab-pill, .demo-root .ds-collapse { transition: none !important; }
+}

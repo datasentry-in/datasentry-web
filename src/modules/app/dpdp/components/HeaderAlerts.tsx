@@ -1,10 +1,11 @@
 'use client';
 
+import { useClosable } from '@/modules/app/ui/useClosable';
 import Link from 'next/link';
-import { useState } from 'react';
 import { attentionAt } from '@/modules/app/dpdp/attention';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { DEADLINE } from '@/modules/app/dpdp/statute';
+import { formatDate } from '@/modules/app/dpdp/time';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import { Skeleton } from '@/modules/app/ui/ui';
 import When from './When';
@@ -17,6 +18,7 @@ import When from './When';
  */
 
 const COMMENCES = new Date(`${DEADLINE.date}T00:00:00+05:30`).getTime();
+const COMMENCES_LABEL = formatDate(new Date(COMMENCES));
 
 function Bell() {
   return (
@@ -29,7 +31,8 @@ function Bell() {
 
 export default function HeaderAlerts() {
   const now = useNow(1000);
-  const [open, setOpen] = useState(false);
+  const menu = useClosable();
+  const { open, close } = menu;
   const alerts = attentionAt(now);
   const urgent = alerts.filter((a) => a.tone === 'danger').length;
   const days = now === null ? null : Math.max(0, Math.floor((COMMENCES - now) / 86_400_000));
@@ -40,22 +43,22 @@ export default function HeaderAlerts() {
       <Link
         href={demoPath()}
         className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-white px-2.5 py-1 text-[12px] text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] 2xl:inline-flex"
-        title="DPDP substantive obligations commence 13 May 2027"
+        title={`DPDP substantive obligations commence ${COMMENCES_LABEL}`}
       >
-        {days === null ? <Skeleton className="h-3 w-7" /> : <span className="ds-figure text-[var(--ds-text)]">{days}</span>} days to 13 May 2027
+        {days === null ? <Skeleton className="h-3 w-7" /> : <span className="ds-figure ds-fade-in text-[var(--ds-text)]">{days}</span>} days to {COMMENCES_LABEL}
       </Link>
 
       <div className="relative">
         <button
           type="button"
-          onClick={() => setOpen(!open)}
+          onClick={menu.toggle}
           aria-expanded={open}
           aria-label={`Notifications — ${alerts.length} need attention`}
           className="relative flex h-8 w-8 items-center justify-center rounded-md text-[var(--ds-text-2)] transition-colors hover:bg-[var(--ds-subtle)] hover:text-[var(--ds-text)]"
         >
           <Bell />
           <span
-            className={`ds-figure absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9.5px] text-white ${
+            className={`ds-figure ds-badge absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] text-white ${
               urgent ? 'bg-[var(--ds-danger)]' : 'bg-[var(--ds-warn)]'
             }`}
             aria-hidden
@@ -66,8 +69,8 @@ export default function HeaderAlerts() {
 
         {open && (
           <>
-            <button type="button" aria-label="Close notifications" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow-md)]">
+            <button type="button" aria-label="Close notifications" className="fixed inset-0 z-40 cursor-default" onClick={close} />
+            <div data-state={menu.state} className="ds-pop ds-origin-tr absolute right-0 z-50 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] shadow-[var(--ds-shadow-md)]">
               <div className="flex items-baseline justify-between border-b border-[var(--ds-border)] px-3.5 py-2.5">
                 <p className="text-[13px] font-semibold tracking-[-0.01em]">Needs attention</p>
                 <p className="ds-meta text-[var(--ds-text-3)]">
@@ -77,7 +80,7 @@ export default function HeaderAlerts() {
               <ul className="max-h-[60vh] overflow-y-auto">
                 {alerts.map((a) => (
                   <li key={a.id} className="border-b border-[var(--ds-border)] last:border-b-0">
-                    <Link href={a.href} onClick={() => setOpen(false)} className="flex gap-2.5 px-3.5 py-2.5 transition-colors hover:bg-[var(--ds-subtle)]">
+                    <Link href={a.href} onClick={close} className="flex gap-2.5 px-3.5 py-2.5 transition-colors hover:bg-[var(--ds-subtle)]">
                       <span
                         className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${a.tone === 'danger' ? 'bg-[var(--ds-danger)]' : 'bg-[var(--ds-warn)]'}`}
                         aria-hidden

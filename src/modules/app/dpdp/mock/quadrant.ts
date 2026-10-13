@@ -4,8 +4,9 @@
  * confirmed, most findings are closed, and what remains is mostly Low.
  * Illustrative only; a live app replaces this module with a data layer.
  */
-import type { ClientData } from './clients';
-import type { Activity, Dsr, FlowEdge, FlowNode, FulfilmentTask, Gap, Incident } from '../types';
+import type {
+  Activity, CheckIn, ClientData, Dsr, FlowEdge, FlowNode, FulfilmentTask, Gap, Incident,
+} from '../types';
 
 const OWNERS: Record<string, string> = {
   'People Operations Lead': 'Sravani Reddy',
@@ -119,7 +120,7 @@ const ACTIVITIES: Activity[] = [
 
 const GAPS: Gap[] = [
   {
-    id: 'G-01', severity: 'High',
+    id: 'G-01', status: 'In progress', severity: 'High',
     title: 'Annotation workforce can download client source images to personal devices',
     detail: 'On the annotation floor, browser downloads and USB mass storage are allowed on 14 of 62 workstations, and the client Labelbox workspace permits image export for the "Reviewer" role. Source images include faces and number plates. The s.17(1)(d) exemption does not lift the duty to protect the data against a breach.',
     provision: 's.8(5) reasonable security safeguards — applies despite s.17(1)(d)',
@@ -214,25 +215,21 @@ const GAPS: Gap[] = [
 const DSRS: Dsr[] = [
   {
     id: 'DSR-2026-0012', type: 'Access', principal: 'Bhargavi Kondapalli',
-    relationship: 'Ex-employee — exited 30 Jun 2026', received: '07 Oct 2026', channel: 'Privacy centre',
-    daysLeft: 24, status: 'In progress',
+    relationship: 'Ex-employee — exited 30 Jun 2026', received: '07 Oct 2026', channel: 'Privacy centre', status: 'In progress',
   },
   {
     id: 'DSR-2026-0011', type: 'Erasure', principal: 'Sai Teja Mudiraj',
-    relationship: 'Candidate — not selected', received: '16 Sep 2026', channel: 'Email',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Candidate — not selected', received: '16 Sep 2026', channel: 'Email', status: 'Closed',
     outcome: 'Fully honoured — Freshteam record and OnGrid file erased, vendor confirmed in writing. Closed in 4 days.',
   },
   {
     id: 'DSR-2026-0010', type: 'Correction', principal: 'Ayesha Fatima',
-    relationship: 'Current employee', received: '28 Aug 2026', channel: 'Privacy centre',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Current employee', received: '28 Aug 2026', channel: 'Privacy centre', status: 'Closed',
     outcome: 'Corrected — nominee name and bank IFSC amended in Darwinbox and RazorpayX. Closed in 3 days.',
   },
   {
     id: 'DSR-2026-0009', type: 'Grievance', principal: 'Ravi Teja Bollam',
-    relationship: 'Current employee', received: '04 Aug 2026', channel: 'Privacy centre',
-    daysLeft: null, status: 'Closed',
+    relationship: 'Current employee', received: '04 Aug 2026', channel: 'Privacy centre', status: 'Closed',
     outcome: 'Asked why screen activity is logged. Explained the safeguarding purpose and 180-day log retention; accepted. Closed in 9 days.',
   },
 ];
@@ -288,7 +285,7 @@ const TASKS: FulfilmentTask[] = [
     attestation: { by: 'Karthik Varma, Talent Acquisition Lead', at: '03 Oct 2026, 11:30 IST', note: 'Monthly purge rule ran; 41 records deleted per the Freshteam activity log.', proof: 'freshteam-purge-log.png' } },
 ];
 
-const QUADRANT_CHECK_IN = {
+const QUADRANT_CHECK_IN: CheckIn = {
   label: 'Q3 2026 check-in',
   due: '24 Oct 2026',
   sentTo: 'People Operations Lead',

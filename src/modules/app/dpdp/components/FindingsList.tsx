@@ -1,149 +1,251 @@
 'use client';
 
-import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { parseDisplayDate } from '@/modules/app/dpdp/time';
-import type { Gap, Severity } from '@/modules/app/dpdp/types';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import { useRef, useState, type ReactNode } from 'react';
+import { auditFor, clientData, getOrg, personFor } from '@/modules/app/dpdp/mock/clients';
+import { formatIst, parseDisplayDate } from '@/modules/app/dpdp/time';
+import type { Gap, GapStatus, Severity } from '@/modules/app/dpdp/types';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetSection, SheetTab, StatusButton,
+} from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
 import Discussion from './Discussion';
-import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
-import {
-  BasisTag, CiteLink, FilterInput, Person, SeverityTag, SortHead, TableWrap, Th, ViewTabs,
-} from '@/modules/app/ui/ui';
+import { useTableView, type Field, type Grouping, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
+import { FINDING_STATUS, SEVERITY_PRIORITY } from '@/modules/app/dpdp/workStatus';
+import BulkBar, { BulkAction } from '@/modules/app/ui/BulkBar';
+import FilterBar from '@/modules/app/ui/FilterBar';
+import { useMenu, type MenuItem } from '@/modules/app/ui/Menu';
+import { useToast } from '@/modules/app/ui/Toast';
+import { useListKeys } from '@/modules/app/ui/useListKeys';
+import { PriorityIcon, StatusIcon, WorkGroup, WorkList, WorkRow } from '@/modules/app/ui/WorkRow';
+import { CiteLink, Person } from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
 /**
- * The gap report as a worklist: saved views (by severity, by what is due soon,
- * by owner), sortable columns, and each finding opened beside the list with
+ * The gap report as a worklist: saved views, filters (owner, severity, status,
+ * evidence), grouping and order, one row per finding — severity, ID, status,
+ * title, citation, due, owner — and each finding opened beside the list with
  * its evidence, provision and history.
  */
 
 const RANK: Record<Severity, number> = { High: 0, Medium: 1, Low: 2 };
 const due = (g: Gap) => parseDisplayDate(g.due)?.getTime() ?? 0;
+const statusOf = (g: Gap): GapStatus => g.status ?? 'Open';
 const DAY = 86_400_000;
+const BASIS: Record<string, string> = { observed: 'Observed on a walkthrough', declared: 'Declared', attested: 'Attested', none: 'No evidence yet' };
 
-// "Due in 30 days" is measured from the mock's review date, so the view is
-// stable in a prerendered page; the relative labels use the real clock.
-const REVIEWED = parseDisplayDate('08 Oct 2026')!.getTime();
-
-const VIEWS: View<Gap>[] = [
-  { id: 'all', label: 'All', test: () => true },
-  { id: 'high', label: 'High', test: (g) => g.severity === 'High' },
-  { id: 'soon', label: 'Due in 30 days', test: (g) => due(g) - REVIEWED <= 30 * DAY },
-  { id: 'legal', label: 'Legal & Compliance', test: (g) => g.owner === 'Legal & Compliance' },
-  { id: 'unobserved', label: 'Not yet observed', test: (g) => g.basis !== 'observed' },
-];
+/**
+ * Saved views for one client. "Due in 30 days" is measured from the client's
+ * last review, so the view is stable in a prerendered page (the relative labels
+ * use the real clock). Anything narrower — one owner, one status — is a filter.
+ */
+function viewsFor(reviewed: number): View<Gap>[] {
+  return [
+    { id: 'all', label: 'All', test: () => true },
+    { id: 'high', label: 'High', test: (g) => g.severity === 'High' },
+    { id: 'soon', label: 'Due in 30 days', test: (g) => due(g) - reviewed <= 30 * DAY },
+    { id: 'unobserved', label: 'Not yet observed', test: (g) => g.basis !== 'observed' },
+  ];
+}
 const SORTS: Sort<Gap>[] = [
   { id: 'severity', label: 'Severity', compare: (a, b) => RANK[a.severity] - RANK[b.severity] || due(a) - due(b) },
-  { id: 'due', label: 'Due', compare: (a, b) => due(a) - due(b) },
+  { id: 'due', label: 'Due date', compare: (a, b) => due(a) - due(b) },
   { id: 'id', label: 'ID', compare: (a, b) => a.id.localeCompare(b.id) },
+];
+const GROUPINGS: Grouping<Gap>[] = [
+  { id: 'severity', label: 'Severity', key: (g) => g.severity, order: ['High', 'Medium', 'Low'] },
+  { id: 'status', label: 'Status', key: statusOf, order: ['Open', 'In progress', 'Resolved'] },
+  { id: 'owner', label: 'Owner', key: (g) => g.owner },
 ];
 
 export default function FindingsList({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
   const OWNERS = d.owners;
-  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
+  const VIEWS = viewsFor(parseDisplayDate(getOrg(org).lastReview)?.getTime() ?? 0);
+  const ownerName = (role: string) => personFor(OWNERS, role).name;
+  const FIELDS: Field<Gap>[] = [
+    { id: 'owner', label: 'Owner', value: (g) => g.owner, display: ownerName },
+    { id: 'severity', label: 'Severity', value: (g) => g.severity },
+    { id: 'status', label: 'Status', value: statusOf },
+    { id: 'basis', label: 'Evidence', value: (g) => g.basis ?? 'none', display: (v) => BASIS[v] ?? v },
+  ];
   const search = (g: Gap) => `${g.id} ${g.title} ${g.provision} ${g.activity} ${g.owner} ${OWNERS[g.owner] ?? ''}`;
+  const toast = useToast();
+  const menu = useMenu();
+  const list = useRef<HTMLUListElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
-  const t = useTableView({ rows: GAPS, views: VIEWS, sorts: SORTS, search });
-  const open = GAPS.find((g) => g.id === openId) ?? null;
-  const person = (g: Gap) => OWNERS[g.owner] ?? g.owner;
+  // Status changes made here (s, the row menu, the bulk bar). A live app writes
+  // them to the register and the audit trail; the mock keeps them for the visit.
+  const [changed, setChanged] = useState<Record<string, GapStatus>>({});
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const rows = GAPS.map((g) => (changed[g.id] ? { ...g, status: changed[g.id] } : g));
+  const t = useTableView({ rows, views: VIEWS, sorts: SORTS, search, fields: FIELDS, groupings: GROUPINGS });
+  const open = rows.find((g) => g.id === openId) ?? null;
+  const byId = (id: string) => rows.find((g) => g.id === id)!;
+
+  const setStatus = (ids: string[], to: GapStatus) => {
+    setChanged((c) => ({ ...c, ...Object.fromEntries(ids.map((id) => [id, to])) }));
+    toast(
+      ids.length === 1 ? `${ids[0]} → ${to}` : `${ids.length} findings → ${to}`,
+      to === 'Resolved'
+        ? 'Resolved once the consultant has seen the fix — the next walkthrough confirms it on screen. In the live app this is logged to the audit trail.'
+        : 'In the live app this is logged to the audit trail, old → new.',
+    );
+  };
+  const statusItems = (ids: string[]): MenuItem[] => [
+    { heading: ids.length === 1 ? 'Status' : `Status of ${ids.length} findings` },
+    ...(['Open', 'In progress', 'Resolved'] as GapStatus[]).map((s) => ({
+      label: s,
+      icon: <StatusIcon status={FINDING_STATUS[s]} label={s} />,
+      checked: ids.length === 1 ? statusOf(byId(ids[0])) === s : undefined,
+      onSelect: () => setStatus(ids, s),
+    })),
+  ];
+  const toggle = (id: string) => setSelected((x) => {
+    const next = new Set(x);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+  const remind = (ids: string[]) => {
+    const owners = new Set(ids.map((id) => byId(id).owner));
+    toast(
+      ids.length === 1 ? `Reminder sent to ${ownerName(byId(ids[0]).owner)}` : `Reminders sent to ${owners.size} owner${owners.size === 1 ? '' : 's'}`,
+      `${ids.join(', ')} · ${formatIst(new Date())} · in this mock nothing is emailed`,
+    );
+  };
+
+  useListKeys(list, {
+    onSelect: toggle,
+    onStatus: (id, el) => menu.openBelow(el, statusItems([id]), `Status of ${id}`),
+    onClear: () => setSelected(new Set()),
+    hasSelection: selected.size > 0,
+  });
+
+  const row = (g: Gap) => {
+    const status = statusOf(g);
+    return (
+      <WorkRow
+        key={g.id}
+        priority={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
+        id={g.id}
+        status={<StatusIcon status={FINDING_STATUS[status]} label={status} />}
+        title={g.title}
+        onOpen={() => setOpenId(g.id)}
+        current={openId === g.id}
+        selected={selected.has(g.id)}
+        onSelect={() => toggle(g.id)}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          menu.openAt(e.clientX, e.clientY, [
+            { label: 'Open', hint: '↵', onSelect: () => setOpenId(g.id) },
+            { label: selected.has(g.id) ? 'Deselect' : 'Select', hint: 'X', onSelect: () => toggle(g.id) },
+            { label: `Remind ${ownerName(g.owner)}`, onSelect: () => remind([g.id]) },
+            { label: 'Copy ID', onSelect: () => { void navigator.clipboard?.writeText(g.id); toast(`Copied ${g.id}`); } },
+            'separator',
+            ...statusItems([g.id]),
+          ], `Actions for ${g.id}`);
+        }}
+        meta={<><CiteLink provision={g.provision} /> · {g.activity}</>}
+        actions={<RemindButton person={ownerName(g.owner)} what={`${g.id} — ${g.title}`} />}
+        due={<When date={g.due} />}
+        owner={personFor(OWNERS, g.owner)}
+      />
+    );
+  };
+  const groupTitle = (key: string): ReactNode =>
+    t.grouping === 'severity' ? <span className="inline-flex items-center gap-2"><PriorityIcon level={SEVERITY_PRIORITY[key as Severity]} />{key}</span>
+      : t.grouping === 'status' ? <span className="inline-flex items-center gap-2"><StatusIcon status={FINDING_STATUS[key as GapStatus]} label={key} />{key}</span>
+        : `${ownerName(key)}${OWNERS[key] ? ` · ${key}` : ''}`;
+  const picked = [...selected];
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
-        <ViewTabs views={VIEWS} active={t.view} counts={t.counts} onChange={t.setView} />
-        <FilterInput value={t.query} onChange={t.setQuery} placeholder="Filter findings, owners…" />
-      </div>
-      <TableWrap minWidth="52rem">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <SortHead id="id" label="ID" active={t.sort === 'id'} dir={t.dir} onSort={t.sortBy} className="w-20" />
-              <Th>Finding</Th>
-              <SortHead id="severity" label="Severity" active={t.sort === 'severity'} dir={t.dir} onSort={t.sortBy} />
-              <Th>Owner</Th>
-              <SortHead id="due" label="Due" active={t.sort === 'due'} dir={t.dir} onSort={t.sortBy} />
-              <th className="w-24 border-b border-[var(--ds-border)] bg-[var(--ds-subtle)]" />
-            </tr>
-          </thead>
-          <tbody>
-            {t.shown.map((g) => (
-              <tr key={g.id} className="ds-row cursor-pointer hover:bg-[var(--ds-subtle)]">
-                <td className="ds-id border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">{g.id}</td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top">
-                  <button type="button" onClick={() => setOpenId(g.id)} className="ds-row-link text-left text-[13px] font-medium leading-snug">
-                    {g.title}
-                  </button>
-                  <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--ds-text-3)]">
-                    <CiteLink provision={g.provision} /> {g.activity}
-                  </span>
-                </td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><SeverityTag s={g.severity} /></td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><Person name={person(g)} role={OWNERS[g.owner] ? g.owner : undefined} /></td>
-                <td className="whitespace-nowrap border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px]">
-                  <span className="block font-medium">{g.due}</span>
-                  <When date={g.due} className="text-[12px]" />
-                </td>
-                <td className="border-b border-[var(--ds-border)] px-3 py-3 text-right align-top">
-                  <span className="ds-row-actions"><RemindButton person={person(g)} what={`${g.id} — ${g.title}`} /></span>
-                </td>
-              </tr>
-            ))}
-            {t.shown.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No findings match this view.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </TableWrap>
+      <FilterBar t={t} views={VIEWS} fields={FIELDS} orders={SORTS} groupings={GROUPINGS} placeholder="Search findings…" />
+      <WorkList ref={list} selecting={selected.size > 0}>
+        {t.groups
+          ? t.groups.map((g) => (
+            <WorkGroup key={g.key} title={groupTitle(g.key)} count={g.rows.length}>
+              {g.rows.map(row)}
+            </WorkGroup>
+          ))
+          : t.shown.map(row)}
+        {t.shown.length === 0 && (
+          <li className="px-4 py-10 text-center text-[13px] text-[var(--ds-text-3)]">No findings match this view.</li>
+        )}
+      </WorkList>
+      {menu.element}
+      <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
+        <BulkAction onClick={() => remind(picked)}>Remind owners</BulkAction>
+        <BulkAction onClick={(e) => menu.openBelow(e.currentTarget, statusItems(picked), 'Set status')}>Set status</BulkAction>
+      </BulkBar>
 
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
+        meta={open && (
+          <>
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+            <span aria-hidden>·</span>
+            <span>Gap report</span>
+          </>
+        )}
         title={open?.title}
-        meta={open && (<><span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span><SeverityTag s={open.severity} /><CiteLink provision={open.provision} /></>)}
-        footer={open && <RemindButton person={person(open)} what={`${open.id} — ${open.title}`} />}
+        actions={open && (
+          <>
+            <StatusButton
+              icon={<StatusIcon status={FINDING_STATUS[statusOf(open)]} label={statusOf(open)} />}
+              label={statusOf(open)}
+              onClick={(e) => menu.openBelow(e.currentTarget, statusItems([open.id]), `Status of ${open.id}`)}
+            />
+            <RemindButton size="md" person={ownerName(open.owner)} what={`${open.id} — ${open.title}`} />
+          </>
+        )}
       >
         {open && (
           <>
-            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
-            <SheetSection title="Ownership">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <Person name={person(open)} role={OWNERS[open.owner] ? open.owner : undefined} />
-                <p className="text-right text-[13px]">
-                  <span className="block font-medium">{open.due}</span>
-                  <When date={open.due} className="text-[12px]" />
-                </p>
-              </div>
+            <SheetDetails>
+              <SheetField label="Severity">
+                <span className="inline-flex items-center gap-2"><PriorityIcon level={SEVERITY_PRIORITY[open.severity]} />{open.severity}</span>
+              </SheetField>
+              <SheetField label="Owner"><Person {...personFor(OWNERS, open.owner)} compact /></SheetField>
+              <SheetField label="Due">
+                {open.due} <When date={open.due} className="ml-1 text-[12px] text-[var(--ds-text-2)]" />
+              </SheetField>
+              <SheetField label="Provision"><CiteLink provision={open.provision} /></SheetField>
+              <SheetField label="Activity">{open.activity}</SheetField>
+              <SheetField label="Evidence">{open.basis ? <BasisTag b={open.basis} /> : <span className="text-[var(--ds-text-3)]">None yet</span>}</SheetField>
+              <SheetField label="Raised by">Rule set v1.4 · {getOrg(org).lastReview}</SheetField>
+            </SheetDetails>
+
+            <SheetSection title="Description">
+              <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
             </SheetSection>
-            <SheetSection title="Activity">
-              <p className="text-[13px]">{open.activity}</p>
-            </SheetSection>
+
             {open.evidence && (
               <SheetSection title="Evidence">
-                <div className="ds-bar ds-bar-plain">
-                  {open.basis && <BasisTag b={open.basis} />}
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
-                </div>
+                <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
               </SheetSection>
             )}
+
             <SheetSection title="Why this is a finding">
               <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 Raised by rule set v1.4 from a register field, citing {open.provision}. The model does not draw this
                 conclusion; it can be traced line by line to the register and the rule.
               </p>
             </SheetSection>
-                    <SheetSection title="Discussion">
-              <Discussion org={org} refId={open.id} />
-            </SheetSection>
-            <SheetSection title="History">
-              <AuditTimeline entries={auditFor(open.id)} empty="Raised 08 Oct 2026 by rule engine v1.4. No changes since." />
-            </SheetSection>   </>
+
+            <SheetActivity>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+              <SheetTab label="History">
+                <AuditTimeline entries={auditFor(d, open.id)} empty={`Raised ${getOrg(org).lastReview} by rule engine v1.4. No changes since.`} />
+              </SheetTab>
+            </SheetActivity>
+          </>
         )}
       </Sheet>
     </>

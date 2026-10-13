@@ -1,14 +1,12 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import DiscoveryInterview from '@/modules/app/dpdp/components/DiscoveryInterview';
+import { BasisTag, ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  BasisTag, Button, Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, ProvenanceTag, Tag,
+  Button, Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
+import MockButton from '@/modules/app/ui/MockButton';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 const SECTIONS = [
   'Company & scope',
@@ -21,9 +19,8 @@ const SECTIONS = [
 ];
 
 export default async function Discovery({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const data = clientData(slug);
+  const { org, d } = await loadClient(params);
+  const data = d;
   const Q = data.questionnaire;
   const WALKTHROUGH = data.walkthrough;
 
@@ -42,6 +39,10 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
   }
 
   const pct = Math.round((Q.answered / Q.total) * 100);
+  const proposed = data.activities.filter((a) => a.provenance === 'ai_suggested').length;
+  // A finding the rules raised from this client's answers, and the largest one a walkthrough confirmed.
+  const raised = data.gaps.find((g) => g.basis === 'declared') ?? data.gaps[0];
+  const observedTop = data.gaps.find((g) => g.basis === 'observed' && g.severity === 'High');
 
   return (
     <div className="space-y-8">
@@ -53,7 +54,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
       <Facts>
         <Fact label="Questions answered" value={`${Q.answered}/${Q.total}`} note={`${pct}% complete`} tone={pct < 100 ? 'warn' : 'good'} />
         <Fact label="Current section" value={`${Q.section} of ${Q.sections}`} note={Q.sectionName} />
-        <Fact label="Activities derived" value={19} note="2 proposed by the model, 17 from the ITES pack" />
+        <Fact label="Activities derived" value={data.activities.length} note={`${proposed} proposed by the model, the rest from the ITES pack`} />
         {WALKTHROUGH && <Fact label="Walkthrough observations" value={WALKTHROUGH.observations.length} note={`${WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length} differed from what was declared`} tone="warn" />}
       </Facts>
 
@@ -95,7 +96,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
 
       <Panel title={`Section ${Q.section} — ${Q.sectionName}`} sub={`Question ${Q.answered + 1} of ${Q.total}`}>
         <div className="space-y-4">
-          <Card tone="subtle" className="p-4">
+          <Card tone="plain" className="p-4">
             <p className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">{Q.question}</p>
             <p className="mt-2 border-l-2 border-[var(--ds-border-strong)] pl-3 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               <span className="font-medium text-[var(--ds-text)]">Why this is asked — </span>
@@ -112,9 +113,9 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
             </div>
             <p className="text-[14px] leading-relaxed text-[var(--ds-text)]">{Q.suggestion}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="primary">Accept</Button>
-              <Button>Edit</Button>
-              <Button variant="ghost">Ask the client</Button>
+              <MockButton variant="primary" what="Accept the suggestion">Accept</MockButton>
+              <MockButton what="Edit the suggestion">Edit</MockButton>
+              <MockButton variant="ghost" what="Ask the client">Ask the client</MockButton>
             </div>
           </Card>
 
@@ -181,19 +182,17 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
                 <CiteLink provision="s.7(i) read with s.8(7)" />
               </p>
             </Card>
-            <Card tone="danger">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="ds-meta text-[var(--ds-danger)]">
-                  Rule fired · raised a finding
-                </p>
-                <Tag tone="alert">G-06</Tag>
-              </div>
-              <p className="mt-1 text-[13px] font-medium">
-                R-24 — Alumni marketing to ex-employees has no determined basis
-              </p>
-            </Card>
+            {raised && (
+              <Card tone="danger">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="ds-meta text-[var(--ds-danger)]">Rule fired · raised a finding</p>
+                  <Tag tone="alert">{raised.id}</Tag>
+                </div>
+                <p className="mt-1 text-[13px] font-medium">{raised.title}</p>
+              </Card>
+            )}
             <p className="text-[12px] text-[var(--ds-text-3)]">
-              Rule set v1.4 · {org.activities} activities evaluated · 14 findings raised
+              Rule set v1.4 · {org.activities} activities evaluated · {data.gaps.length} findings raised
             </p>
           </div>
         </Panel>
@@ -234,8 +233,8 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
         <div className="border-t border-[var(--ds-border)] p-4 sm:p-5">
           <DemoNote>
             Nothing here was exported. The client screen-shared each system on a review call and the consultant recorded
-            what they saw — a client who would never send a candidate dump to a third party will show it on screen. The
-            biggest finding in the report, 4,812 CVs past their purpose, came from exactly that.
+            what they saw — a client who would never send a candidate dump to a third party will show it on screen.
+            {observedTop && ` The biggest finding in the report — ${observedTop.title.toLowerCase()} — came from exactly that.`}
           </DemoNote>
         </div>
       </Panel>

@@ -1,13 +1,9 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import {
   Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 const ITEMISED = [
   ['Full name', 'Identify you as an applicant and address you in correspondence'],
@@ -43,18 +39,12 @@ function Check({ on = true }: { on?: boolean }) {
 }
 
 export default async function Consent({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
-  if (!d.consent) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Notice & consent" sub={org.name} />
-        <ModulePending org={org.slug} what="The notice and the consent ledger" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  if (!d.consent) return <ModulePending org={org} title="Notice & consent" what="The notice and the consent ledger" />;
   const C = d.consent.summary;
+  // The talent-pool period, as the register states it for candidate data.
+  const talentPool = (d.activities.find((a) => a.principals.includes('Candidate'))?.retention ?? '180 days').replace(/ from application$/, '');
+  const noticeGap = d.gaps.find((g) => g.provision.startsWith('Rule 3'));
   const CONSENT_LEDGER = d.consent.ledger;
   const legitimate = d.basisBreakdown.filter((b) => b.label.startsWith('s.7(i)')).reduce((n, b) => n + b.count, 0);
   const languages = d.privacyCentre?.languages.join(', ') ?? C.languages.join(', ');
@@ -80,7 +70,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
       <Facts>
         <Fact label="Active candidate consents" value={C.activeCandidate.toLocaleString('en-IN')} note={C.noticeVersion} tone="good" />
         <Fact label="Withdrawn" value={C.withdrawn} note="each raised an erasure task" tone="warn" />
-        <Fact label="Retention clock expired" value={C.expiredClock} note="talent pool past 180 days" tone="bad" />
+        <Fact label="Retention clock expired" value={C.expiredClock} note={`talent pool past ${talentPool}`} tone="bad" />
         <Fact label="Erasure tasks pending" value={C.pendingErasureTasks} note="withdrawal and expiry combined" tone="bad" />
       </Facts>
 
@@ -174,9 +164,9 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
                 Separate choices
               </p>
               {[
-                ['Keep my details for other openings for 180 days', true],
+                [`Keep my details for other openings for ${talentPool}`, true],
                 ['Share my profile with a named client for project staffing', false],
-                ['Carry out background verification through AuthBridge if I am offered a role', true],
+                ['Carry out background verification through our verification partner if I am offered a role', true],
               ].map(([label, on]) => (
                 <label key={String(label)} className="flex items-start gap-2">
                   <span className="mt-px">
@@ -199,9 +189,10 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
 
         <div className="mt-3">
           <DemoNote>
-            The current live form collects these same fourteen items behind one &ldquo;I agree to the Privacy
-            Policy&rdquo; checkbox — that is finding G-03. Rule 3 is read strictly: a category label such as
-            &ldquo;contact details&rdquo; is not an item.
+            {noticeGap
+              ? `The current live form collects these same items behind one “I agree to the Privacy Policy” checkbox — that is finding ${noticeGap.id}. `
+              : ''}
+            Rule 3 is read strictly: a category label such as &ldquo;contact details&rdquo; is not an item.
           </DemoNote>
         </div>
       </Panel>

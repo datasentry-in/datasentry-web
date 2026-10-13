@@ -5,7 +5,7 @@
  * publishes only an email address, so requests arrive by email, forwarded into
  * the platform — and two of them are already past their response window.
  */
-import type { ClientData } from './clients';
+import type { ClientData } from '../types';
 
 const EVIDENCE_NAMES = [
   'Record of Processing Activities', 'Role determination memo', 'Data flow map', 'Gap report with remediation plan',
@@ -30,11 +30,11 @@ export const MERIDIAN: ClientData = {
   activities: [],
   gaps: [],
   dsrs: [
-    { id: 'DSR-2026-0014', type: 'Access', principal: 'Karthik Subramanian', relationship: 'Ex-employee — exited 30 Jun 2026', received: '02 Sep 2026', channel: 'Email', daysLeft: -11, status: 'In progress' },
-    { id: 'DSR-2026-0015', type: 'Erasure', principal: 'Divya Ramesh', relationship: 'Candidate — applied May 2026', received: '08 Sep 2026', channel: 'Email', daysLeft: -5, status: 'Awaiting client' },
-    { id: 'DSR-2026-0016', type: 'Correction', principal: 'Prakash Velu', relationship: 'Current employee', received: '22 Sep 2026', channel: 'Email', daysLeft: 9, status: 'In progress' },
-    { id: 'DSR-2026-0017', type: 'Grievance', principal: 'Anonymous (customer of a client)', relationship: 'Client end-user', received: '01 Oct 2026', channel: 'Email', daysLeft: 18, status: 'New' },
-    { id: 'DSR-2026-0018', type: 'Access', principal: 'Meena Sundaram', relationship: 'Current employee', received: '09 Oct 2026', channel: 'Email', daysLeft: 26, status: 'New' },
+    { id: 'DSR-2026-0014', type: 'Access', principal: 'Karthik Subramanian', relationship: 'Ex-employee — exited 30 Jun 2026', received: '02 Sep 2026', channel: 'Email', status: 'In progress' },
+    { id: 'DSR-2026-0015', type: 'Erasure', principal: 'Divya Ramesh', relationship: 'Candidate — applied May 2026', received: '08 Sep 2026', channel: 'Email', status: 'Awaiting client' },
+    { id: 'DSR-2026-0016', type: 'Correction', principal: 'Prakash Velu', relationship: 'Current employee', received: '22 Sep 2026', channel: 'Email', status: 'In progress' },
+    { id: 'DSR-2026-0017', type: 'Grievance', principal: 'Anonymous (customer of a client)', relationship: 'Client end-user', received: '01 Oct 2026', channel: 'Email', status: 'New' },
+    { id: 'DSR-2026-0018', type: 'Access', principal: 'Meena Sundaram', relationship: 'Current employee', received: '09 Oct 2026', channel: 'Email', status: 'New' },
   ],
   incidents: [],
   tasks: [],

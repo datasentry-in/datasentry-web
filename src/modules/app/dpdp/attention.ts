@@ -1,6 +1,6 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
+import { ORGS, clientData } from '@/modules/app/dpdp/mock/clients';
 import { demoPath } from '@/modules/app/dpdp/routes';
+import { lateRequests } from '@/modules/app/dpdp/sla';
 import { parseDisplayDate } from '@/modules/app/dpdp/time';
 
 /**
@@ -10,8 +10,12 @@ import { parseDisplayDate } from '@/modules/app/dpdp/time';
  * keeps the derivation and swaps the mock imports for its data layer.
  */
 
+/** What raised an item: a breach clock, late requests, one overdue task, open tasks, a check-in, a finding. */
+export type AttentionKind = 'incident' | 'requests' | 'task' | 'tasks' | 'check-in' | 'finding';
+
 export type Attention = {
   id: string;
+  kind: AttentionKind;
   org: string;
   tone: 'danger' | 'warn';
   title: string;
@@ -46,28 +50,28 @@ function forClient(slug: string, now: number | null): Attention[] {
   for (const i of d.incidents.filter((x) => x.status === 'Open' && x.deadlineIso)) {
     const ms = new Date(i.deadlineIso!).getTime() - (now ?? 0);
     out.push({
-      id: i.id, org: slug, tone: 'danger', title: `${i.id} — Board intimation not sent`, client: o.name,
+      id: i.id, kind: 'incident', org: slug, tone: 'danger', title: `${i.id} — Board intimation not sent`, client: o.name,
       meta: now === null ? '72-hour clock running' : `72-hour clock · ${clockLeft(ms)}`, href: demoPath(slug, 'breach'),
       owner: 'CISO',
     });
   }
-  const late = d.dsrs.filter((x) => x.status !== 'Closed' && x.daysLeft !== null && x.daysLeft < 0);
+  const late = lateRequests(d.dsrs, d.privacyCentre?.responseDays ?? 30, now).map((w) => w.dsr);
   if (late.length) {
     out.push({
-      id: `dsr-${slug}`, org: slug, tone: 'danger', title: `${late.length} request${late.length === 1 ? '' : 's'} past the response window`, client: o.name,
+      id: `dsr-${slug}`, kind: 'requests', org: slug, tone: 'danger', title: `${late.length} request${late.length === 1 ? '' : 's'} past the response window`, client: o.name,
       meta: late.map((x) => `${x.id} ${x.type.toLowerCase()}`).join(', '), href: demoPath(slug, 'dsr'),
     });
   }
   for (const t of d.tasks.filter((x) => x.status === 'Overdue')) {
     out.push({
-      id: t.id, org: slug, tone: 'danger', title: `${t.id} overdue — ${t.system}`, client: o.name,
+      id: t.id, kind: 'task', org: slug, tone: 'danger', title: `${t.id} overdue — ${t.system}`, client: o.name,
       meta: t.action, href: demoPath(slug, 'tasks'), owner: t.owner, due: t.due,
     });
   }
   const open = d.tasks.filter((x) => x.status === 'Open');
   if (open.length) {
     out.push({
-      id: `tasks-${slug}`, org: slug, tone: 'warn', title: `${open.length} task${open.length === 1 ? '' : 's'} awaiting attestation`, client: o.name,
+      id: `tasks-${slug}`, kind: 'tasks', org: slug, tone: 'warn', title: `${open.length} task${open.length === 1 ? '' : 's'} awaiting attestation`, client: o.name,
       meta: 'Owners to do the work in their systems and attest it', href: demoPath(slug, 'tasks'),
       owners: new Set(open.map((t) => t.owner)).size,
       due: [...open].sort((a, b) => time(a.due) - time(b.due))[0].due,
@@ -75,7 +79,7 @@ function forClient(slug: string, now: number | null): Attention[] {
   }
   if (d.checkIn) {
     out.push({
-      id: `check-in-${slug}`, org: slug, tone: 'warn', title: `${d.checkIn.label} due`, client: o.name,
+      id: `check-in-${slug}`, kind: 'check-in', org: slug, tone: 'warn', title: `${d.checkIn.label} due`, client: o.name,
       meta: `Sent to the ${d.checkIn.sentTo} on ${d.checkIn.sentOn}`, href: demoPath(slug, 'check-in'),
       owner: d.checkIn.sentTo, due: d.checkIn.due,
     });
@@ -97,13 +101,10 @@ export function workFor(slug: string, now: number | null): Attention[] {
   const findings: Attention[] = clientData(slug).gaps
     .filter((g) => g.severity === 'High')
     .map((g) => ({
-      id: g.id, org: slug, tone: 'warn', title: g.title, client: o.name,
+      id: g.id, kind: 'finding', org: slug, tone: 'warn', title: g.title, client: o.name,
       meta: `${g.id} · high-severity finding`, href: demoPath(slug, 'gaps'), owner: g.owner, due: g.due,
     }));
   const urgent = forClient(slug, now);
   return [...urgent, ...findings.sort((a, b) => time(a.due) - time(b.due))];
 }
 
-/** The open incident whose Board-intimation clock is running, if any, across clients. */
-export const runningBreach = () =>
-  ORGS.flatMap((o) => clientData(o.slug).incidents).find((x) => x.status === 'Open' && x.deadlineIso) ?? null;

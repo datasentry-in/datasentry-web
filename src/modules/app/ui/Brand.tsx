@@ -6,7 +6,7 @@ export const BRAND_URL = 'https://datasentry.in';
 type Size = 'sm' | 'md' | 'lg';
 const TYPE: Record<Size, { font: string; rule: number; offset: number }> = {
   sm: { font: 'text-[13px]', rule: 2.5, offset: 3 },
-  md: { font: 'text-[14.5px]', rule: 3, offset: 4 },
+  md: { font: 'text-[15px]', rule: 3, offset: 4 },
   lg: { font: 'text-[18px]', rule: 4, offset: 5 },
 };
 

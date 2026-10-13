@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { attentionAt } from '@/modules/app/dpdp/attention';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
-import { NAV } from '@/modules/app/dpdp/nav';
+import { ORGS } from '@/modules/app/dpdp/mock/clients';
+import { NAV, WORK } from '@/modules/app/dpdp/nav';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import Dialog from '@/modules/app/ui/Dialog';
 import { ICONS } from '@/modules/app/ui/Icons';
@@ -27,6 +27,12 @@ function buildCommands(org: string | null): Command[] {
       id: `att-${a.id}`, group: 'Needs attention', label: a.title, hint: a.client, href: a.href,
       icon: <span className={`h-1.5 w-1.5 rounded-full ${a.tone === 'danger' ? 'bg-[var(--ds-danger)]' : 'bg-[var(--ds-warn)]'}`} />,
       terms: `${a.title} ${a.client} ${a.meta}`,
+    });
+  }
+  for (const m of WORK) {
+    out.push({
+      id: `work-${m.seg}`, group: 'Across clients', label: m.label, keys: `G ${m.key.toUpperCase()}`, href: demoPath(m.seg),
+      icon: ICONS[m.icon], terms: `${m.label} ${m.keywords ?? ''}`,
     });
   }
   if (current) {
@@ -104,7 +110,6 @@ export default function CommandPalette({ org }: { org: string | null }) {
     if (e.key === 'ArrowDown') { e.preventDefault(); move(active + 1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); move(active - 1); }
     else if (e.key === 'Enter') { e.preventDefault(); go(shown[active]); }
-    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
   };
 
   return (
@@ -162,7 +167,7 @@ export default function CommandPalette({ org }: { org: string | null }) {
                       {c.hint && <span className="hidden max-w-[45%] truncate text-[12px] text-[var(--ds-text-3)] sm:block">{c.hint}</span>}
                       {c.keys && (
                         <span className="hidden gap-1 sm:flex">
-                          {c.keys.split(' ').map((k) => <kbd key={k} className="ds-kbd">{k}</kbd>)}
+                          {c.keys.split(' ').map((k, i) => <kbd key={i} className="ds-kbd">{k}</kbd>)}
                         </span>
                       )}
                     </div>

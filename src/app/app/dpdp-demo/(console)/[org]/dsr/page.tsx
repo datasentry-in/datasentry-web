@@ -1,102 +1,43 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
-import SlaBar from '@/modules/app/dpdp/components/SlaBar';
+import { loadClient } from '@/modules/app/dpdp/routeData';
+import { DsrHeader } from '@/modules/app/dpdp/components/RequestsLive';
+import ListHeader from '@/modules/app/ui/ListHeader';
+import RequestList from '@/modules/app/dpdp/components/RequestList';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, Fact, Facts, NextStep, PageHeader, Panel, TableWrap, Tag, Td, Th,
+  Button, Card, CiteLink, DemoNote, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
+import MockButton from '@/modules/app/ui/MockButton';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
-
-const statusTone = (s: string) =>
-  s === 'Closed' ? 'ok' : s === 'Awaiting client' ? 'watch' : s === 'New' ? 'info' : 'dark';
 
 export default async function Dsr({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const data = clientData(slug);
+  const { org, d } = await loadClient(params);
+  const slug = org.slug;
+  const data = d;
   const DSRS = data.dsrs;
   const TASKS = data.tasks;
-  const responseDays = data.privacyCentre?.responseDays ?? 30;
-  const open = DSRS.filter((d) => d.status !== 'Closed');
   const closed = DSRS.filter((d) => d.status === 'Closed');
-  const late = open.filter((d) => d.daysLeft !== null && d.daysLeft < 0).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0));
-  const conflicts = DSRS.filter((d) => d.conflicts?.length).length;
   const grievance = data.privacyCentre?.grievanceOfficer ?? null;
   // The request worked through in detail on this page, when the client has one.
   const focus = data.dsrFocus ? DSRS.find((d) => d.id === data.dsrFocus) : undefined;
 
   return (
     <div className="space-y-8">
-      <PageHeader
+      <ListHeader
         title="Data principal requests"
-        sub={`Access, correction, erasure, grievance and nomination · ${org.name}`}
+        meta="Access, correction, erasure, grievance and nomination"
+        about={
+          <>
+            Every request to {org.name} lands here, whichever way it arrived — the privacy centre or the published
+            email address. The response window runs from receipt and the platform keeps the clock; the owners do
+            the work in their own systems and attest it on a task.
+          </>
+        }
       />
 
-      <Facts>
-        <Fact label="Open requests" value={open.length} note={late.length ? `${late.length} past the response window` : 'none past the response window'} tone={late.length ? 'bad' : open.length ? 'warn' : 'plain'} />
-        <Fact label="Closed this quarter" value={closed.length} note="the log is the evidence" tone={closed.length ? 'good' : 'plain'} />
-        <Fact label="Erasure conflicts" value={conflicts} note="statutory retention applies" tone={conflicts ? 'bad' : 'plain'} />
-        <Fact label="Grievance contact" value={grievance ?? 'None'} note={grievance ? 'published on the privacy centre' : 'no one named to handle complaints (s.13)'} tone={grievance ? 'good' : 'bad'} />
-      </Facts>
+      <DsrHeader org={slug} />
 
-      {focus ? (
-        <NextStep
-          title={`Send ${focus.principal} a partial-erasure response`}
-          action={<Button as="link" href="#dsr-focus">Review the drafted response</Button>}
-        >
-          Four of her records are kept by law. The response has to name each one and the statute that keeps it — the
-          draft below already does.
-        </NextStep>
-      ) : late.length ? (
-        <NextStep title={`Respond to ${late[0].principal} — ${-(late[0].daysLeft ?? 0)} days past the response window`}>
-          {late.map((d) => `${d.id} (${d.type.toLowerCase()}, received ${d.received} by ${d.channel?.toLowerCase() ?? 'email'})`).join(' · ')}. Each
-          arrived at the published email address and was forwarded into the desk; the window ran from the day it arrived.
-        </NextStep>
-      ) : null}
-
-      <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining" flush>
-        <TableWrap>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <Th>Reference</Th>
-                <Th>Type</Th>
-                <Th>Data principal</Th>
-                <Th>Relationship</Th>
-                <Th>Received</Th>
-                <Th>Channel</Th>
-                <Th>Response window</Th>
-                <Th>Status</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {open.map((d) => (
-                <tr
-                  key={d.id}
-                  className={d.id === focus?.id ? 'bg-[var(--ds-accent-weak)]' : 'hover:bg-[var(--ds-subtle)]'}
-                >
-                  <Td className="ds-id whitespace-nowrap text-[12px]">{d.id}</Td>
-                  <Td>
-                    <Tag tone={d.type === 'Erasure' ? 'alert' : 'plain'}>{d.type}</Tag>
-                  </Td>
-                  <Td className="font-medium">{d.principal}</Td>
-                  <Td className="text-[var(--ds-text-2)]">{d.relationship}</Td>
-                  <Td className="tnum text-[var(--ds-text-2)]">{d.received}</Td>
-                  <Td className="text-[var(--ds-text-2)]">{d.channel ?? '—'}</Td>
-                  <Td>
-                    <SlaBar received={d.received} days={responseDays} />
-                  </Td>
-                  <Td>
-                    <Tag tone={statusTone(d.status)}>{d.status}</Tag>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrap>
+      <Panel title="Open requests" sub="The response window runs from receipt; escalation fires at 7 days remaining. Open one for its tasks and history." flush>
+        <RequestList org={slug} />
       </Panel>
 
       {/* The hard case — this is the screen that sells the product to a consultant. */}
@@ -104,10 +45,10 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
       <div id="dsr-focus" className="scroll-mt-20" />
       <Panel
         title={`${focus.id} — erasure request from an ex-employee`}
-        sub={`${focus.principal} · ${focus.relationship} · received ${focus.received} · ${focus.daysLeft} days left`}
+        sub={`${focus.principal} · ${focus.relationship} · received ${focus.received}`}
       >
         <div className="space-y-4">
-          <Card tone="subtle">
+          <Card tone="plain">
             <p className="max-w-3xl text-[13px] italic leading-relaxed text-[var(--ds-text)]">
               &ldquo;I left Northstar in March 2024. I want all my personal data deleted from your systems
               including my salary records and the complaint file. Please confirm when this is done.&rdquo;
@@ -165,7 +106,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
             </div>
           </div>
 
-          <Card tone="subtle">
+          <Card tone="plain">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="ds-meta text-[var(--ds-text-3)]">Fulfilment</p>
@@ -196,9 +137,9 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
               the Data Protection Board of India if you disagree with this decision.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="primary">Approve &amp; send</Button>
-              <Button>Edit draft</Button>
-              <Button variant="ghost">Refer to counsel</Button>
+              <MockButton variant="primary" what="Approve and send the response">Approve &amp; send</MockButton>
+              <MockButton what="Edit the draft">Edit draft</MockButton>
+              <MockButton variant="ghost" what="Refer to counsel">Refer to counsel</MockButton>
             </div>
           </Card>
 
@@ -214,6 +155,12 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Closed requests" sub="The log is the evidence of a working mechanism" flush>
+          {closed.length === 0 && (
+            <p className="px-4 py-8 text-center text-[13px] leading-relaxed text-[var(--ds-text-3)] sm:px-5">
+              None closed yet. Each request answered here lands in this log with its outcome — the evidence that the
+              desk works.
+            </p>
+          )}
           <ul>
             {closed.map((d) => (
               <li key={d.id} className="border-b border-[var(--ds-border)] px-4 py-3 last:border-b-0 sm:px-5">
@@ -236,11 +183,11 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
             {[
               ['Access and summary', 's.11', 'What is held, who it has been shared with'],
               ['Correction, completion, updating and erasure', 's.12', 'Erasure subject to statutory retention'],
-              ['Grievance redressal', 's.13', 'Mandatory mechanism — currently missing at this client'],
+              ['Grievance redressal', 's.13', grievance ? `Mandatory mechanism — ${grievance} is the named contact` : 'Mandatory mechanism — currently missing at this client'],
               ['Nomination', 's.14', 'Nominee exercises rights on death or incapacity'],
             ].map(([right, prov, note]) => (
               <li key={String(right)}>
-                <Card tone={prov === 's.13' ? 'danger' : 'plain'} className="p-2.5">
+                <Card tone={prov === 's.13' && !grievance ? 'danger' : 'plain'} className="p-2.5">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="text-[13px] font-medium">{right}</span>
                     <CiteLink provision={String(prov)} />

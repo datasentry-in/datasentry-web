@@ -1,5 +1,5 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
+import type { EvidenceItem } from '@/modules/app/dpdp/types';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 
 /** A short, stable stand-in for an entry's chain hash. */
@@ -10,30 +10,26 @@ const hashOf = (s: string) => {
   return `${hex.slice(0, 4)}…${hex.slice(4)}`;
 };
 import {
-  Button, Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
+  Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
+import MockButton from '@/modules/app/ui/MockButton';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
-const tone = (s: string) =>
+const tone = (s: EvidenceItem['status']) =>
   s === 'Generated' ? 'ok' : s === 'Review pending' ? 'watch' : s === 'Incomplete' ? 'alert' : 'plain';
 
 export default async function Evidence({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const d = clientData(slug);
-  if (!d.registerBuilt) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Evidence & audit pack" sub={org.name} />
-        <ModulePending org={org.slug} what="The evidence pack" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  if (!d.registerBuilt) return <ModulePending org={org} title="Evidence & audit pack" what="The evidence pack" />;
   const EVIDENCE_PACK = d.evidence;
   const generated = EVIDENCE_PACK.filter((e) => e.status === 'Generated').length;
+  const languages = d.privacyCentre?.languages ?? d.consent?.summary.languages ?? [];
+  const legitimate = d.activities.filter((a) => a.basis.startsWith('s.7(i)')).length;
+  const consentBased = d.activities.filter((a) => a.basis === 'Consent').length;
+  const exempt = d.activities.filter((a) => a.role === 'Exempt').length;
+  const grievance = d.privacyCentre?.grievanceOfficer ?? null;
+  // What stops a complete pack: every artefact not yet generated, with the finding its note names.
+  const blockers = EVIDENCE_PACK.filter((e) => e.status !== 'Generated').map((e) => ({ ...e, finding: e.detail.match(/G-\d+/)?.[0] }));
   const blocked = EVIDENCE_PACK.filter((e) => e.status !== 'Generated').length;
 
   return (
@@ -46,7 +42,7 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
       <Facts>
         <Fact label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="the confirmed register is the source" tone={generated < EVIDENCE_PACK.length ? 'warn' : 'good'} />
         <Fact label="Blocked or pending" value={blocked} note="each traces to a finding" tone="bad" />
-        <Fact label="Languages" value={4} note="EN, HI, MR, KN" tone="good" />
+        <Fact label="Languages" value={languages.length} note={languages.join(', ')} tone="good" />
         <Fact label="Register as source" value={org.lastReview} note="hash-stamped on generation" />
       </Facts>
 
@@ -58,9 +54,9 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
             RoPA version and the reviewer who signed it off.
           </p>
         </div>
-        <Button variant="primary" className="px-4 py-2 text-[13px]">
+        <MockButton variant="primary" what="Generate the pack" className="px-4 py-2 text-[13px]">
           Generate the pack
-        </Button>
+        </MockButton>
       </div>
 
       <Panel title="Artefacts" sub="Generated from the client's own register — not boilerplate" flush>
@@ -97,14 +93,14 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
         <Panel title="Policy generator" sub="Assembled from reviewed clause libraries, filled with client specifics" flush>
           <ul>
             {[
-              ['Employee privacy notice', 'Lists the 10 activities running on s.7(i) and the 5 needing consent'],
-              ['Candidate privacy notice', 'Rule 3 itemised — 14 data items, purpose per item, withdrawal link'],
+              ['Employee privacy notice', `Lists the ${legitimate} activities running on s.7(i) and the ${consentBased} needing consent`],
+              ['Candidate privacy notice', 'Rule 3 itemised — each data item with its purpose, and a withdrawal link'],
               ['Retention & erasure policy', `Keyed to all ${d.activities.length} activities plus the statutory retention matrix`],
               ['DSR standard operating procedure', 'Intake, identity verification, SLA, lawful part-refusal'],
               ['Breach response SOP', '72-hour clock, escalation ladder, both notification templates'],
               ['Processor DPA template', 's.8(2) clauses — purpose limitation, security, sub-processing, erasure'],
-              ['Grievance & contact designation note', 's.13 — blocked until a contact person is named'],
-              ['s.17(1)(d) applicability memo', 'Per-engagement reasoning for the two exempt activities'],
+              ['Grievance & contact designation note', grievance ? `s.13 — names ${grievance} as the contact person` : 's.13 — blocked until a contact person is named'],
+              ['s.17(1)(d) applicability memo', `Per-engagement reasoning for the ${exempt} exempt activit${exempt === 1 ? 'y' : 'ies'}`],
             ].map(([doc, note]) => (
               <li key={String(doc)} className="border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5">
                 <p className="text-[13px] font-medium">{doc}</p>
@@ -123,17 +119,13 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
 
         <Panel title="What is blocking a complete pack" sub="Evidence completeness is itself a readiness signal">
           <ul className="space-y-2">
-            {[
-              ['Breach response SOP', 'Awaiting CISO sign-off', 'G-04'],
-              ['Processor / DPA register', 'AuthBridge and Marsh India have no executed DPA', 'G-02'],
-              ['Grievance & DPO designation note', 'No contact person named by the client', 'G-09'],
-              ['s.17(1)(d) applicability memo', 'MSA clauses not yet extracted and linked', 'G-11'],
-            ].map(([doc, why, gap]) => (
+            {blockers.length === 0 && <li className="text-[14px] text-[var(--ds-text-3)]">Nothing — every artefact is generated.</li>}
+            {blockers.map(({ name: doc, detail: why, finding: gap }) => (
               <li key={String(doc)}>
                 <Card tone="danger" className="p-2.5">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="text-[13px] font-medium">{doc}</span>
-                    <Tag tone="alert">{gap}</Tag>
+                    {gap ? <Tag tone="alert">{gap}</Tag> : <Tag tone="watch">Pending</Tag>}
                   </div>
                   <p className="mt-0.5 text-[12px] text-[var(--ds-text-2)]">{why}</p>
                 </Card>
@@ -142,8 +134,9 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
           </ul>
           <div className="mt-3">
             <DemoNote>
-              Four of the thirteen artefacts are blocked on client action rather than on the platform. Making that
-              visible is what moves a remediation plan along between review calls.
+              {blockers.length} of the {EVIDENCE_PACK.length} artefacts {blockers.length === 1 ? 'is' : 'are'} blocked on client
+              action rather than on the platform. Making that visible is what moves a remediation plan along between
+              review calls.
             </DemoNote>
           </div>
         </Panel>

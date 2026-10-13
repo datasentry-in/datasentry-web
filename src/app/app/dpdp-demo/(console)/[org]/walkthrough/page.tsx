@@ -1,32 +1,21 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import type { Observation } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import WalkthroughAgenda from '@/modules/app/dpdp/components/WalkthroughAgenda';
+import { BasisTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  BasisTag, Button, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
+  Button, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 const resultTag = (r: Observation['result']) =>
   r === 'matches' ? <Tag tone="ok">Matches</Tag> : r === 'differs' ? <Tag tone="watch">Differs</Tag> : <Tag tone="info">New</Tag>;
 
 export default async function Walkthroughs({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const WALKTHROUGH = clientData(slug).walkthrough;
-  if (!WALKTHROUGH) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Consultant walkthroughs" sub={org.name} />
-        <ModulePending org={org.slug} what="A walkthrough agenda" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  const WALKTHROUGH = d.walkthrough;
+  if (!WALKTHROUGH) return <ModulePending org={org} title="Consultant walkthroughs" what="A walkthrough agenda" />;
   const obs = WALKTHROUGH.observations;
   const findings = [...new Set(obs.map((o) => o.finding).filter(Boolean))];
 
@@ -78,13 +67,13 @@ export default async function Walkthroughs({ params }: { params: Promise<{ org: 
         </TableWrap>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--ds-border)] p-4 sm:px-5">
           <p className="text-[12px] text-[var(--ds-text-2)]">
-            The 4,812 over-retained CVs behind G-01 were counted on the client&rsquo;s own screen — not reconciled from an export.
+            {findings.length ? `Findings ${findings.join(', ')} rest` : 'Everything here rests'} on what was counted on the client&rsquo;s own screen — not reconciled from an export.
           </p>
           <Button as="link" href={demoPath(org.slug, 'gaps')}>Gap report</Button>
         </div>
       </Panel>
 
-      {clientData(slug).walkthroughAgenda.length > 0 && <WalkthroughAgenda org={org.slug} />}
+      {d.walkthroughAgenda.length > 0 && <WalkthroughAgenda org={org.slug} />}
 
       <DemoNote>
         The client drives the screen; the consultant records. Nothing leaves the client&rsquo;s system — not a file,

@@ -1,17 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import type { AuditEntry } from '@/modules/app/dpdp/mock/data';
+import { auditFor, clientData, currentUser, getOrg } from '@/modules/app/dpdp/mock/clients';
 import { formatIst } from '@/modules/app/dpdp/time';
-import type { Activity, Basis } from '@/modules/app/dpdp/types';
-import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
+import type { Activity, AuditEntry, Basis, Role } from '@/modules/app/dpdp/types';
+import Sheet, {
+  SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab,
+} from '@/modules/app/ui/Sheet';
+import { PriorityIcon } from '@/modules/app/ui/WorkRow';
+import { SEVERITY_PRIORITY } from '@/modules/app/dpdp/workStatus';
 import AuditTimeline from './AuditTimeline';
+import When from './When';
 import Discussion from './Discussion';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
+import { ProvenanceTag } from '@/modules/app/dpdp/components/Tags';
 import {
-  CiteLink, FilterInput, Person, ProvenanceTag, SeverityTag, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
+  CiteLink, FilterInput, SortHead, TableWrap, Tag, Td, Th, ViewTabs,
 } from '@/modules/app/ui/ui';
 
 /**
@@ -23,7 +28,7 @@ import {
  */
 
 const BASES: Basis[] = ['s.7(i) employment', 's.7(i) safeguarding', 'Consent', 'Legal obligation', 's.17(1)(d) exempt', 'Not determined'];
-const roleTone = (r: string) => (r === 'Exempt' ? 'ok' : r === 'Processor' ? 'info' : 'dark');
+const roleTone = (r: Role) => (r === 'Exempt' ? 'ok' : r === 'Processor' ? 'info' : 'dark');
 const flagged = (a: Activity) => a.basis === 'Not determined' || a.retention === 'Not stated';
 
 const VIEWS: View<Activity>[] = [
@@ -39,6 +44,23 @@ const SORTS: Sort<Activity>[] = [
   { id: 'items', label: 'Items', compare: (a, b) => a.items - b.items },
 ];
 const search = (a: Activity) => `${a.id} ${a.name} ${a.purpose} ${a.department} ${a.systems.join(' ')} ${a.processors.join(' ')}`;
+
+/**
+ * The basis as plain text, for inside the edit button — a button cannot hold
+ * the citation link. The side panel shows the linked version.
+ */
+function BasisText({ basis }: { basis: Basis }) {
+  if (basis === 'Not determined') return <span className="font-medium text-[var(--ds-danger)]">Not determined</span>;
+  if (basis.startsWith('s.7(i)'))
+    return (
+      <span className="inline-flex flex-col items-start gap-0.5">
+        <span className="font-medium text-[var(--ds-accent-hover)]">s.7(i)</span>
+        <span className="text-[11px] text-[var(--ds-text-3)]">{basis.includes('safeguard') ? 'safeguarding' : 'employment'}</span>
+      </span>
+    );
+  if (basis === 's.17(1)(d) exempt') return <span className="font-medium text-[var(--ds-accent-hover)]">s.17(1)(d)</span>;
+  return <span className="text-[var(--ds-text-2)]">{basis}</span>;
+}
 
 function BasisValue({ basis }: { basis: Basis }) {
   if (basis === 'Not determined') return <span className="font-medium text-[var(--ds-danger)]">Not determined</span>;
@@ -59,8 +81,6 @@ const editable =
 export default function RopaRegister({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
-  const OWNERS = d.owners;
-  const auditFor = (ref: string) => d.audit.filter((e) => e.ref === ref || e.what.includes(ref));
   const toast = useToast();
   const [rows, setRows] = useState<Activity[]>(d.activities);
   const [edits, setEdits] = useState<AuditEntry[]>([]);
@@ -75,7 +95,7 @@ export default function RopaRegister({ org }: { org: string }) {
     if (!value.trim() || value === from) return;
     setRows((rs) => rs.map((r) => (r.id === a.id ? { ...r, [field]: value, provenance: 'consultant_reviewed' } : r)));
     const label = field === 'basis' ? 'Lawful basis' : 'Retention';
-    setEdits((es) => [{ at: formatIst(new Date()), who: 'Dharita Gada', ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
+    setEdits((es) => [{ at: formatIst(new Date()), who: currentUser.name, ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
 
     const bad = field === 'basis' ? 'Not determined' : 'Not stated';
     const finding = GAPS.find((g) => g.activity.startsWith(a.id));
@@ -86,7 +106,7 @@ export default function RopaRegister({ org }: { org: string }) {
 
   const open = rows.find((r) => r.id === openId) ?? null;
   const findings = open ? GAPS.filter((g) => g.activity.startsWith(open.id)) : [];
-  const history = open ? [...edits.filter((e) => e.ref === open.id), ...auditFor(open.id)] : [];
+  const history = open ? [...edits.filter((e) => e.ref === open.id), ...auditFor(d, open.id)] : [];
 
   return (
     <>
@@ -114,7 +134,12 @@ export default function RopaRegister({ org }: { org: string }) {
               <tr key={a.id} className="hover:bg-[var(--ds-subtle)]">
                 <Td className="ds-id whitespace-nowrap text-[12px] text-[var(--ds-text-2)]">
                   <span className="flex items-center gap-1.5">
-                    {flagged(a) && <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-label="Needs attention" />}
+                    {flagged(a) && (
+                      <>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-hidden />
+                        <span className="sr-only">Needs attention</span>
+                      </>
+                    )}
                     {a.id}
                   </span>
                 </Td>
@@ -144,7 +169,7 @@ export default function RopaRegister({ org }: { org: string }) {
                     </select>
                   ) : (
                     <button type="button" className={editable} onClick={() => setEditing({ id: a.id, field: 'basis' })} title="Click to change">
-                      <BasisValue basis={a.basis} />
+                      <BasisText basis={a.basis} />
                     </button>
                   )}
                 </Td>
@@ -196,68 +221,64 @@ export default function RopaRegister({ org }: { org: string }) {
       <Sheet
         open={!!open}
         onClose={() => setOpenId(null)}
+        meta={open && (
+          <>
+            <span className="ds-id">{open.id}</span>
+            <span aria-hidden>·</span>
+            <span>{getOrg(org).name}</span>
+            <span aria-hidden>·</span>
+            <span>Record of processing activities</span>
+          </>
+        )}
         title={open?.name}
-        meta={
-          open && (
-            <>
-              <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
-              <Tag tone={roleTone(open.role)}>{open.role}</Tag>
-              <ProvenanceTag p={open.provenance} />
-            </>
-          )
-        }
+        actions={open && (
+          <>
+            <Tag tone={roleTone(open.role)}>{open.role}</Tag>
+            <ProvenanceTag p={open.provenance} />
+          </>
+        )}
       >
         {open && (
           <>
-            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
-            <SheetSection title="Details">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
-                {[
-                  ['Department', open.department],
-                  ['Data principals', open.principals],
-                  ['Data items', String(open.items)],
-                  ['Retention', open.retention],
-                  ['Systems', open.systems.join(', ')],
-                  ['Processors', open.processors.join(', ') || 'None'],
-                  ['Cross-border', open.crossBorder ?? 'None'],
-                ].map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="ds-meta text-[var(--ds-text-3)]">{k}</dt>
-                    <dd className={`mt-0.5 ${v === 'Not stated' ? 'font-medium text-[var(--ds-danger)]' : ''}`}>{v}</dd>
-                  </div>
+            <SheetDetails>
+              <SheetField label="Department">{open.department}</SheetField>
+              <SheetField label="Data principals">{open.principals}</SheetField>
+              <SheetField label="Data items">{open.items}</SheetField>
+              <SheetField label="Lawful basis"><BasisValue basis={open.basis} /></SheetField>
+              <SheetField label="Retention">
+                <span className={open.retention === 'Not stated' ? 'font-medium text-[var(--ds-danger)]' : ''}>{open.retention}</span>
+              </SheetField>
+              <SheetField label="Systems">{open.systems.join(', ')}</SheetField>
+              <SheetField label="Processors">{open.processors.join(', ') || 'None'}</SheetField>
+              <SheetField label="Cross-border">{open.crossBorder ?? 'None'}</SheetField>
+            </SheetDetails>
+
+            <SheetSection title="Purpose">
+              <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
+            </SheetSection>
+
+            <SheetSection title="Findings on this activity" count={findings.length}>
+              <SheetList empty="None — the rule engine raised nothing here.">
+                {findings.map((g) => (
+                  <SheetListItem
+                    key={g.id}
+                    icon={<PriorityIcon level={SEVERITY_PRIORITY[g.severity]} />}
+                    id={g.id}
+                    right={<When date={g.due} />}
+                  >
+                    {g.title}
+                  </SheetListItem>
                 ))}
-                <div>
-                  <dt className="ds-meta text-[var(--ds-text-3)]">Lawful basis</dt>
-                  <dd className="mt-0.5"><BasisValue basis={open.basis} /></dd>
-                </div>
-              </dl>
+              </SheetList>
             </SheetSection>
 
-            <SheetSection title={`Findings on this activity (${findings.length})`}>
-              {findings.length === 0 ? (
-                <p className="text-[13px] text-[var(--ds-text-3)]">None — the rule engine raised nothing here.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {findings.map((g) => (
-                    <li key={g.id} className="ds-bar ds-bar-plain">
-                      <p className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium">
-                        {g.title} <SeverityTag s={g.severity} />
-                      </p>
-                      <p className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ds-text-3)]">
-                        <Person name={OWNERS[g.owner] ?? g.owner} compact /> due {g.due}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </SheetSection>
-
-                    <SheetSection title="Discussion">
-              <Discussion org={org} refId={open.id} />
-            </SheetSection>
-            <SheetSection title="History">
-              <AuditTimeline entries={history} empty="No changes since RoPA v4 was confirmed." />
-            </SheetSection>   </>
+            <SheetActivity>
+              <SheetTab label="Comments"><Discussion org={org} refId={open.id} /></SheetTab>
+              <SheetTab label="History">
+                <AuditTimeline entries={history} empty={`No changes since the register was confirmed on ${getOrg(org).lastReview}.`} />
+              </SheetTab>
+            </SheetActivity>
+          </>
         )}
       </Sheet>
     </>

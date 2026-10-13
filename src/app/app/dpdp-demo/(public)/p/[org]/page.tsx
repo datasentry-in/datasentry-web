@@ -1,7 +1,6 @@
+import { clientData, getOrg, publicCentre } from '@/modules/app/dpdp/mock/clients';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { clientData, publicCentre } from '@/modules/app/dpdp/mock/clients';
-import { getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { RIGHTS } from '@/modules/app/dpdp/statute';
 import { Callout, DemoNote } from '@/modules/app/ui/ui';
@@ -29,7 +28,7 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
       </div>
 
       {!PRIVACY_CENTRE.live && (
-        <Callout boxed tone="warn" title="Preview — this page is not live">
+        <Callout tone="warn" title="Preview — this page is not live">
           {org.name} publishes an email address only: {PRIVACY_CENTRE.contactEmail}. Requests sent there are forwarded
           into the request desk and run on the same clock. This is what DataSentry would host once the notice is ready.
         </Callout>
@@ -72,6 +71,11 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
         <div className="rounded-lg border border-[var(--ds-border)] bg-white p-4">
           <p className="ds-meta text-[var(--ds-text-3)]">Contact</p>
           <p className="mt-2 text-[13px]">{PRIVACY_CENTRE.contactEmail}</p>
+          {PRIVACY_CENTRE.grievanceOfficer && (
+            <p className="mt-1 text-[13px]">
+              Grievance officer: <span className="font-medium">{PRIVACY_CENTRE.grievanceOfficer}</span>
+            </p>
+          )}
           <p className="mt-2 text-[12px] leading-relaxed text-[var(--ds-text-2)]">
             If you are not satisfied with our response, you can complain to the Data Protection Board of India.
           </p>
@@ -91,7 +95,7 @@ export default async function PrivacyCentre({ params }: { params: Promise<{ org:
       <DemoNote>
         Hosted by the platform under the client&rsquo;s name and colours — this is the s.13 grievance mechanism and the
         rights route in one place, with no client system involved. A grievance officer&rsquo;s name appears under Contact
-        once one is designated; at {org.name} that is still finding G-09.
+        once one is designated{PRIVACY_CENTRE.grievanceOfficer ? ` — at ${org.name}, ${PRIVACY_CENTRE.grievanceOfficer}.` : `; at ${org.name} none is designated yet.`}
       </DemoNote>
     </div>
   );

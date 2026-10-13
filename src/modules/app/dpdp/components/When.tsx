@@ -21,7 +21,7 @@ export default function When({
   // Only what is already late is red; everything else stays neutral.
   const colour = !tone || kind === 'event' ? '' : left < 0 ? 'text-[var(--ds-danger)]' : '';
   return (
-    <time dateTime={at.toISOString()} title={date} className={`${colour} ${className}`}>
+    <time dateTime={at.toISOString()} title={date} className={`ds-fade-in ${colour} ${className}`}>
       {label}
     </time>
   );

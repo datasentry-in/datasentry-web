@@ -1,7 +1,7 @@
+import { clientTheme, getOrg, publicCentre } from '@/modules/app/dpdp/mock/clients';
+import { orgParams } from '@/modules/app/dpdp/routeData';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { publicCentre } from '@/modules/app/dpdp/mock/clients';
-import { CLIENT_THEME, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink } from '@/modules/app/ui/Brand';
 import ClientMark from '@/modules/app/dpdp/components/ClientMark';
@@ -12,16 +12,16 @@ import ClientMark from '@/modules/app/dpdp/components/ClientMark';
  * reach these from the client's own site. White-labelled by overriding the
  * accent tokens with the client's colour.
  */
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
+/** Public pages exist for known clients only; any other slug is a 404. */
+export const generateStaticParams = orgParams;
+export const dynamicParams = false;
 
 export default async function ClientPublicLayout({
   children, params,
 }: { children: React.ReactNode; params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = getOrg(slug);
-  const t = CLIENT_THEME[org.slug] ?? CLIENT_THEME.northstar;
+  const t = clientTheme(org.slug);
   const PRIVACY_CENTRE = publicCentre(org.slug);
   const theme = {
     '--ds-accent': t.accent,

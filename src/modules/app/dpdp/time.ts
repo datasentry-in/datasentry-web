@@ -76,3 +76,6 @@ export function relativeTo(at: Date, now: number, kind: 'due' | 'event' = 'due')
   if (days > 1) return days > 60 ? `due in ${Math.round(days / 30)} months` : `due in ${days} days`;
   return `overdue ${-days} day${days === -1 ? '' : 's'}`;
 }
+
+/** "13 Oct 2026, 18:45" — the display form the mock data uses, for records made now. */
+export const formatIstShort = (d: Date) => formatIst(d).replace(' IST', '');

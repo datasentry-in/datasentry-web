@@ -1,27 +1,15 @@
-import { clientData } from '@/modules/app/dpdp/mock/clients';
-import { ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
+import { loadClient } from '@/modules/app/dpdp/routeData';
 import ModulePending from '@/modules/app/dpdp/components/ModulePending';
 import CheckInForm from '@/modules/app/dpdp/components/CheckInForm';
 import {
   DemoNote, Fact, Facts, PageHeader,
 } from '@/modules/app/ui/ui';
 
-export function generateStaticParams() {
-  return ORGS.map((o) => ({ org: o.slug }));
-}
 
 export default async function CheckIn({ params }: { params: Promise<{ org: string }> }) {
-  const { org: slug } = await params;
-  const org = getOrg(slug);
-  const CHECK_IN = clientData(slug).checkIn;
-  if (!CHECK_IN) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Quarterly check-in" sub={org.name} />
-        <ModulePending org={org.slug} what="The quarterly check-in" />
-      </div>
-    );
-  }
+  const { org, d } = await loadClient(params);
+  const CHECK_IN = d.checkIn;
+  if (!CHECK_IN) return <ModulePending org={org} title="Quarterly check-in" what="The quarterly check-in" />;
 
   return (
     <div className="space-y-8">
