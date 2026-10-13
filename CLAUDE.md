@@ -40,7 +40,7 @@ src/modules/app/dpdp/    the DPDP product
   attention.ts           what needs attention, derived from register/clocks/tasks — bell, overview, palette
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
-  useNow.ts              the real clock, null until mounted
+  useNow.ts              the real clock (shared per tick rate), null while hydrating
   mock/                  illustrative data; the only part a live app replaces
     clients.ts           the facade: ORGS (with counts computed from data), findOrg/getOrg, clientData,
                          clientTheme, currentUser, TEAM, auditFor, personFor, publicCentre
@@ -91,6 +91,7 @@ src/modules/app/dpdp/    the DPDP product
   table column heads and the brand only.
 - **People and dates**: `Person`/`Avatar` (neutral grey initials) for owners; `When` for due dates
   and event times — exact date in the prerendered HTML, relative after mount, red only when overdue.
+  One date per row: the relative form, with the exact date on hover (detail panels may show both).
 - **New pages or alerts** go in `nav.ts` / `attention.ts`; the sidebar, bell, ⌘K
   palette and `g`-then-key shortcuts (`Shortcuts.tsx`, `?` lists them) pick them up.
 - **Overlays** use `Dialog` / `Sheet`, both on `useOverlay`: portal into `.demo-root` (the header's
@@ -126,16 +127,19 @@ src/modules/app/dpdp/    the DPDP product
   AI-drafted section marks it reviewed), comments and versions beside the text, and a sign-off flow
   (draft → approver signs off → sent; locked once sent). The Board intimation is the first:
   `[org]/breach/intimation`.
-- **Plain language first, citation second**: say what is wrong in words, then the provision as a
-  chip or in brackets — "no one named to handle complaints (s.13)", never "s.13 breach".
+- **Plain language first, citation second**: say what is wrong in words, then the provision —
+  "no one named to handle complaints (s.13)", never "s.13 breach". `CiteLink` is quiet grey text on a
+  hairline underline, blue only on hover: blue belongs to the primary action.
 - **The data flow map** (`DataFlowMap.tsx`, data in `FLOW_NODES`/`FLOW_EDGES`) draws three trust
   boundaries (own systems · third parties in India · outside India) with the India border; every node
   carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
   personal data" class, so never label anything sensitive.
 - **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
-  ease-out in and faster out, all off under reduced motion. Pages ease in (`ds-page-in`), headline
-  numbers pop in (`ds-num-in`), live values fade in over their skeleton (`ds-fade-in`), overlays and menus
+  ease-out in and faster out, all off under reduced motion. Entrances play on the first page of a visit
+  only — after that the page is `ds-settled` (`ui/useSettled.ts`) and navigation is instant; motion
+  answers actions, not page changes. The first page eases in (`ds-page-in`), headline
+  numbers pop in (`ds-num-in`), live values fade in over their skeleton (`ds-fade-in`); overlays and menus
   exit before unmounting (`data-state="closing"`; `useClosable` for menus, Dialog/Sheet handle their own),
   menus grow from their corner (`ds-origin-tr/tl`), `ViewTabs` slides one pill, accordions use
   `ds-collapse`. Never `transition: all`.

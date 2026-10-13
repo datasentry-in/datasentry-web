@@ -6,6 +6,7 @@ import { formatIst } from '@/modules/app/dpdp/time';
 import type { Activity, AuditEntry, Basis, Role } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
+import When from './When';
 import Discussion from './Discussion';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
@@ -265,7 +266,7 @@ export default function RopaRegister({ org }: { org: string }) {
                         {g.title} <SeverityTag s={g.severity} />
                       </p>
                       <p className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ds-text-3)]">
-                        <Person name={personFor(OWNERS, g.owner).name} compact /> due {g.due}
+                        <Person name={personFor(OWNERS, g.owner).name} compact /> <When date={g.due} />
                       </p>
                     </li>
                   ))}

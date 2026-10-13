@@ -292,13 +292,19 @@ export function Td({ children, className = '' }: { children: ReactNode; classNam
 
 /* -------------------------------------------------------------------- notes */
 
+/**
+ * A provision, cited quietly: grey text on a hairline underline that turns blue
+ * on hover. Blue belongs to the one primary action, so a column of citations
+ * must not compete with it.
+ */
 export function CiteLink({ provision }: { provision: string }) {
   return (
     <a
       href="https://www.meity.gov.in/writereaddata/files/Digital%20Personal%20Data%20Protection%20Act%202023.pdf"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center rounded border border-[var(--ds-accent-border)] bg-[var(--ds-accent-weak)] px-1.5 py-px text-[12px] font-medium text-[var(--ds-accent-hover)] transition-colors hover:border-[var(--ds-accent)] hover:bg-[var(--ds-accent-weak-2)]"
+      title="Open the Act (MeitY)"
+      className="text-[12px] text-[var(--ds-text-2)] underline decoration-[var(--ds-border-strong)] decoration-1 underline-offset-[3px] transition-colors hover:text-[var(--ds-accent-hover)] hover:decoration-[var(--ds-accent)]"
     >
       {provision}
     </a>

@@ -313,6 +313,11 @@ body:has(.demo-root) {
 @keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
 .demo-root .ds-fade-in { animation: ds-fade-in var(--ds-dur-base) var(--ds-ease-out) both; }
 
+/* Entrances play on the first page of a visit only. After that the shell marks
+   the page `ds-settled` (useSettled) and navigation is instant — figures and
+   live values arrive settled. Motion that answers an action is unaffected. */
+.demo-root .ds-settled .ds-num-in, .demo-root .ds-settled .ds-fade-in { animation: none; }
+
 /* Overlays leave faster than they arrive. `data-state="closing"` is set for the
    length of the exit by useClosable (menus) and useOverlay (Dialog, Sheet). */
 @keyframes ds-pop-out { to { opacity: 0; transform: translateY(-2px) scale(0.98); } }

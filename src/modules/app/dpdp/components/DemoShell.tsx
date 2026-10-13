@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from 'react';
 import { DEMO_BASE, demoPath } from '@/modules/app/dpdp/routes';
 import { BrandLink, ProductLockup } from '@/modules/app/ui/Brand';
 import { ToastProvider } from '@/modules/app/ui/Toast';
+import { useSettled } from '@/modules/app/ui/useSettled';
 import { lateRequests } from '@/modules/app/dpdp/sla';
 import { useNow } from '@/modules/app/dpdp/useNow';
 import AccountMenu from './AccountMenu';
@@ -62,6 +63,16 @@ const countsFor = (slug: string, now: number | null): Record<string, string> => 
   if (late) c.dsr = `${late} late`;
   return c;
 };
+
+/**
+ * Keyed by path, so each page mounts fresh. The first page of a visit eases in;
+ * after that, navigation is instant (`useSettled`). Mounted only once signed
+ * in, so the entrance plays on arriving in the console, not behind the sign-in.
+ */
+function Page({ path, children }: { path: string; children: React.ReactNode }) {
+  const settled = useSettled();
+  return <div key={path} className={settled ? 'ds-settled' : 'ds-page-in'}>{children}</div>;
+}
 
 export default function DemoShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? DEMO_BASE;
@@ -137,8 +148,7 @@ export default function DemoShell({ children }: { children: React.ReactNode }) {
           <Sidebar org={org.slug} activeSeg={activeSeg} counts={countsFor(org.slug, now)} open={navOpen} onNavigate={() => setNavOpen(false)} />
         )}
         <main className="mx-auto w-full min-w-0 max-w-[82rem] flex-1 px-4 py-6 lg:px-10 lg:py-7">
-          {/* Keyed by path so each page eases in as you arrive (texts reveal). */}
-          <div key={pathname} className="ds-page-in">{children}</div>
+          <Page path={pathname}>{children}</Page>
         </main>
       </div>
 

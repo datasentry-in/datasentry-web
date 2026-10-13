@@ -10,6 +10,7 @@ import {
 } from '@/modules/app/ui/ui';
 import Discussion from './Discussion';
 import RemindButton from './RemindButton';
+import When from './When';
 
 /**
  * The data-flow map as a privacy reviewer reads one: three trust boundaries
@@ -374,7 +375,7 @@ function FindingBlock({ org, id }: { org: string; id: string }) {
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <CiteLink provision={g.provision} />
           <Person name={person} compact />
-          <span className="text-[12px] text-[var(--ds-text-3)]">due {g.due}</span>
+          <When date={g.due} className="text-[12px] text-[var(--ds-text-3)]" />
           <RemindButton person={person} what={`${g.id} — ${g.title}`} />
         </div>
       </div>

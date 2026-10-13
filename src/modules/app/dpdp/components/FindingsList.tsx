@@ -85,14 +85,13 @@ export default function FindingsList({ org }: { org: string }) {
                     {g.title}
                   </button>
                   <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--ds-text-3)]">
-                    <CiteLink provision={g.provision} /> {g.activity}
+                    <CiteLink provision={g.provision} /><span aria-hidden>·</span>{g.activity}
                   </span>
                 </td>
                 <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><SeverityTag s={g.severity} /></td>
                 <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top"><Person {...personFor(OWNERS, g.owner)} /></td>
-                <td className="whitespace-nowrap border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px]">
-                  <span className="block font-medium">{g.due}</span>
-                  <When date={g.due} className="text-[12px]" />
+                <td className="whitespace-nowrap border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">
+                  <When date={g.due} />
                 </td>
                 <td className="border-b border-[var(--ds-border)] px-3 py-3 text-right align-top">
                   <span className="ds-row-actions"><RemindButton person={person(g)} what={`${g.id} — ${g.title}`} /></span>
