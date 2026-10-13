@@ -22,7 +22,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
   const generated = EVIDENCE_PACK.filter((e) => e.status === 'Generated').length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Readiness overview"
         sub={`${org.engagement} · last reviewed ${org.lastReview}`}
@@ -32,7 +32,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
       {openIncident ? (
         <NextStep
           title={`Send the Board intimation for ${openIncident.id}`}
-          action={<Button as="link" variant="primary" href={`${demoPath(org.slug, 'breach')}#board-intimation`}>Draft the Board intimation</Button>}
+          action={<Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>}
         >
           {openIncident.affected} data principals affected · Rule 7 deadline{' '}
           <span className="font-medium text-[var(--ds-danger)]">{openIncident.deadline}</span>
@@ -58,7 +58,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
 
       <AttentionList org={org.slug} exclude={openIncident ? [openIncident.id] : []} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Where this client stands" sub="Module completion across the engagement">
           <ul className="space-y-3.5">
             {[
@@ -81,7 +81,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
               <p className="flex items-baseline justify-between gap-3 text-[13px] font-semibold tracking-[-0.01em]">
                 Data Fiduciary <span className="ds-figure text-[13px] font-normal text-[var(--ds-text-2)]">17 activities</span>
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+              <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 Employee, candidate, ex-employee, dependant, visitor, vendor and prospect data. Obligations apply
                 in full.
               </p>
@@ -91,7 +91,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
                 <span className="flex items-center gap-2">Exempt <CiteLink provision="s.17(1)(d)" /></span>
                 <span className="ds-figure text-[13px] font-normal text-[var(--ds-ok)]">2 activities</span>
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+              <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 Offshore delivery for the US payer and the UK retailer. Principals are outside India under
                 contract with a person outside India.
               </p>
@@ -147,7 +147,7 @@ export default async function Overview({ params }: { params: Promise<{ org: stri
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px]">
-                  <span className="ds-figure mr-1.5 text-[11px] text-[var(--ds-text-3)]">{e.ref}</span>
+                  <span className="ds-id mr-1.5 text-[11px] text-[var(--ds-text-3)]">{e.ref}</span>
                   {e.what}
                 </span>
                 {e.change && <Change {...e.change} />}

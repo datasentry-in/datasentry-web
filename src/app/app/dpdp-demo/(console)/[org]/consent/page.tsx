@@ -1,6 +1,6 @@
 import { CONSENT_LEDGER, CONSENT_SUMMARY as C, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import {
-  Card, CiteLink, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
+  Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -45,18 +45,18 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
   const org = getOrg(slug);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Notice & consent"
-        sub="Narrow by design — candidates, and the handful of employee purposes that fall outside s.7(i)."
+        sub="Narrow by design — candidates, and the handful of employee purposes that need consent rather than the employment exemption (s.7(i))."
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Active candidate consents" value={C.activeCandidate.toLocaleString('en-IN')} note={C.noticeVersion} tone="good" />
-        <Stat label="Withdrawn" value={C.withdrawn} note="each raised an erasure task" tone="warn" />
-        <Stat label="Retention clock expired" value={C.expiredClock} note="talent pool past 180 days" tone="bad" />
-        <Stat label="Erasure tasks pending" value={C.pendingErasureTasks} note="withdrawal and expiry combined" tone="bad" />
-      </div>
+      <Facts>
+        <Fact label="Active candidate consents" value={C.activeCandidate.toLocaleString('en-IN')} note={C.noticeVersion} tone="good" />
+        <Fact label="Withdrawn" value={C.withdrawn} note="each raised an erasure task" tone="warn" />
+        <Fact label="Retention clock expired" value={C.expiredClock} note="talent pool past 180 days" tone="bad" />
+        <Fact label="Erasure tasks pending" value={C.pendingErasureTasks} note="withdrawal and expiry combined" tone="bad" />
+      </Facts>
 
       <Panel title="Why the employee side is small" sub="The correction that reshapes this module">
         <div className="grid gap-3 lg:grid-cols-2">
@@ -65,7 +65,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
               <p className="text-[13px] font-semibold tracking-[-0.01em]">No consent needed — 10 activities</p>
               <CiteLink provision="s.7(i)" />
             </div>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               Payroll, attendance, performance, onboarding, exit, statutory filings, CCTV, visitor register, IT
               monitoring and DLP all run on a legitimate use. Asking for consent here would be misleading, and
               withdrawal would be meaningless because the processing would continue regardless.
@@ -96,7 +96,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
 
       <Panel
         title="Candidate consent page"
-        sub="What an applicant sees — Rule 3 requires an itemised description with a purpose per item"
+        sub="What an applicant sees — each item listed with its purpose, as the notice rules require (Rule 3)"
         right={
           <div className="flex flex-wrap gap-1.5">
             {C.languages.map((l) => (
@@ -120,7 +120,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
           </div>
 
           <div className="p-4">
-            <p className="max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               We are Northstar BPO Services Pvt Ltd. We will use the information below only for the purposes
               listed beside it. You may withdraw your consent at any time, ask us for a summary of what we hold,
               ask us to correct or erase it, or complain to the Data Protection Board of India.
@@ -223,7 +223,7 @@ export default async function Consent({ params }: { params: Promise<{ org: strin
         </TableWrap>
       </Panel>
 
-      <Panel title="Withdrawal does something" sub="s.8(7) requires erasure once consent is withdrawn or the purpose is served">
+      <Panel title="Withdrawal does something" sub="Data is erased once consent is withdrawn or the purpose is served (s.8(7))">
         <ul className="space-y-2">
           {[
             ['Deepa Krishnan', 'Consent withdrawn 09 Oct 2026, 17:55', 'Zoho Recruit record, AuthBridge BGV file, Drive CV copy', 'Assigned to Head of Talent Acquisition · due 16 Oct 2026'],

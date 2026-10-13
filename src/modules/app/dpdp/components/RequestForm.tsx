@@ -201,7 +201,7 @@ export default function RequestForm({ orgName, orgSlug, initialType }: { orgName
               </Choice>
             ))}
             {rel === 'customer' && (
-              <p className="rounded-md bg-[var(--ds-subtle)] px-3 py-2 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+              <p className="rounded-md bg-[var(--ds-subtle)] px-3 py-2 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 {orgName} handles this information on behalf of that company. We&rsquo;ll take your request and pass it to them.
               </p>
             )}

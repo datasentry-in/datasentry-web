@@ -1,7 +1,7 @@
 import { ACTIVITIES, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import RopaRegister from '@/modules/app/dpdp/components/RopaRegister';
 import {
-  Card, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
+  Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -16,18 +16,18 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
   const processors = new Set(ACTIVITIES.flatMap((a) => a.processors)).size;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Record of processing activities"
         sub={`RoPA v4 · confirmed 08 Oct 2026 · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Activities" value={ACTIVITIES.length} note={`${org.exemptActivities} exempt`} />
-        <Stat label="Data items itemised" value={items} note="Rule 3 requires item-level detail" />
-        <Stat label="Processors engaged" value={processors} note="8 of 10 have a DPA" tone="warn" />
-        <Stat label="Basis not determined" value={undetermined} note="blocks the evidence pack" tone="bad" />
-      </div>
+      <Facts>
+        <Fact label="Activities" value={ACTIVITIES.length} note={`${org.exemptActivities} exempt`} />
+        <Fact label="Data items itemised" value={items} note="each item listed, as notices must (Rule 3)" />
+        <Fact label="Processors engaged" value={processors} note="8 of 10 have a DPA" tone="warn" />
+        <Fact label="Basis not determined" value={undetermined} note="blocks the evidence pack" tone="bad" />
+      </Facts>
 
       <Panel
         title="Register"
@@ -43,7 +43,7 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
         <RopaRegister />
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="How the basis breaks down" sub="The correction most clients need to hear">
           <ul className="space-y-2">
             {[
@@ -73,7 +73,7 @@ export default async function Ropa({ params }: { params: Promise<{ org: string }
           </div>
         </Panel>
 
-        <Panel title="Processor register" sub="s.8(2) requires a written contract with every processor" flush>
+        <Panel title="Processor register" sub="Every vendor handling this data needs a written contract (s.8(2))" flush>
           <TableWrap>
             <table className="w-full border-collapse">
               <thead>

@@ -6,6 +6,7 @@ import { formatIst } from '@/modules/app/dpdp/time';
 import type { Activity, Basis } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
+import Discussion from './Discussion';
 import { useToast } from '@/modules/app/ui/Toast';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
 import {
@@ -106,7 +107,7 @@ export default function RopaRegister() {
           <tbody>
             {t.shown.map((a) => (
               <tr key={a.id} className="hover:bg-[var(--ds-subtle)]">
-                <Td className="ds-figure whitespace-nowrap text-[12px] text-[var(--ds-text-2)]">
+                <Td className="ds-id whitespace-nowrap text-[12px] text-[var(--ds-text-2)]">
                   <span className="flex items-center gap-1.5">
                     {flagged(a) && <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-label="Needs attention" />}
                     {a.id}
@@ -194,7 +195,7 @@ export default function RopaRegister() {
         meta={
           open && (
             <>
-              <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
+              <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span>
               <Tag tone={roleTone(open.role)}>{open.role}</Tag>
               <ProvenanceTag p={open.provenance} />
             </>
@@ -203,7 +204,7 @@ export default function RopaRegister() {
       >
         {open && (
           <>
-            <p className="text-[13px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
+            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
             <SheetSection title="Details">
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
                 {[
@@ -246,7 +247,10 @@ export default function RopaRegister() {
               )}
             </SheetSection>
 
-                    <SheetSection title="History">
+                    <SheetSection title="Discussion">
+              <Discussion refId={open.id} client="Northstar" />
+            </SheetSection>
+            <SheetSection title="History">
               <AuditTimeline entries={history} empty="No changes since RoPA v4 was confirmed." />
             </SheetSection>   </>
         )}

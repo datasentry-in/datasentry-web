@@ -168,7 +168,7 @@ export default function IncidentReport({ orgName, orgSlug }: { orgName: string; 
             </p>
           </>
         ) : (
-          <p className="mt-2 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+          <p className="mt-2 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
             Starts from when you first realised. Enter that time to see the deadline.
           </p>
         )}

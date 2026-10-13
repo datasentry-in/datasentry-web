@@ -23,27 +23,40 @@ export function Panel({
   title?: string; sub?: string; right?: ReactNode;
   children: ReactNode; className?: string; flush?: boolean;
 }) {
-  // `min-w-0` lets a Panel shrink below its content's min-content width.
-  // Without it a grid column sizes to the widest TableWrap inside it and the
-  // whole panel overflows the viewport on a phone instead of scrolling.
-  // A flush panel holds rows, so its header needs a rule above the first one;
-  // a padded panel's header runs straight into its content.
+  // Two kinds of section, as in a document. A flush panel holds an object you
+  // work in — a table, a list of rows, the flow map — so it gets a frame with
+  // its heading inside. Anything else is prose and cards under a heading: no
+  // frame, the heading and white space do the separating.
+  // `min-w-0` lets a section shrink below its content's min-content width, so
+  // a grid column with a wide table scrolls instead of overflowing on a phone.
+  if (!flush) {
+    return (
+      <section className={`min-w-0 ${className}`}>
+        {title && (
+          <header className="mb-3 flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--ds-text)]">{title}</h2>
+              {sub && <p className="mt-0.5 text-[13px] leading-snug text-[var(--ds-text-3)]">{sub}</p>}
+            </div>
+            {right}
+          </header>
+        )}
+        <div>{children}</div>
+      </section>
+    );
+  }
   return (
     <section className={`min-w-0 overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] ${className}`}>
       {title && (
-        <header
-          className={`flex flex-wrap items-start justify-between gap-3 px-4 sm:px-5 ${
-            flush ? 'border-b border-[var(--ds-border)] py-3' : 'pt-4'
-          }`}
-        >
+        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--ds-border)] px-4 py-3 sm:px-5">
           <div className="min-w-0">
-            <h2 className="text-[14px] font-semibold tracking-[-0.01em] text-[var(--ds-text)]">{title}</h2>
-            {sub && <p className="mt-0.5 text-[12px] leading-snug text-[var(--ds-text-3)]">{sub}</p>}
+            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--ds-text)]">{title}</h2>
+            {sub && <p className="mt-0.5 text-[13px] leading-snug text-[var(--ds-text-3)]">{sub}</p>}
           </div>
           {right}
         </header>
       )}
-      <div className={flush ? '' : title ? 'px-4 pb-4 pt-3.5 sm:px-5 sm:pb-5' : 'p-4 sm:p-5'}>{children}</div>
+      <div>{children}</div>
     </section>
   );
 }
@@ -102,8 +115,8 @@ export function PageHeader({ title, sub, right }: { title: string; sub?: ReactNo
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="ds-display text-[22px] text-[var(--ds-text)] sm:text-[24px]">{title}</h1>
-        {sub && <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">{sub}</p>}
+        <h1 className="ds-display text-[26px] text-[var(--ds-text)] sm:text-[30px]">{title}</h1>
+        {sub && <div className="mt-2 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">{sub}</div>}
       </div>
       {right}
     </div>
@@ -121,14 +134,15 @@ export function PageHeader({ title, sub, right }: { title: string; sub?: ReactNo
 export function Stat({
   label, value, note, tone = 'plain',
 }: { label: string; value: string | number; note?: string; tone?: 'plain' | 'bad' | 'warn' | 'good' }) {
-  const fg =
-    tone === 'bad' ? 'text-[var(--ds-danger)]'
-      : tone === 'warn' ? 'text-[var(--ds-warn)]'
-        : tone === 'good' ? 'text-[var(--ds-ok)]'
-          : 'text-[var(--ds-text)]';
+  // Calm by default: the number stays ink; a dot by the label says it needs a look.
+  const dot = tone === 'bad' ? 'var(--ds-danger)' : tone === 'warn' ? 'var(--ds-warn)' : tone === 'good' ? 'var(--ds-ok)' : null;
+  const fg = 'text-[var(--ds-text)]';
   return (
     <div className="min-w-0 bg-[var(--ds-panel)] px-4 py-3.5">
-      <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">{label}</p>
+      <p className="flex items-center gap-1.5 text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">
+        {dot && <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />}
+        {label}
+      </p>
       <p
         className={`ds-figure mt-1.5 leading-none tracking-[-0.02em] ${fg} ${
           String(value).length > 6 ? 'text-[19px] sm:text-[21px]' : 'text-[24px] sm:text-[26px]'
@@ -137,6 +151,37 @@ export function Stat({
         {value}
       </p>
       {note && <p className="mt-1.5 text-[12px] leading-snug text-[var(--ds-text-3)]">{note}</p>}
+    </div>
+  );
+}
+
+/**
+ * A module page's key figures as one line of properties under its title, the
+ * way a Notion page carries its properties — so the page leads with its own
+ * content, not a dashboard strip. Stat strips are for the overview and the
+ * portfolio only. A figure that is bad or due gets a dot, not red text.
+ */
+export function Facts({ children, tight = true }: { children: ReactNode; tight?: boolean }) {
+  // `tight` tucks the row under the page title, closing the section gap.
+  return (
+    <dl className={`flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[var(--ds-border)] pb-4 ${tight ? '-mt-5' : ''}`}>
+      {children}
+    </dl>
+  );
+}
+
+export function Fact({
+  label, value, note, tone = 'plain',
+}: { label: string; value: string | number; note?: string; tone?: 'plain' | 'bad' | 'warn' | 'good' }) {
+  const dot = tone === 'bad' ? 'var(--ds-danger)' : tone === 'warn' ? 'var(--ds-warn)' : tone === 'good' ? 'var(--ds-ok)' : null;
+  return (
+    // The note is on hover: properties stay one short line.
+    <div className={`flex items-baseline gap-1.5 text-[13px] ${note ? 'cursor-help' : ''}`} title={note}>
+      <dt className="text-[var(--ds-text-3)]">{label}</dt>
+      <dd className="flex items-center gap-1.5 font-medium text-[var(--ds-text)]">
+        {dot && <span aria-hidden className="h-1.5 w-1.5 self-center rounded-full" style={{ background: dot }} />}
+        <span className="tnum">{value}</span>
+      </dd>
     </div>
   );
 }
@@ -156,7 +201,7 @@ export function ScoreBlock({
       <div className="shrink-0 sm:w-36">
         <p className="text-[12px] font-medium leading-snug text-[var(--ds-text-2)]">Readiness score</p>
         <p className="mt-1.5 flex items-baseline gap-1 leading-none">
-          <span className="ds-figure text-[24px] tracking-[-0.03em] sm:text-[26px]" style={{ color: fg }}>{score}</span>
+          <span className="ds-figure text-[24px] tracking-[-0.03em] text-[var(--ds-text)] sm:text-[26px]">{score}</span>
           <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">/ 100</span>
         </p>
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--ds-subtle-2)]">
@@ -169,7 +214,7 @@ export function ScoreBlock({
         {history.length > 1 ? (
           <>
             <p className="mb-1 text-[12px] text-[var(--ds-text-3)]">At each review</p>
-            <TrendChart points={history} color={fg} label={`Readiness score at each review: ${history.map((h) => `${h.label} ${h.value}`).join(', ')}`} />
+            <TrendChart points={history} color="var(--ds-accent)" label={`Readiness score at each review: ${history.map((h) => `${h.label} ${h.value}`).join(', ')}`} />
           </>
         ) : (
           <p className="flex h-full items-center text-[12px] leading-relaxed text-[var(--ds-text-3)]">
@@ -376,14 +421,7 @@ export function CiteLink({ provision }: { provision: string }) {
   );
 }
 
-export function DemoNote({ children }: { children: ReactNode }) {
-  return (
-    <Callout tone="note">
-      <span className="font-medium text-[var(--ds-text)]">Design note — </span>
-      {children}
-    </Callout>
-  );
-}
+export { default as DemoNote } from './DemoNote';
 
 /** What a list shows when there is nothing in it — say why, and what next. */
 export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {

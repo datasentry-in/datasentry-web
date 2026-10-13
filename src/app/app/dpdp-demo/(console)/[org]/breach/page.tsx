@@ -2,7 +2,7 @@ import { INCIDENTS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import Countdown from '@/modules/app/dpdp/components/Countdown';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, NextStep, PageHeader, Panel, Stat, Tag,
+  Button, Card, CiteLink, DemoNote, Fact, Facts, NextStep, PageHeader, Panel, Tag,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -16,23 +16,23 @@ export default async function Breach({ params }: { params: Promise<{ org: string
   const closed = INCIDENTS.filter((i) => i.status !== 'Open');
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Breach & incident register"
         sub={`Rule 7 has no severity threshold — every personal data breach is reportable. Staff report through a link with no login; the clock runs from when they became aware. ${org.name}`}
         right={<Button as="link" href={demoPath('p', org.slug, 'report')}>Staff report form</Button>}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Open incidents" value={1} note="clock running" tone="bad" />
-        <Stat label="Closed this year" value={closed.length} note="both notified in time" tone="good" />
-        <Stat label="Principals affected" value={open.affected} note="this incident" tone="bad" />
-        <Stat label="Response SOP" value="Unsigned" note="finding G-04" tone="bad" />
-      </div>
+      <Facts>
+        <Fact label="Open incidents" value={1} note="clock running" tone="bad" />
+        <Fact label="Closed this year" value={closed.length} note="both notified in time" tone="good" />
+        <Fact label="Principals affected" value={open.affected} note="this incident" tone="bad" />
+        <Fact label="Response SOP" value="Unsigned" note="finding G-04" tone="bad" />
+      </Facts>
 
       <NextStep
         title={`Send the Board intimation for ${open.id}`}
-        action={<Button as="link" href="#board-intimation">Review the drafted intimation</Button>}
+        action={<Button as="link" variant="primary" href={demoPath(org.slug, 'breach', 'intimation')}>Open the Board intimation</Button>}
       >
         The initial description is due without delay and full particulars within 72 hours of awareness. The draft is
         prepared from the incident record; the CISO signs it off.
@@ -82,7 +82,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
             <p className="ds-meta text-[var(--ds-text-3)]">
               Data categories involved
             </p>
-            <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">{open.categories}</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.categories}</p>
           </Card>
 
           <div className="grid gap-3 lg:grid-cols-2">
@@ -113,7 +113,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
             <p className="ds-meta text-[var(--ds-text-3)]">
               Generated intimation to the Board — draft
             </p>
-            <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               Northstar BPO Services Pvt Ltd became aware on 10 October 2026 at 14:20 IST that the September 2026
               payroll register was sent by email to an internal distribution list that included 34 recipients
               without a need to access it. The register contained the name, employee identifier, designation,
@@ -122,8 +122,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
               Affected employees are being intimated. No evidence of onward disclosure has been identified.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="primary">Approve &amp; send to Board</Button>
-              <Button>Edit draft</Button>
+              <Button as="link" href={demoPath(org.slug, 'breach', 'intimation')}>Open as a document to edit and sign off</Button>
               <Button variant="ghost">Notify 240 principals</Button>
             </div>
           </Card>
@@ -147,7 +146,7 @@ export default async function Breach({ params }: { params: Promise<{ org: string
                   <Tag tone="ok">Closed</Tag>
                 </div>
               </div>
-              <p className="ds-figure mt-0.5 text-[11px] text-[var(--ds-text-3)]">{i.id}</p>
+              <p className="ds-id mt-0.5 text-[11px] text-[var(--ds-text-3)]">{i.id}</p>
               <p className="mt-1 text-[13px] text-[var(--ds-text-2)]">
                 Aware {i.awareness} · {i.boardIntimation}
               </p>

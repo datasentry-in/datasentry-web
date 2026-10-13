@@ -4,7 +4,9 @@ import {
 } from '@/modules/app/dpdp/mock/data';
 import type { EvidenceBasis } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
-import { BasisTag, DemoNote, PageHeader, Panel, Stat, Tag } from '@/modules/app/ui/ui';
+import {
+  BasisTag, DemoNote, Fact, Facts, PageHeader, Panel, Tag,
+} from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -141,18 +143,18 @@ export default async function Intake({ params }: { params: Promise<{ org: string
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Intake channels"
         sub={`How information reaches ${org.name}'s register. The platform holds records about processing, and the records it is the system of record for — never copies of the client's systems.`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Channels live" value={created.length + register.length + attestedWork.length} note="none touch a client system" tone="good" />
-        <Stat label="Requests this quarter" value={byChannel('Privacy centre') + byChannel('Email')} note={`${byChannel('Privacy centre')} privacy centre, ${byChannel('Email')} email`} />
-        <Stat label="Tasks awaiting attestation" value={open + overdue} note={`${overdue} overdue`} tone={overdue ? 'bad' : 'warn'} />
-        <Stat label="Check-in" value="Due" note={`${CHECK_IN.label} · ${CHECK_IN.due}`} tone="warn" />
-      </div>
+      <Facts>
+        <Fact label="Channels live" value={created.length + register.length + attestedWork.length} note="none touch a client system" tone="good" />
+        <Fact label="Requests this quarter" value={byChannel('Privacy centre') + byChannel('Email')} note={`${byChannel('Privacy centre')} privacy centre, ${byChannel('Email')} email`} />
+        <Fact label="Tasks awaiting attestation" value={open + overdue} note={`${overdue} overdue`} tone={overdue ? 'bad' : 'warn'} />
+        <Fact label="Check-in" value="Due" note={`${CHECK_IN.label} · ${CHECK_IN.due}`} tone="warn" />
+      </Facts>
 
       <Panel
         title="Created here"

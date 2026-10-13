@@ -12,7 +12,7 @@ export default function Portfolio() {
   const incidents = ORGS.reduce((n, o) => n + o.incidentOpen, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Client portfolio"
         sub={`${ORGS.length} engagements, ${totalHigh} high-severity gaps across them.`}

@@ -2,7 +2,7 @@ import { DSRS, ORGS, PRIVACY_CENTRE, TASKS, getOrg } from '@/modules/app/dpdp/mo
 import SlaBar from '@/modules/app/dpdp/components/SlaBar';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import {
-  Button, Card, CiteLink, DemoNote, NextStep, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th,
+  Button, Card, CiteLink, DemoNote, Fact, Facts, NextStep, PageHeader, Panel, TableWrap, Tag, Td, Th,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -20,18 +20,18 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
   const focus = DSRS.find((d) => d.id === 'DSR-2026-0041')!;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Data principal requests"
         sub={`Access, correction, erasure, grievance and nomination · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Open requests" value={open.length} note="none past SLA" tone="warn" />
-        <Stat label="Closed this quarter" value={closed.length} note="median 4 days to close" tone="good" />
-        <Stat label="Erasure conflicts" value={1} note="statutory retention applies" tone="bad" />
-        <Stat label="Grievance contact" value="None" note="finding G-09 — s.13 breach" tone="bad" />
-      </div>
+      <Facts>
+        <Fact label="Open requests" value={open.length} note="none past SLA" tone="warn" />
+        <Fact label="Closed this quarter" value={closed.length} note="median 4 days to close" tone="good" />
+        <Fact label="Erasure conflicts" value={1} note="statutory retention applies" tone="bad" />
+        <Fact label="Grievance contact" value="None" note="no one named to handle complaints (G-09, s.13)" tone="bad" />
+      </Facts>
 
       <NextStep
         title={`Send ${focus.principal} a partial-erasure response`}
@@ -62,7 +62,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                   key={d.id}
                   className={d.id === focus.id ? 'bg-[var(--ds-accent-weak)]' : 'hover:bg-[var(--ds-subtle)]'}
                 >
-                  <Td className="ds-figure whitespace-nowrap text-[12px]">{d.id}</Td>
+                  <Td className="ds-id whitespace-nowrap text-[12px]">{d.id}</Td>
                   <Td>
                     <Tag tone={d.type === 'Erasure' ? 'alert' : 'plain'}>{d.type}</Tag>
                   </Td>
@@ -152,7 +152,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="ds-meta text-[var(--ds-text-3)]">Fulfilment</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+                <p className="mt-1 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                   {(() => {
                     const t = TASKS.filter((x) => x.source.ref === focus.id);
                     const n = (s: string) => t.filter((x) => x.status === s).length;
@@ -168,7 +168,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
             <p className="ds-meta text-[var(--ds-text-3)]">
               Generated response — draft
             </p>
-            <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               We have erased your personnel file, your recruitment record, your alumni mailing entry and the
               photograph you asked about. We are unable to erase four categories of record because we are
               required by law to keep them: your Provident Fund member records under the Employees&rsquo;
@@ -194,7 +194,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
         </div>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Closed requests" sub="The log is the evidence of a working mechanism" flush>
           <ul>
             {closed.map((d) => (
@@ -206,7 +206,7 @@ export default async function Dsr({ params }: { params: Promise<{ org: string }>
                     <Tag tone="ok">Closed</Tag>
                   </div>
                 </div>
-                <p className="ds-figure mt-0.5 text-[11px] text-[var(--ds-text-3)]">{d.id}</p>
+                <p className="ds-id mt-0.5 text-[11px] text-[var(--ds-text-3)]">{d.id}</p>
                 <p className="mt-1 text-[13px] leading-snug text-[var(--ds-text-2)]">{d.outcome}</p>
               </li>
             ))}

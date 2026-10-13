@@ -245,7 +245,7 @@ export const GAPS: Gap[] = [
   },
   {
     id: 'G-03', severity: 'High',
-    title: 'Candidate application form carries no Rule 3 notice',
+    title: 'Job application form asks for one blanket consent, with no itemised notice',
     detail: 'The application form collects 14 distinct data items behind a single "I agree to the Privacy Policy" checkbox. There is no itemised description of data with a purpose per item, no withdrawal link, and no route to complain to the Data Protection Board.',
     provision: 'Rule 3 read with s.5 and s.6', activity: 'PA-01 Recruitment & applicant tracking',
     owner: 'Head of Talent Acquisition', due: '31 Dec 2026',
@@ -675,3 +675,110 @@ export const AUDIT: AuditEntry[] = [
 ];
 
 export const auditFor = (ref: string) => AUDIT.filter((e) => e.ref === ref || e.what.includes(ref));
+
+/** Everyone who can be @mentioned: the consultant team and the client's owners. */
+export const PEOPLE: { name: string; role: string; side: 'DataSentry' | 'Client' }[] = [
+  { name: 'Dharita Gada', role: 'Consultant Admin', side: 'DataSentry' },
+  { name: 'Rohan Mehta', role: 'Consultant', side: 'DataSentry' },
+  { name: 'Meera Joshi', role: 'HR Operations Manager', side: 'Client' },
+  { name: 'Ritu Sharma', role: 'Head of Talent Acquisition', side: 'Client' },
+  { name: 'Farhan Qureshi', role: 'Marketing Lead', side: 'Client' },
+  { name: 'Kiran Rao', role: 'Legal & Compliance', side: 'Client' },
+  { name: 'Anil Deshmukh', role: 'IT Manager', side: 'Client' },
+  { name: 'Vikram Iyer', role: 'Chief Information Security Officer', side: 'Client' },
+];
+
+/**
+ * Comments on a record. `visibility` decides who sees it: an internal note stays
+ * with the DataSentry team; a shared comment is visible to the client's owners.
+ */
+export type RecordComment = {
+  id: string;
+  ref: string;
+  who: string;
+  at: string;
+  text: string;
+  visibility: 'internal' | 'shared';
+};
+
+export const COMMENTS: RecordComment[] = [
+  { id: 'c1', ref: 'G-01', who: 'Ritu Sharma', at: '10 Oct 2026, 11:05', visibility: 'shared', text: 'Zoho support says the purge rule can run monthly. Can we keep campus hires for 12 months instead of 180 days?' },
+  { id: 'c2', ref: 'G-01', who: 'Dharita Gada', at: '10 Oct 2026, 12:20', visibility: 'shared', text: '@Ritu Sharma 12 months works if the notice says so — we would update the candidate notice to v4 first. Drafting it this week.' },
+  { id: 'c3', ref: 'G-01', who: 'Rohan Mehta', at: '10 Oct 2026, 12:41', visibility: 'internal', text: 'Watch the scope: notice change pushes the evidence pack to v5.' },
+  { id: 'c4', ref: 'G-06', who: 'Farhan Qureshi', at: '09 Oct 2026, 16:10', visibility: 'shared', text: 'We could add an opt-in to the exit form. Would that cover the people already on the list?' },
+  { id: 'c5', ref: 'G-06', who: 'Dharita Gada', at: '09 Oct 2026, 17:02', visibility: 'shared', text: 'It covers future leavers. The 1,340 already on the list need a one-time re-permission email — or we stop mailing them. @Kiran Rao to confirm.' },
+  { id: 'c6', ref: 'PA-12', who: 'Rohan Mehta', at: '08 Oct 2026, 16:02', visibility: 'internal', text: 'Basis set to Not determined on purpose so the finding fires. Revisit after the re-permission campaign.' },
+  { id: 'c7', ref: 'INC-2026-003', who: 'Vikram Iyer', at: '13 Oct 2026, 10:15', visibility: 'shared', text: 'Recall confirmed for all 34 recipients. Please add that to section 3.' },
+  { id: 'c8', ref: 'INC-2026-003', who: 'Dharita Gada', at: '13 Oct 2026, 10:40', visibility: 'shared', text: '@Vikram Iyer done — section 3 updated. Ready for your sign-off.' },
+];
+
+/**
+ * A generated compliance document, opened as a page. Sections carry their own
+ * provenance: AI-drafted from the record, or reviewed by the consultant.
+ * Editing a drafted section marks it reviewed.
+ */
+export type DocSection = { heading: string; text: string; provenance: Provenance; source?: string };
+export type ComplianceDoc = {
+  id: string;
+  ref: string;
+  title: string;
+  kind: string;
+  provision: string;
+  owner: string;
+  approver: string;
+  due: string;
+  version: number;
+  sections: DocSection[];
+  versions: { v: number; at: string; who: string; note: string }[];
+};
+
+export const BOARD_INTIMATION: ComplianceDoc = {
+  id: 'board-intimation',
+  ref: 'INC-2026-003',
+  title: 'Intimation to the Data Protection Board',
+  kind: 'Personal data breach — intimation',
+  provision: 'Rule 7(2)',
+  owner: 'Dharita Gada',
+  approver: 'Vikram Iyer',
+  due: '13 Oct 2026, 14:20',
+  version: 2,
+  sections: [
+    {
+      heading: 'Who is notifying',
+      provenance: 'consultant_reviewed',
+      text: 'Northstar BPO Services Pvt Ltd, Pune, Maharashtra, as Data Fiduciary. Contact for this intimation: Vikram Iyer, Chief Information Security Officer — privacy@northstarbpo.in.',
+    },
+    {
+      heading: 'What happened',
+      provenance: 'ai_suggested',
+      source: 'Drafted from incident record INC-2026-003',
+      text: 'On 10 October 2026 the September 2026 payroll register was sent by email to an internal distribution list that included 34 recipients with no need to access it. The register held the name, employee ID, designation, gross and net salary, PAN, bank account number and PF number of 240 employees.',
+    },
+    {
+      heading: 'When we became aware, and what we did',
+      provenance: 'consultant_reviewed',
+      text: 'We became aware at 14:20 IST on 10 October 2026. The message was recalled at 14:52 IST and the distribution list was corrected the same afternoon. Recall has been confirmed for all 34 recipients. No onward disclosure has been identified.',
+    },
+    {
+      heading: 'People and personal data affected',
+      provenance: 'ai_suggested',
+      source: 'From the register — PA-04 Payroll processing',
+      text: '240 current employees. Identity data (name, employee ID, designation), financial data (salary, bank account number) and government identifiers (PAN, PF number). No data of children, and no data from outside India.',
+    },
+    {
+      heading: 'Likely consequences',
+      provenance: 'ai_suggested',
+      source: 'Suggested from the categories involved',
+      text: 'Bank account numbers alongside PAN raise the risk of targeted financial fraud and phishing. Salary disclosure inside the company may cause distress. The risk is limited by the recipients all being employees bound by confidentiality.',
+    },
+    {
+      heading: 'Measures taken and planned',
+      provenance: 'consultant_reviewed',
+      text: 'Recall and deletion confirmed by each recipient. Payroll registers now go only to a named list owned by Finance, with external-sharing blocked on the payroll folder (finding G-08). Affected employees are being told what happened and how to watch for fraud attempts.',
+    },
+  ],
+  versions: [
+    { v: 2, at: '13 Oct 2026, 10:40', who: 'Dharita Gada', note: 'Section 3 updated after the CISO confirmed recall for all 34 recipients' },
+    { v: 1, at: '13 Oct 2026, 09:30', who: 'DataSentry draft', note: 'Generated from incident record INC-2026-003 and the register' },
+  ],
+};

@@ -5,6 +5,7 @@ import { FLOW_EDGES, FLOW_NODES, GAPS, OWNERS } from '@/modules/app/dpdp/mock/da
 import type { FlowEdge, FlowNode, Gap } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import { CiteLink, Person, SeverityTag, Tag } from '@/modules/app/ui/ui';
+import Discussion from './Discussion';
 import RemindButton from './RemindButton';
 
 /**
@@ -359,7 +360,7 @@ function FindingBlock({ id }: { id: string }) {
     <SheetSection title="Finding">
       <div className="ds-bar" style={{ ['--bar' as string]: g.severity === 'High' ? C.danger : C.warn }}>
         <p className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium">
-          <span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{g.id}</span> {g.title} <SeverityTag s={g.severity} />
+          <span className="ds-id text-[12px] text-[var(--ds-text-3)]">{g.id}</span> {g.title} <SeverityTag s={g.severity} />
         </p>
         <p className="mt-1 text-[12px] text-[var(--ds-text-2)]">{g.detail}</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -425,6 +426,9 @@ function FlowSheet({ selected, onSelect }: { selected: Selected; onSelect: (s: S
           />
         </SheetSection>
         {edge.finding && <FindingBlock id={edge.finding} />}
+        <SheetSection title="Discussion">
+          <Discussion refId={edge.finding ?? edge.activity.split(' ')[0]} client="Northstar" />
+        </SheetSection>
       </Sheet>
     );
   }

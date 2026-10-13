@@ -183,7 +183,7 @@ function Trace({ lines, done, onDone }: { lines: string[]; done: boolean; onDone
 
       <ul className="mt-2.5 space-y-1.5">
         {visible.map((l) => (
-          <li key={l} className="flex gap-2 text-[13px] leading-relaxed text-[var(--ds-text)]">
+          <li key={l} className="flex gap-2 text-[14px] leading-relaxed text-[var(--ds-text)]">
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[var(--ds-accent)]" aria-hidden />
             {l}
           </li>
@@ -328,7 +328,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                 key={r.id}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b border-[var(--ds-border)] px-4 py-2.5 last:border-b-0 sm:px-5"
               >
-                <span className="ds-figure w-12 shrink-0 text-[11px] text-[var(--ds-text-3)]">{r.id}</span>
+                <span className="ds-id w-12 shrink-0 text-[11px] text-[var(--ds-text-3)]">{r.id}</span>
                 <span className="min-w-0 flex-1 text-[13px] font-medium">{r.name}</span>
                 <span className="text-[12px] text-[var(--ds-text-2)]">{r.principals}</span>
                 {r.source === 'proposed' && <Tag tone="watch">Not in the pack</Tag>}
@@ -438,7 +438,7 @@ export default function DiscoveryInterview({ org }: { org: Org }) {
                     </Tag>
                   </div>
                 </div>
-                <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">{r.detail}</p>
+                <p className="mt-1 max-w-3xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">{r.detail}</p>
               </li>
             ))}
           </ul>

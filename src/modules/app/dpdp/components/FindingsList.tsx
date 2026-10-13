@@ -6,6 +6,7 @@ import { parseDisplayDate } from '@/modules/app/dpdp/time';
 import type { Gap, Severity } from '@/modules/app/dpdp/types';
 import Sheet, { SheetSection } from '@/modules/app/ui/Sheet';
 import AuditTimeline from './AuditTimeline';
+import Discussion from './Discussion';
 import { useTableView, type Sort, type View } from '@/modules/app/ui/useTableView';
 import {
   BasisTag, CiteLink, FilterInput, Person, SeverityTag, SortHead, TableWrap, Th, ViewTabs,
@@ -68,7 +69,7 @@ export default function FindingsList() {
           <tbody>
             {t.shown.map((g) => (
               <tr key={g.id} className="ds-row cursor-pointer hover:bg-[var(--ds-subtle)]">
-                <td className="ds-figure border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">{g.id}</td>
+                <td className="ds-id border-b border-[var(--ds-border)] px-3 py-3 align-top text-[12px] text-[var(--ds-text-2)]">{g.id}</td>
                 <td className="border-b border-[var(--ds-border)] px-3 py-3 align-top">
                   <button type="button" onClick={() => setOpenId(g.id)} className="ds-row-link text-left text-[13px] font-medium leading-snug">
                     {g.title}
@@ -101,12 +102,12 @@ export default function FindingsList() {
         open={!!open}
         onClose={() => setOpenId(null)}
         title={open?.title}
-        meta={open && (<><span className="ds-figure text-[12px] text-[var(--ds-text-3)]">{open.id}</span><SeverityTag s={open.severity} /><CiteLink provision={open.provision} /></>)}
+        meta={open && (<><span className="ds-id text-[12px] text-[var(--ds-text-3)]">{open.id}</span><SeverityTag s={open.severity} /><CiteLink provision={open.provision} /></>)}
         footer={open && <RemindButton person={person(open)} what={`${open.id} — ${open.title}`} />}
       >
         {open && (
           <>
-            <p className="text-[13px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
+            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.detail}</p>
             <SheetSection title="Ownership">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Person name={person(open)} role={OWNERS[open.owner] ? open.owner : undefined} />
@@ -123,17 +124,20 @@ export default function FindingsList() {
               <SheetSection title="Evidence">
                 <div className="ds-bar ds-bar-plain">
                   {open.basis && <BasisTag b={open.basis} />}
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.evidence}</p>
                 </div>
               </SheetSection>
             )}
             <SheetSection title="Why this is a finding">
-              <p className="text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+              <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">
                 Raised by rule set v1.4 from a register field, citing {open.provision}. The model does not draw this
                 conclusion; it can be traced line by line to the register and the rule.
               </p>
             </SheetSection>
-                    <SheetSection title="History">
+                    <SheetSection title="Discussion">
+              <Discussion refId={open.id} client="Northstar" />
+            </SheetSection>
+            <SheetSection title="History">
               <AuditTimeline entries={auditFor(open.id)} empty="Raised 08 Oct 2026 by rule engine v1.4. No changes since." />
             </SheetSection>   </>
         )}

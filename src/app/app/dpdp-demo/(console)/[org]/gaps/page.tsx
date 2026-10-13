@@ -1,7 +1,9 @@
 import { GAPS, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
 import FindingsList from '@/modules/app/dpdp/components/FindingsList';
 import RemindButton from '@/modules/app/dpdp/components/RemindButton';
-import { DemoNote, NextStep, PageHeader, Panel, Stat } from '@/modules/app/ui/ui';
+import {
+  DemoNote, Fact, Facts, NextStep, PageHeader, Panel,
+} from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -17,18 +19,18 @@ export default async function Gaps({ params }: { params: Promise<{ org: string }
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Gap report"
         sub={`Rule set v1.4 · ${org.activities} activities evaluated · generated 08 Oct 2026`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Findings" value={GAPS.length} note="all with an owner and a date" />
-        <Stat label="High" value={counts.High} note="remediate before Dec 2026" tone="bad" />
-        <Stat label="Medium" value={counts.Medium} note="remediate by Jan 2027" tone="warn" />
-        <Stat label="Low" value={counts.Low} note="remediate by Mar 2027" />
-      </div>
+      <Facts>
+        <Fact label="Findings" value={GAPS.length} note="all with an owner and a date" />
+        <Fact label="High" value={counts.High} note="remediate before Dec 2026" tone="bad" />
+        <Fact label="Medium" value={counts.Medium} note="remediate by Jan 2027" tone="warn" />
+        <Fact label="Low" value={counts.Low} note="remediate by Mar 2027" />
+      </Facts>
 
       <NextStep
         title="Get the 180-day purge switched on in Zoho Recruit"

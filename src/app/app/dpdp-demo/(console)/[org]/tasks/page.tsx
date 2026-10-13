@@ -12,7 +12,7 @@ export default async function Tasks({ params }: { params: Promise<{ org: string 
   const org = getOrg(slug);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Tasks & attestations"
         sub={`An erasure request, a consent withdrawal, an expired retention clock or a finding becomes one task per system ${org.name}'s register lists. The owner does the work in that system and attests it — who, when, what.`}

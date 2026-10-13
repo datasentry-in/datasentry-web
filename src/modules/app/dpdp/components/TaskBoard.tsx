@@ -6,7 +6,9 @@ import { OWNERS, TASKS } from '@/modules/app/dpdp/mock/data';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst } from '@/modules/app/dpdp/time';
 import type { FulfilmentTask } from '@/modules/app/dpdp/types';
-import { BasisTag, Panel, Person, Stat, Tag } from '@/modules/app/ui/ui';
+import {
+  BasisTag, Fact, Facts, Panel, Person, Tag,
+} from '@/modules/app/ui/ui';
 import RemindButton from './RemindButton';
 import When from './When';
 
@@ -92,12 +94,12 @@ export default function TaskBoard({ org }: { org: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Open" value={count('Open')} note="awaiting the owner" tone="warn" />
-        <Stat label="Overdue" value={count('Overdue')} note="past due — escalated" tone={count('Overdue') ? 'bad' : 'plain'} />
-        <Stat label="Attested" value={count('Attested')} note="by the person who did it" tone="good" />
-        <Stat label="Kept — statutory" value={count('Retained')} note="cited in the response" />
-      </div>
+      <Facts tight={false}>
+        <Fact label="Open" value={count('Open')} note="awaiting the owner" tone="warn" />
+        <Fact label="Overdue" value={count('Overdue')} note="past due — escalated" tone={count('Overdue') ? 'bad' : 'plain'} />
+        <Fact label="Attested" value={count('Attested')} note="by the person who did it" tone="good" />
+        <Fact label="Kept — statutory" value={count('Retained')} note="cited in the response" />
+      </Facts>
 
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="ds-meta mr-1 text-[var(--ds-text-3)]">Viewing as</span>
@@ -139,7 +141,7 @@ export default function TaskBoard({ org }: { org: string }) {
                     <div className="min-w-0">
                       <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold tracking-[-0.01em]">
                         {t.system}
-                        <span className="ds-figure text-[11px] font-normal text-[var(--ds-text-3)]">{t.id}</span>
+                        <span className="ds-id text-[11px] font-normal text-[var(--ds-text-3)]">{t.id}</span>
                       </p>
                       <p className="mt-0.5 text-[13px] text-[var(--ds-text-2)]">{t.action}</p>
                     </div>

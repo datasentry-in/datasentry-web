@@ -7,7 +7,7 @@ import { useNow } from '@/modules/app/dpdp/useNow';
  * A date shown relative to now — "due in 3 days", "2h ago" — with the exact
  * date on hover. The prerendered HTML carries the exact date; the relative
  * form fills in after mount, so there is no hydration mismatch. Overdue dates
- * turn red, dates within a week amber.
+ * turn red; nothing else is coloured.
  */
 export default function When({
   date, kind = 'due', tone = true, className = '',
@@ -18,11 +18,8 @@ export default function When({
 
   const label = relativeTo(at, now, kind);
   const left = at.getTime() - now;
-  const colour =
-    !tone || kind === 'event' ? ''
-      : left < 0 ? 'text-[var(--ds-danger)]'
-        : left < 7 * 86_400_000 ? 'text-[var(--ds-warn)]'
-          : '';
+  // Only what is already late is red; everything else stays neutral.
+  const colour = !tone || kind === 'event' ? '' : left < 0 ? 'text-[var(--ds-danger)]' : '';
   return (
     <time dateTime={at.toISOString()} title={date} className={`${colour} ${className}`}>
       {label}

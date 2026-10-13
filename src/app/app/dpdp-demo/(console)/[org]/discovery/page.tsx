@@ -2,7 +2,7 @@ import { ORGS, QUESTIONNAIRE as Q, WALKTHROUGH, getOrg } from '@/modules/app/dpd
 import { demoPath } from '@/modules/app/dpdp/routes';
 import DiscoveryInterview from '@/modules/app/dpdp/components/DiscoveryInterview';
 import {
-  BasisTag, Button, Card, CiteLink, DemoNote, PageHeader, Panel, ProvenanceTag, Stat, Tag,
+  BasisTag, Button, Card, CiteLink, DemoNote, Fact, Facts, PageHeader, Panel, ProvenanceTag, Tag,
 } from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
@@ -28,7 +28,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
   // Northstar's is mid-flight and shown as a worked example.
   if (org.engagement.startsWith('Discovery')) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-8">
         <PageHeader
           title="Guided discovery interview"
           sub={`Nothing answered yet · ${org.name} · the question set adapts to what you tell it`}
@@ -39,18 +39,18 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Guided discovery interview"
         sub="Adaptive question set. No integrations and no file imports — the interview, consultant walkthroughs and owner attestations build the register."
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Questions answered" value={`${Q.answered}/${Q.total}`} note={`${pct}% complete`} tone="warn" />
-        <Stat label="Current section" value={`${Q.section} of ${Q.sections}`} note={Q.sectionName} />
-        <Stat label="Activities derived" value={19} note="2 proposed by the model, 17 from the ITES pack" />
-        <Stat label="Walkthrough observations" value={WALKTHROUGH.observations.length} note={`${WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length} differed from what was declared`} tone="warn" />
-      </div>
+      <Facts>
+        <Fact label="Questions answered" value={`${Q.answered}/${Q.total}`} note={`${pct}% complete`} tone="warn" />
+        <Fact label="Current section" value={`${Q.section} of ${Q.sections}`} note={Q.sectionName} />
+        <Fact label="Activities derived" value={19} note="2 proposed by the model, 17 from the ITES pack" />
+        <Fact label="Walkthrough observations" value={WALKTHROUGH.observations.length} note={`${WALKTHROUGH.observations.filter((o) => o.result !== 'matches').length} differed from what was declared`} tone="warn" />
+      </Facts>
 
       <Panel title="Interview progress" sub={`${pct}% of the question set answered`} flush>
         <ol>
@@ -92,7 +92,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
         <div className="space-y-4">
           <Card tone="subtle" className="p-4">
             <p className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">{Q.question}</p>
-            <p className="mt-2 border-l-2 border-[var(--ds-border-strong)] pl-3 text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="mt-2 border-l-2 border-[var(--ds-border-strong)] pl-3 text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               <span className="font-medium text-[var(--ds-text)]">Why this is asked — </span>
               {Q.why}
             </p>
@@ -105,7 +105,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
                 Drafted from sections 1–3 · awaiting consultant review
               </span>
             </div>
-            <p className="text-[13px] leading-relaxed text-[var(--ds-text)]">{Q.suggestion}</p>
+            <p className="text-[14px] leading-relaxed text-[var(--ds-text)]">{Q.suggestion}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="primary">Accept</Button>
               <Button>Edit</Button>
@@ -131,7 +131,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
         </div>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Fields this answer populates" sub="Every field carries its provenance">
           <ul className="space-y-2">
             {Q.derived.map((d) => (
@@ -156,7 +156,7 @@ export default async function Discovery({ params }: { params: Promise<{ org: str
 
         <Panel title="Rule engine" sub="Conclusions are computed, not generated">
           <div className="space-y-3">
-            <p className="text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+            <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">
               The model proposes activities and normalises free-text answers. Role, lawful basis and every gap
               finding are produced by a deterministic versioned rule set over the structured register, each citing
               a provision.

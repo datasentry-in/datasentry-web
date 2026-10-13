@@ -2,7 +2,9 @@ import { ORGS, WALKTHROUGH, getOrg } from '@/modules/app/dpdp/mock/data';
 import type { Observation } from '@/modules/app/dpdp/types';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import WalkthroughAgenda from '@/modules/app/dpdp/components/WalkthroughAgenda';
-import { BasisTag, Button, DemoNote, PageHeader, Panel, Stat, TableWrap, Tag, Td, Th } from '@/modules/app/ui/ui';
+import {
+  BasisTag, Button, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
+} from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -18,18 +20,18 @@ export default async function Walkthroughs({ params }: { params: Promise<{ org: 
   const findings = [...new Set(obs.map((o) => o.finding).filter(Boolean))];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Consultant walkthroughs"
         sub={`On a review call, ${org.name} screen-shares a system and the consultant records what they see. The client keeps control of their system; the register gets observed facts instead of declared ones.`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Observations" value={obs.length} note={`walkthrough ${WALKTHROUGH.id}`} />
-        <Stat label="Differed from the register" value={obs.filter((o) => o.result !== 'matches').length} note="declared ≠ observed" tone="warn" />
-        <Stat label="Findings raised or confirmed" value={findings.length} note={findings.join(', ')} tone="bad" />
-        <Stat label="Next walkthrough" value={WALKTHROUGH.next.slice(0, 6)} note={WALKTHROUGH.next.slice(7)} />
-      </div>
+      <Facts>
+        <Fact label="Observations" value={obs.length} note={`walkthrough ${WALKTHROUGH.id}`} />
+        <Fact label="Differed from the register" value={obs.filter((o) => o.result !== 'matches').length} note="declared ≠ observed" tone="warn" />
+        <Fact label="Findings raised or confirmed" value={findings.length} note={findings.join(', ')} tone="bad" />
+        <Fact label="Next walkthrough" value={WALKTHROUGH.next.slice(0, 6)} note={WALKTHROUGH.next.slice(7)} />
+      </Facts>
 
       <Panel
         title={`${WALKTHROUGH.id} — ${WALKTHROUGH.date}`}

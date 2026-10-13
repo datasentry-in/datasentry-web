@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { attentionAt, clockLeft, runningBreach } from '@/modules/app/dpdp/attention';
-import { ORGS } from '@/modules/app/dpdp/mock/data';
+import { attentionAt } from '@/modules/app/dpdp/attention';
 import { demoPath } from '@/modules/app/dpdp/routes';
 import { DEADLINE } from '@/modules/app/dpdp/statute';
 import { useNow } from '@/modules/app/dpdp/useNow';
@@ -12,13 +11,12 @@ import When from './When';
 
 /**
  * The top bar's right side: what needs the consultant's attention across every
- * client, at a glance. A running breach clock gets its own chip because it is
- * the one deadline measured in hours; everything else sits behind the bell.
+ * client, behind one bell. The running breach clock is the first item in it and
+ * the page's next step; the header itself stays calm.
  * The list itself comes from `attention.ts`.
  */
 
 const COMMENCES = new Date(`${DEADLINE.date}T00:00:00+05:30`).getTime();
-const NORTHSTAR = ORGS[0];
 
 function Bell() {
   return (
@@ -34,23 +32,10 @@ export default function HeaderAlerts() {
   const [open, setOpen] = useState(false);
   const alerts = attentionAt(now);
   const urgent = alerts.filter((a) => a.tone === 'danger').length;
-  const breach = runningBreach();
-  const breachMs = breach && now !== null ? new Date(breach.deadlineIso!).getTime() - now : null;
   const days = now === null ? null : Math.max(0, Math.floor((COMMENCES - now) / 86_400_000));
 
   return (
     <div className="flex items-center gap-2">
-      {breach && (
-        <Link
-          href={demoPath(NORTHSTAR.slug, 'breach')}
-          className="hidden items-center gap-1.5 rounded-full border border-[var(--ds-danger-border)] bg-[var(--ds-danger-weak)] px-2.5 py-1 text-[12px] font-medium text-[var(--ds-danger)] transition-colors hover:border-[var(--ds-danger)] md:inline-flex"
-          title={`${breach.id} — Board intimation due ${breach.deadline}`}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--ds-danger)]" aria-hidden />
-          {breach.id}
-          {breachMs === null ? <Skeleton className="h-3 w-20" /> : <span className="ds-figure">{clockLeft(breachMs)}</span>}
-        </Link>
-      )}
 
       <Link
         href={demoPath()}

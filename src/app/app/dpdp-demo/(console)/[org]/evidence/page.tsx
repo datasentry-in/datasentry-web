@@ -1,5 +1,7 @@
 import { EVIDENCE_PACK, ORGS, getOrg } from '@/modules/app/dpdp/mock/data';
-import { Button, Card, DemoNote, PageHeader, Panel, Stat, Tag, TableWrap, Td, Th } from '@/modules/app/ui/ui';
+import {
+  Button, Card, DemoNote, Fact, Facts, PageHeader, Panel, TableWrap, Tag, Td, Th,
+} from '@/modules/app/ui/ui';
 
 export function generateStaticParams() {
   return ORGS.map((o) => ({ org: o.slug }));
@@ -15,23 +17,23 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
   const blocked = EVIDENCE_PACK.filter((e) => e.status !== 'Generated').length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <PageHeader
         title="Evidence & audit pack"
         sub={`The compliance file a board or a Board of India query actually asks for · ${org.name}`}
       />
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--ds-border)] bg-[var(--ds-border)] lg:grid-cols-4">
-        <Stat label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="RoPA v4 as source" tone="warn" />
-        <Stat label="Blocked or pending" value={blocked} note="each traces to a finding" tone="bad" />
-        <Stat label="Languages" value={4} note="EN, HI, MR, KN" tone="good" />
-        <Stat label="Pack version" value="v4" note="hash-stamped 08 Oct 2026" />
-      </div>
+      <Facts>
+        <Fact label="Artefacts generated" value={`${generated}/${EVIDENCE_PACK.length}`} note="RoPA v4 as source" tone="warn" />
+        <Fact label="Blocked or pending" value={blocked} note="each traces to a finding" tone="bad" />
+        <Fact label="Languages" value={4} note="EN, HI, MR, KN" tone="good" />
+        <Fact label="Pack version" value="v4" note="hash-stamped 08 Oct 2026" />
+      </Facts>
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--ds-border)] bg-[var(--ds-panel)] p-4 sm:p-5">
         <div className="min-w-0">
           <p className="text-[15px] font-semibold tracking-[-0.01em]">Export the compliance file</p>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[var(--ds-text-2)]">
+          <p className="mt-1 max-w-2xl text-[14px] leading-relaxed text-[var(--ds-text-2)]">
             Single PDF plus a ZIP of every artefact. Each document carries its generation timestamp, the source
             RoPA version and the reviewer who signed it off.
           </p>
@@ -71,7 +73,7 @@ export default async function Evidence({ params }: { params: Promise<{ org: stri
         </TableWrap>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Panel title="Policy generator" sub="Assembled from reviewed clause libraries, filled with client specifics" flush>
           <ul>
             {[
