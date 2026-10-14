@@ -1,9 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { auditFor, clientData, currentUser, getOrg } from '@/modules/app/dpdp/mock/clients';
+import { CONTRACTS, REGIONS, REGION_NAME, applyEdits } from '@/modules/app/dpdp/flowGraph';
+import { editActivity, editParty, useRegisterEdits } from '@/modules/app/dpdp/registerEdits';
+import { demoPath } from '@/modules/app/dpdp/routes';
 import { formatIst } from '@/modules/app/dpdp/time';
-import type { Activity, AuditEntry, Basis, Role } from '@/modules/app/dpdp/types';
+import type { Activity, AuditEntry, Basis, Party, Region, Role } from '@/modules/app/dpdp/types';
 import Sheet, {
   SheetActivity, SheetDetails, SheetField, SheetList, SheetListItem, SheetSection, SheetTab,
 } from '@/modules/app/ui/Sheet';
@@ -82,8 +86,11 @@ export default function RopaRegister({ org }: { org: string }) {
   const d = clientData(org);
   const GAPS = d.gaps;
   const toast = useToast();
-  const [rows, setRows] = useState<Activity[]>(d.activities);
-  const [edits, setEdits] = useState<AuditEntry[]>([]);
+  // The register as recorded, with this session's edits — the same edits the
+  // data flow map reads, so a change here shows there.
+  const edits = useRegisterEdits(org);
+  const { activities: rows, parties } = applyEdits(d, edits);
+  const [logged, setLogged] = useState<AuditEntry[]>([]);
   const [editing, setEditing] = useState<{ id: string; field: 'basis' | 'retention' } | null>(null);
   const [draft, setDraft] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -93,9 +100,9 @@ export default function RopaRegister({ org }: { org: string }) {
     setEditing(null);
     const from = a[field];
     if (!value.trim() || value === from) return;
-    setRows((rs) => rs.map((r) => (r.id === a.id ? { ...r, [field]: value, provenance: 'consultant_reviewed' } : r)));
+    editActivity(org, a.id, { [field]: value, provenance: 'consultant_reviewed' });
     const label = field === 'basis' ? 'Lawful basis' : 'Retention';
-    setEdits((es) => [{ at: formatIst(new Date()), who: currentUser.name, ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
+    setLogged((es) => [{ at: formatIst(new Date()), who: currentUser.name, ref: a.id, what: `${label} edited in the register`, change: { field: label, from, to: value } }, ...es]);
 
     const bad = field === 'basis' ? 'Not determined' : 'Not stated';
     const finding = GAPS.find((g) => g.activity.startsWith(a.id));
@@ -106,7 +113,23 @@ export default function RopaRegister({ org }: { org: string }) {
 
   const open = rows.find((r) => r.id === openId) ?? null;
   const findings = open ? GAPS.filter((g) => g.activity.startsWith(open.id)) : [];
-  const history = open ? [...edits.filter((e) => e.ref === open.id), ...auditFor(d, open.id)] : [];
+  const history = open ? [...logged.filter((e) => e.ref === open.id), ...auditFor(d, open.id)] : [];
+  const transfers = open ? d.transfers.filter((t) => t.activity === open.id) : [];
+  const partyById = new Map(parties.map((p) => [p.id, p]));
+  /** A recipient's hosting or contract changed here: a register edit the map picks up. */
+  const changeParty = (id: string, patch: { region?: Region; safeguard?: Party['safeguard'] }) => {
+    const p = partyById.get(id)!;
+    editParty(org, id, patch);
+    const field = patch.region ? 'Hosted in' : 'Contract';
+    const from = patch.region ? REGION_NAME[p.region] : p.safeguard;
+    const to = patch.region ? REGION_NAME[patch.region] : patch.safeguard!;
+    setLogged((es) => [{ at: formatIst(new Date()), who: currentUser.name, ref: open!.id, what: `${p.label}: ${field.toLowerCase()} edited in the register`, change: { field, from, to } }, ...es]);
+    toast(`${p.label} — ${field.toLowerCase()} updated`, patch.region && patch.region !== 'IN'
+      ? `${p.label} is now a cross-border recipient. The data flow map moves it outside India and marks the border crossing.`
+      : patch.safeguard === 'No DPA'
+        ? `The rule engine flags every flow to ${p.label} until a data processing agreement is on file (s.8(2)).`
+        : 'The data flow map and its findings update from the register.');
+  };
 
   return (
     <>
@@ -255,6 +278,57 @@ export default function RopaRegister({ org }: { org: string }) {
 
             <SheetSection title="Purpose">
               <p className="text-[14px] leading-relaxed text-[var(--ds-text-2)]">{open.purpose}</p>
+            </SheetSection>
+
+            <SheetSection
+              title="Recipients and transfers"
+              count={transfers.length}
+              right={
+                <Link href={demoPath(org, 'flows')} className="text-[12px] text-[var(--ds-text-2)] hover:text-[var(--ds-accent-hover)]">
+                  See it on the data flow map →
+                </Link>
+              }
+            >
+              {transfers.length === 0 ? (
+                <p className="text-[13px] text-[var(--ds-text-3)]">Nothing leaves the systems this activity runs in.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {transfers.map((t) => {
+                    const from = partyById.get(t.from)!;
+                    const to = partyById.get(t.to)!;
+                    return (
+                      <li key={t.id} className="rounded-lg border border-[var(--ds-border)] px-3 py-2.5">
+                        <p className="text-[13px] font-medium">{from.label} → {to.label}</p>
+                        <p className="text-[12px] text-[var(--ds-text-3)]">{t.label} · {t.principals}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-[var(--ds-text-2)]">
+                          <label className="flex items-center gap-1.5">
+                            Hosted in
+                            <select
+                              value={to.region}
+                              onChange={(e) => changeParty(to.id, { region: e.target.value as Region })}
+                              className="h-7 rounded-md border border-[var(--ds-border)] bg-[var(--ds-panel)] px-2 text-[13px] text-[var(--ds-text)] outline-none focus:border-[var(--ds-accent)]"
+                            >
+                              {REGIONS.map((r) => <option key={r} value={r}>{REGION_NAME[r]}</option>)}
+                            </select>
+                          </label>
+                          {to.kind === 'processor' && (
+                            <label className="flex items-center gap-1.5">
+                              Contract
+                              <select
+                                value={to.safeguard}
+                                onChange={(e) => changeParty(to.id, { safeguard: e.target.value as Party['safeguard'] })}
+                                className="h-7 rounded-md border border-[var(--ds-border)] bg-[var(--ds-panel)] px-2 text-[13px] text-[var(--ds-text)] outline-none focus:border-[var(--ds-accent)]"
+                              >
+                                {CONTRACTS.map((c) => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                            </label>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </SheetSection>
 
             <SheetSection title="Findings on this activity" count={findings.length}>

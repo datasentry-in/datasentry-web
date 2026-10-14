@@ -41,6 +41,9 @@ src/modules/app/dpdp/    the DPDP product
   workStatus.ts          finding/task/request statuses and severities → WorkRow glyphs (with hover labels)
   inbox.ts               the inbox: others' changes and comments across clients; unread state per viewer
   assigned.ts            the consultant's work across clients (requests, intimations, reviews, check-ins…)
+  flowGraph.ts           the data flow map, generated from the register: zones from hosting, basis from the
+                         RoPA activity, findings from rules (no DPA, no basis); register edits applied first
+  registerEdits.ts       this session's register edits (sessionStorage) — the RoPA writes, the map reads
   routes.ts              DEMO_BASE + demoPath()
   time.ts                IST formatting; parseDisplayDate/relativeTo for "due in 3 days"
   useNow.ts              the real clock (shared per tick rate), null while hydrating
@@ -169,11 +172,36 @@ src/modules/app/dpdp/    the DPDP product
 - **Plain language first, citation second**: say what is wrong in words, then the provision —
   "no one named to handle complaints (s.13)", never "s.13 breach". `CiteLink` is quiet grey text on a
   hairline underline, blue only on hover: blue belongs to the primary action.
-- **The data flow map** (`DataFlowMap.tsx`, data in `FLOW_NODES`/`FLOW_EDGES`) draws three trust
+- **The data flow map** (`DataFlowElk.tsx`, generated from `PARTIES`/`TRANSFERS` by `flowGraph`) draws three trust
   boundaries (own systems · third parties in India · outside India) with the India border; every node
   carries its kind, region and safeguard (DPA / no DPA / terms only / statutory / exempt), every flow
   its data and lawful basis. Name data categories as they are — the DPDP Act has no "sensitive
   personal data" class, so never label anything sensitive.
+- **Data flow maps — the standard (decided 13 Oct 2026).** A map is a *graph derived from the register*
+  (discovery → RoPA → nodes and flows, with the rule engine's findings attached), laid out by ELK and drawn
+  with React Flow — never hand-placed, never authored as diagram text. Edits by prompt are typed operations on
+  the register (add/update/remove a system or flow), previewed with the rule engine's consequences, audited
+  old → new; the map re-lays itself out. Mermaid/D2 only ever come *out* of the graph as generated exports
+  (post-MVP). It is the `[org]/flows` page (`DataFlowElk.tsx`). Division of labour, after several failed
+  routes: **ELK places the systems, we draw the flows.** ELK (`elkjs`, layered, flat graph, no labels) only
+  orders each column and sets each system's height: own systems are pinned `FIRST`, outside-India `LAST`, and a
+  chain of invisible anchors (one per gap, hidden links to every system of the next zone) forces each zone
+  into its own column — flows alone don't (nothing runs India → abroad). We set the column x (gap = widest
+  label + margin), draw S-curves with the label on the flow in the gap after the source, run straight through
+  the slot ELK reserved in any column a flow skips, spread several flows along a system's edge, and nudge
+  labels apart. Don't hand ELK the labels (it routes every flow through a label slot: jogs and spikes), nest
+  the zones (they become obstacles flows route around), or use its splines (wiggles). React Flow renders
+  (`@xyflow/react`); zoom is on the + / − buttons only. `FlowSections.tsx` holds the facts row and the flagged
+  / cross-border sections both map pages share. The earlier hand-placed map (`DataFlowMap.tsx`) is hidden at
+  `[org]/flows/hand-placed` — unlinked, kept for reference, to be deleted later (its colours, icons, legend,
+  `graphFor` and `FlowSheet` are shared and stay); `[org]/flows/elk` redirects to `flows`. **The register is the
+  source**: `parties` (systems and recipients, with hosting country and contract — no stored zone) and
+  `transfers` (each recorded against a RoPA activity — no stored basis) in ClientData; `flowGraph(d, edits)`
+  derives zones, bases and rule findings (no DPA → s.8(2) High; basis Not determined → s.6/s.4 Medium; reusing
+  the gap report's finding when it records the same, else a `New · PA-xx` one). Edits made in the RoPA (lawful
+  basis, retention, a recipient's hosting or contract — the activity sheet's "Recipients and transfers") or on
+  the map's side panel go into `registerEdits`; the map, its facts and flagged flows follow, with "N register
+  edits · Reset" on the map. Gaps: ELK should run in a web worker; elkjs is EPL-2.0 — check before shipping.
 - **Motion** (tokens and keyframes at the end of `console.css`): quick, subtle, transform/opacity only,
   ease-out in and faster out, all off under reduced motion. Every page eases in (`ds-page-in`: title,
   then body 40ms behind, a 4px rise over `--ds-dur-page` 200ms — keep it that short). Headline numbers

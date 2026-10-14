@@ -40,8 +40,8 @@ export const MERIDIAN: ClientData = {
   tasks: [],
   evidence: EVIDENCE_NAMES.map((name) => ({ name, status: 'Not started' as const, detail: 'Generated from the register once discovery is done', ts: '—' })),
   questionnaire: null,
-  flowNodes: [],
-  flowEdges: [],
+  parties: [],
+  transfers: [],
   // Meridian publishes an email address only — no hosted privacy centre yet.
   privacyCentre: null,
   walkthrough: null,

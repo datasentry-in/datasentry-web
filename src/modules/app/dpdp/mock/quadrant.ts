@@ -5,7 +5,7 @@
  * Illustrative only; a live app replaces this module with a data layer.
  */
 import type {
-  Activity, CheckIn, ClientData, Dsr, FlowEdge, FlowNode, FulfilmentTask, Gap, Incident,
+  Activity, CheckIn, ClientData, Dsr, FulfilmentTask, Gap, Incident, Party, Transfer,
 } from '../types';
 
 const OWNERS: Record<string, string> = {
@@ -248,24 +248,25 @@ const INCIDENTS: Incident[] = [
   },
 ];
 
-const FLOW_NODES: FlowNode[] = [
-  { id: 'ats', label: 'Freshteam', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
-  { id: 'hrms', label: 'Darwinbox', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
-  { id: 'payroll', label: 'RazorpayX Payroll', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
-  { id: 'biometric', label: 'eSSL terminals', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees', finding: 'G-02', note: 'On-premises · 131 templates for 95 staff' },
-  { id: 'vdi', label: 'Annotation floor', kind: 'system', zone: 'internal', region: 'IN', safeguard: 'Internal', principals: 'Client end-users', finding: 'G-01', note: '62 workstations · client data viewed in client tools' },
-  { id: 'authbridge', label: 'OnGrid', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'DPA in place', principals: 'Candidates' },
-  { id: 'insurer', label: 'ICICI Lombard', kind: 'processor', zone: 'india', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
-  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', zone: 'india', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
-  { id: 'ukclient', label: 'US autonomy client', kind: 'client', zone: 'abroad', region: 'US', safeguard: 'Exempt', principals: 'Client end-users' },
+/** Quadrant's systems and recipients, and the transfers its RoPA records — the map is generated from these. */
+const PARTIES: Party[] = [
+  { id: 'ats', label: 'Freshteam', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Candidates' },
+  { id: 'hrms', label: 'Darwinbox', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees' },
+  { id: 'payroll', label: 'RazorpayX Payroll', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees' },
+  { id: 'biometric', label: 'eSSL terminals', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Employees, ex-employees', finding: 'G-02', note: 'On-premises · 131 templates for 95 staff' },
+  { id: 'vdi', label: 'Annotation floor', kind: 'system', region: 'IN', safeguard: 'Internal', principals: 'Client end-users', finding: 'G-01', note: '62 workstations · client data viewed in client tools' },
+  { id: 'authbridge', label: 'OnGrid', kind: 'processor', region: 'IN', safeguard: 'DPA in place', principals: 'Candidates' },
+  { id: 'insurer', label: 'ICICI Lombard', kind: 'processor', region: 'IN', safeguard: 'DPA in place', principals: 'Employees, dependants' },
+  { id: 'epfo', label: 'EPFO / ESIC', kind: 'statutory', region: 'IN', safeguard: 'Statutory', principals: 'Employees' },
+  { id: 'ukclient', label: 'US autonomy client', kind: 'client', region: 'US', safeguard: 'Exempt', principals: 'Client end-users' },
 ];
 
-const FLOW_EDGES: FlowEdge[] = [
-  { id: 'f1', from: 'ats', to: 'authbridge', activity: 'PA-02 Pre-employment background verification', label: 'ID, education, PAN', categories: ['Identity documents', 'Address proof', 'Education records', 'Employment history'], principals: 'Candidates', basis: 'Consent' },
-  { id: 'f2', from: 'hrms', to: 'insurer', activity: 'PA-08 Group health insurance & dependant enrolment', label: 'Dependants, health', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees', basis: 'Consent' },
-  { id: 'f3', from: 'hrms', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'UAN, KYC', categories: ['UAN', 'Aadhaar-linked KYC', 'Date of joining'], principals: 'Employees', basis: 'Legal obligation' },
-  { id: 'f4', from: 'payroll', to: 'epfo', activity: 'PA-05 Statutory filings', label: 'Wages, contributions', categories: ['PF number', 'Wages', 'Contribution amounts'], principals: 'Employees', basis: 'Legal obligation' },
-  { id: 'f5', from: 'vdi', to: 'ukclient', activity: 'PA-12 Client delivery — US autonomous-driving imagery', label: 'Labelled image sets', categories: ['Street-scene images with faces and number plates, handled in the client’s workspace'], principals: 'Client end-users', basis: 's.17(1)(d) exempt', finding: 'G-01' },
+const TRANSFERS: Transfer[] = [
+  { id: 'f1', activity: 'PA-02', from: 'ats', to: 'authbridge', label: 'ID, education, PAN', categories: ['Identity documents', 'Address proof', 'Education records', 'Employment history'], principals: 'Candidates' },
+  { id: 'f2', activity: 'PA-08', from: 'hrms', to: 'insurer', label: 'Dependants, health', categories: ['Name, date of birth', 'Dependant details', 'Health claims'], principals: 'Employees' },
+  { id: 'f3', activity: 'PA-05', from: 'hrms', to: 'epfo', label: 'UAN, KYC', categories: ['UAN', 'Aadhaar-linked KYC', 'Date of joining'], principals: 'Employees' },
+  { id: 'f4', activity: 'PA-05', from: 'payroll', to: 'epfo', label: 'Wages, contributions', categories: ['PF number', 'Wages', 'Contribution amounts'], principals: 'Employees' },
+  { id: 'f5', activity: 'PA-12', from: 'vdi', to: 'ukclient', label: 'Labelled image sets', categories: ['Street-scene images with faces and number plates, handled in the client’s workspace'], principals: 'Client end-users', finding: 'G-01' },
 ];
 
 const G01 = { kind: 'Finding' as const, ref: 'G-01', label: 'Client images downloadable on the floor' };
@@ -353,8 +354,8 @@ export const QUADRANT: ClientData = {
       { field: 'Cross-border — PA-14', value: 'Data remains in client environment (UK)', provenance: 'ai_suggested' },
     ],
   },
-  flowNodes: FLOW_NODES,
-  flowEdges: FLOW_EDGES,
+  parties: PARTIES,
+  transfers: TRANSFERS,
   privacyCentre: {
     url: 'privacy.quadrantanalytics.in',
     contactEmail: 'privacy@quadrantanalytics.in',
